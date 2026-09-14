@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+</head>
+
+<body>
+
+    <h1>User Management</h1>
+
+    <!-- Search -->
+    <form method="GET">
+
+        <input
+            type="text"
+            name="search"
+            placeholder="Search users"
+            value="{{ search_query }}"
+        >
+
+        <button type="submit">
+            Search
+        </button>
+
+        <a href="{% url 'user_list' %}">
+            Clear
+        </a>
+
+    </form>
+
+    <br>
+
+    <!-- User Table -->
+    <table border="1">
+
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for user in page_obj %}
+
+                <tr>
+                    <td>{{ user.username }}</td>
+
+                    <td>{{ user.email }}</td>
+
+                    <td>{{ user.phone }}</td>
+
+                    <td>
+                        {% if user.is_active %}
+                            Active
+                        {% else %}
+                            Blocked
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'toggle_user_status' user.id %}">
+                            {% if user.is_active %}
+                                Block
+                            {% else %}
+                                Unblock
+                            {% endif %}
+                        </a>
+                    </td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="5">
+                        No users found.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    <br>
+
+    <!-- Pagination -->
+    <div>
+
+        {% if page_obj.has_previous %}
+
+            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">
+                First
+            </a>
+
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                Previous
+            </a>
+
+        {% endif %}
+
+
+        <span>
+            Page {{ page_obj.number }}
+            of
+            {{ page_obj.paginator.num_pages }}
+        </span>
+
+
+        {% if page_obj.has_next %}
+
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                Next
+            </a>
+
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                Last
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>
