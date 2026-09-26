@@ -1,0 +1,1638 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Addresses | Hot Wheels HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* CSS Reset & Design Tokens */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #09090c;
+      --bg-surface: #101014;
+      --bg-card: #15151a;
+      --bg-item: #1b1b22;
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-item: rgba(255, 255, 255, 0.05);
+      --accent-red: #e51b24;
+      --accent-red-bright: #ff222e;
+      --accent-orange: #ff4d00;
+      --accent-peach: #fca5a5;
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation */
+    .navbar {
+      height: 72px;
+      background: rgba(9, 9, 12, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(24px, 5vw, 64px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(20px, 4vw, 44px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-white);
+    }
+
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.3);
+    }
+
+    .logo-badge svg {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+    }
+
+    .brand-name {
+      font-family: 'Montserrat', var(--font-main);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      padding: 6px 0;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: #ffffff;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.2s ease;
+      text-decoration: none;
+    }
+
+    .nav-action-btn:hover {
+      color: #ffffff;
+    }
+
+    .nav-action-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+    }
+
+    .nav-avatar-link {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .nav-avatar-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid rgba(229, 27, 36, 0.6);
+    }
+
+    .nav-avatar-placeholder {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #22222a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Main Viewport Container */
+    .address-viewport {
+      flex: 1;
+      padding: 38px clamp(24px, 5vw, 64px) 80px clamp(24px, 5vw, 64px);
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Page Title Banner */
+    .page-title-banner {
+      margin-bottom: 36px;
+    }
+
+    .page-main-title {
+      font-size: clamp(30px, 4vw, 42px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      margin-bottom: 8px;
+      line-height: 1.15;
+    }
+
+    .page-main-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    /* Alert / Django Messages */
+    .alert-container {
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-box {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert-box.success {
+      background: rgba(34, 197, 94, 0.14) !important;
+      border: 1px solid rgba(34, 197, 94, 0.35) !important;
+      border-left: 3px solid #22c55e !important;
+      color: #86efac !important;
+    }
+
+    .alert-box svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke: var(--accent-red);
+    }
+
+    .alert-box.success svg {
+      stroke: #22c55e !important;
+    }
+
+    /* 2-Column Addresses Layout */
+    .addresses-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    /* LEFT SIDEBAR */
+    .addresses-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* User Card */
+    .user-profile-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 32px 24px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin-bottom: 16px;
+    }
+
+    .profile-avatar-img {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(229, 27, 36, 0.5);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .profile-avatar-default {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #1e1e26 0%, #121216 100%);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .profile-avatar-default svg {
+      width: 44px;
+      height: 44px;
+      stroke: #8e8e98;
+    }
+
+    .avatar-change-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-red);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--bg-card);
+      text-decoration: none;
+      transition: background-color 0.2s ease, transform 0.15s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .avatar-change-badge:hover {
+      background-color: var(--accent-red-bright);
+      transform: scale(1.1);
+    }
+
+    .avatar-change-badge svg {
+      width: 14px;
+      height: 14px;
+      stroke: #ffffff;
+    }
+
+    .user-card-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-white);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .user-card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .user-card-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+    }
+
+    /* Sidebar Navigation Menu */
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .sidebar-menu-item {
+      width: 100%;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .sidebar-link:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .sidebar-link.active {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .sidebar-link svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      margin: 8px 12px;
+    }
+
+    /* Logout Form Button */
+    .logout-form {
+      width: 100%;
+    }
+
+    .sidebar-logout-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      text-align: left;
+    }
+
+    .sidebar-logout-btn:hover {
+      color: var(--accent-red-bright);
+      background-color: rgba(229, 27, 36, 0.08);
+    }
+
+    .sidebar-logout-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    /* RIGHT MAIN CONTENT */
+    .addresses-main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Section Header Row */
+    .section-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+
+    /* + ADD NEW ADDRESS Button */
+    .btn-add-address {
+      background: linear-gradient(135deg, #ff222e 0%, #e51b24 100%);
+      color: #ffffff;
+      text-decoration: none;
+      font-family: 'Montserrat', var(--font-main);
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 11px 20px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 18px rgba(229, 27, 36, 0.45);
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-add-address:hover {
+      background: linear-gradient(135deg, #ff3843 0%, #f0242e 100%);
+      box-shadow: 0 6px 24px rgba(229, 27, 36, 0.65);
+      transform: translateY(-1px);
+    }
+
+    .btn-add-address:active {
+      transform: translateY(0);
+    }
+
+    .btn-add-address svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* Addresses 2-Column Grid */
+    .address-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    /* Address Card */
+    .address-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .address-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .address-card.is-default {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Card Top Header */
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-type-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .type-icon {
+      width: 20px;
+      height: 20px;
+      stroke: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .type-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .default-pill {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Card Top Right Action Icons */
+    .card-actions-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-icon-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+      padding: 0;
+    }
+
+    .action-icon-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .action-icon-btn.delete-icon-btn:hover {
+      color: var(--accent-red-bright);
+      background: rgba(229, 27, 36, 0.12);
+      border-color: rgba(229, 27, 36, 0.25);
+    }
+
+    .action-icon-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* Card Details Body */
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .recipient-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .recipient-phone {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #d1d5db;
+    }
+
+    .recipient-phone svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .address-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .landmark-tag {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* Card Bottom Footer */
+    .card-bottom-row {
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .set-default-btn {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-peach);
+      text-decoration: none;
+      transition: color 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .set-default-btn:hover {
+      color: #ffffff;
+    }
+
+    .default-status-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* Empty State Card */
+    .empty-state-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 60px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .empty-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #202028;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-peach);
+      box-shadow: 0 0 24px rgba(229, 27, 36, 0.15);
+      margin-bottom: 6px;
+    }
+
+    .empty-icon-wrap svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--accent-peach);
+    }
+
+    .empty-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .empty-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      max-width: 420px;
+      line-height: 1.55;
+    }
+
+    .btn-add-first-address {
+      margin-top: 8px;
+      background: var(--accent-red);
+      color: #ffffff;
+      text-decoration: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 18px rgba(229, 27, 36, 0.45);
+      transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .btn-add-first-address:hover {
+      background: var(--accent-red-bright);
+      transform: translateY(-1px);
+    }
+
+    /* Delete Confirmation Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 4, 7, 0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: modalFadeIn 0.2s ease forwards;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-dialog {
+      width: 100%;
+      max-width: 440px;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-top: 2px solid var(--accent-red);
+      border-radius: 16px;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(229, 27, 36, 0.12);
+      padding: 32px 28px 28px 28px;
+      position: relative;
+      animation: modalSlideUp 0.22s ease forwards;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    @keyframes modalSlideUp {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-title-accent {
+      width: 4px;
+      height: 20px;
+      background-color: var(--accent-red);
+      border-radius: 2px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .modal-close-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .modal-close-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-close-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+    }
+
+    .modal-icon-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: #242429;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-red);
+      box-shadow: 0 0 20px rgba(229, 27, 36, 0.18);
+    }
+
+    .modal-icon-badge svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--accent-red);
+    }
+
+    .modal-description {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .modal-target-name {
+      color: #ffffff;
+      font-weight: 700;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .modal-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 7px;
+      height: 40px;
+      padding: 0 18px;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.25);
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .btn-danger {
+      background-color: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 7px;
+      height: 40px;
+      padding: 0 20px;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(229, 27, 36, 0.45);
+      transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--accent-red-bright);
+      transform: translateY(-1px);
+    }
+
+    /* Footer matching Figma reference */
+    .site-footer {
+      background-color: #060608;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 48px clamp(24px, 5vw, 64px) 28px clamp(24px, 5vw, 64px);
+      margin-top: auto;
+    }
+
+    .footer-columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: clamp(24px, 4vw, 48px);
+      margin-bottom: 40px;
+    }
+
+    .footer-brand .brand-logo {
+      margin-bottom: 14px;
+    }
+
+    .footer-brand-text {
+      font-size: 13px;
+      color: #7b7c87;
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    .footer-column-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #f87171;
+      margin-bottom: 16px;
+      text-transform: capitalize;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    .footer-social-icons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .social-icon-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .social-icon-link:hover {
+      color: #ffffff;
+    }
+
+    .social-icon-link svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .footer-social-text {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .footer-bottom-bar {
+      border-top: 1px solid #141418;
+      padding-top: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-copyright {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #52535d;
+      text-transform: uppercase;
+    }
+
+    .footer-accent-bar {
+      width: 60px;
+      height: 2px;
+      background-color: var(--accent-red);
+      border-radius: 2px;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .addresses-layout {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+      .address-grid {
+        grid-template-columns: 1fr;
+      }
+      .footer-columns {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 20px;
+      }
+      .nav-links {
+        display: none;
+      }
+      .address-viewport {
+        padding: 24px 16px 60px 16px;
+      }
+      .section-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .btn-add-address {
+        width: 100%;
+        justify-content: center;
+      }
+      .footer-columns {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+      .footer-bottom-bar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="{% url 'home' %}" class="brand-logo">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+            <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+            <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+          </svg>
+        </div>
+        <span class="brand-name">HUB</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="{% url 'home' %}" class="nav-link">HOME</a></li>
+          <li><a href="#" class="nav-link">SHOP</a></li>
+          <li><a href="#" class="nav-link">COLLECTIONS</a></li>
+          <li><a href="#" class="nav-link">ABOUT</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="nav-right">
+      <button class="nav-action-btn" title="Search" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+
+      <a href="#" class="nav-action-btn" title="Wishlist" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </a>
+
+      <a href="#" class="nav-action-btn" title="Cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'profile' %}" class="nav-avatar-link" title="My Profile">
+        {% if request.user.profile_image %}
+          <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" class="nav-avatar-img">
+        {% else %}
+          <div class="nav-avatar-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+        {% endif %}
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="address-viewport">
+
+    <!-- Top Big Heading & Subtitle -->
+    <div class="page-title-banner">
+      <h1 class="page-main-title">My Addresses</h1>
+      <p class="page-main-subtitle">
+        Manage your shipping destinations. Speed up checkout by keeping your addresses current.
+      </p>
+    </div>
+
+    <!-- Django Messages -->
+    {% if messages %}
+      <div class="alert-container">
+        {% for message in messages %}
+          <div class="alert-box {% if 'success' in message.tags %}success{% endif %}">
+            {% if 'success' in message.tags %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- 2-Column Layout matching Figma -->
+    <div class="addresses-layout">
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="addresses-sidebar">
+
+        <!-- User Profile Card -->
+        <div class="user-profile-card">
+          <div class="avatar-wrapper">
+            {% if request.user.profile_image %}
+              <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" class="profile-avatar-img">
+            {% else %}
+              <div class="profile-avatar-default">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+            {% endif %}
+            <a href="{% url 'change_profile_image' %}" class="avatar-change-badge" title="Change Profile Picture">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </a>
+          </div>
+
+          <h2 class="user-card-name">{{ request.user.username }}</h2>
+          <div class="user-card-badge">COLLECTOR</div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a href="{% url 'profile' %}" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>My Profile</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                <path d="M13 5v2"/>
+                <path d="M13 17v2"/>
+                <path d="M13 11v2"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              <span>Wallet</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="{% url 'address_list' %}" class="sidebar-link active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>Addresses</span>
+            </a>
+          </li>
+
+          <li class="sidebar-divider"></li>
+
+          <!-- Logout Form via POST -->
+          <li class="sidebar-menu-item">
+            <form method="POST" action="{% url 'logout' %}" class="logout-form">
+              {% csrf_token %}
+              <button type="submit" class="sidebar-logout-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Logout</span>
+              </button>
+            </form>
+          </li>
+        </ul>
+
+      </aside>
+
+      <!-- RIGHT MAIN CONTENT -->
+      <section class="addresses-main-content">
+
+        <!-- Section Header Row -->
+        <div class="section-header-row">
+          <h2 class="section-title">Saved Addresses</h2>
+
+          <!-- + ADD NEW ADDRESS Button using existing URL -->
+          <a href="{% url 'add_address' %}" class="btn-add-address">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>+ Add New Address</span>
+          </a>
+        </div>
+
+        <!-- Address Cards Grid or Empty State -->
+        {% if addresses %}
+          <div class="address-grid">
+            {% for address in addresses %}
+              <div class="address-card {% if address.is_default %}is-default{% endif %}">
+
+                <!-- Top Row: Icon + Type Name + DEFAULT badge + Actions -->
+                <div class="card-top-row">
+                  <div class="card-type-wrap">
+                    {% if address.address_type == 'home' %}
+                      <svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                      </svg>
+                    {% elif address.address_type == 'work' %}
+                      <svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                      </svg>
+                    {% else %}
+                      <svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                    {% endif %}
+
+                    <span class="type-title">{{ address.address_type|title }}</span>
+
+                    {% if address.is_default %}
+                      <span class="default-pill">DEFAULT</span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Edit and Delete Actions -->
+                  <div class="card-actions-wrap">
+                    <!-- Edit Button -->
+                    <a href="{% url 'edit_address' address.id %}" class="action-icon-btn" title="Edit Address" aria-label="Edit Address">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                      </svg>
+                    </a>
+
+                    <!-- Delete Form with CSRF and Confirmation Modal Trigger -->
+                    <form method="POST" action="{% url 'delete_address' address.id %}" id="deleteForm{{ address.id }}" style="display: inline;">
+                      {% csrf_token %}
+                      <button 
+                        type="button" 
+                        class="action-icon-btn delete-icon-btn" 
+                        title="Delete Address" 
+                        aria-label="Delete Address"
+                        onclick="promptDelete('{{ address.id }}', '{{ address.full_name|escapejs }}')"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Card Body: Recipient Info and Full Address -->
+                <div class="card-body">
+                  <div class="recipient-name">{{ address.full_name }}</div>
+
+                  <div class="recipient-phone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <span>{{ address.phone }}</span>
+                  </div>
+
+                  <div class="address-lines">
+                    <div>{{ address.address_line1 }}</div>
+                    {% if address.address_line2 %}
+                      <div>{{ address.address_line2 }}</div>
+                    {% endif %}
+                    {% if address.landmark %}
+                      <div class="landmark-tag">Near {{ address.landmark }}</div>
+                    {% endif %}
+                    <div>{{ address.city }}, {{ address.state }}</div>
+                    <div>{{ address.postal_code }}</div>
+                  </div>
+                </div>
+
+                <!-- Card Bottom Footer Row -->
+                <div class="card-bottom-row">
+                  {% if address.is_default %}
+                    <span class="default-status-label">DEFAULT ADDRESS</span>
+                  {% else %}
+                    <a href="{% url 'edit_address' address.id %}" class="set-default-btn">
+                      SET AS DEFAULT
+                    </a>
+                  {% endif %}
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <!-- Empty State -->
+          <div class="empty-state-card">
+            <div class="empty-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <h3 class="empty-title">No addresses saved yet.</h3>
+            <p class="empty-desc">
+              You haven't saved any delivery destinations yet. Add your primary shipping address to enjoy rapid, one-click checkouts on exclusive die-cast drops.
+            </p>
+            <a href="{% url 'add_address' %}" class="btn-add-first-address">
+              + Add Your First Address
+            </a>
+          </div>
+        {% endif %}
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="deleteConfirmModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-dialog" id="deleteModalDialog">
+      <div class="modal-header-row">
+        <div class="modal-title-wrap">
+          <div class="modal-title-accent"></div>
+          <h2 class="modal-title" id="deleteModalTitle">DELETE ADDRESS</h2>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeDeleteModal()" title="Close" aria-label="Close modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </div>
+
+        <p class="modal-description">
+          Are you sure you want to delete this address?
+          <span class="modal-target-name" id="modalTargetAddressName"></span>
+        </p>
+      </div>
+
+      <div class="modal-actions-row">
+        <button type="button" class="btn-secondary" onclick="closeDeleteModal()">
+          Cancel
+        </button>
+        <button type="button" class="btn-danger" id="confirmDeleteBtn">
+          Delete Address
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Footer matching Figma reference -->
+  <footer class="site-footer">
+    <div class="footer-columns">
+      <div class="footer-brand">
+        <a href="{% url 'home' %}" class="brand-logo" style="margin-bottom: 14px;">
+          <div class="logo-badge">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+              <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+              <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+            </svg>
+          </div>
+          <span class="brand-name">HUB</span>
+        </a>
+        <p class="footer-brand-text">
+          Precision engineering meets ultimate speed. The premier destination for serious die-cast collectors.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Company</h4>
+        <ul class="footer-links-list">
+          <li><a href="#" class="footer-link">About Us</a></li>
+          <li><a href="#" class="footer-link">Contact</a></li>
+          <li><a href="#" class="footer-link">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Connect</h4>
+        <div class="footer-social-icons">
+          <a href="#" class="social-icon-link" aria-label="Share">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-link" aria-label="Global">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-link" aria-label="Play">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+          </a>
+        </div>
+        <div class="footer-social-text">Instagram / Facebook / YouTube</div>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <div class="footer-copyright">
+        &copy; 2024 HOT WHEELS HUB. ALL RIGHTS RESERVED.
+      </div>
+      <div class="footer-accent-bar"></div>
+    </div>
+  </footer>
+
+  <!-- Delete Modal & Interaction Logic -->
+  <script>
+    let activeDeleteFormId = null;
+
+    function promptDelete(addressId, addressName) {
+      activeDeleteFormId = 'deleteForm' + addressId;
+      const targetNameEl = document.getElementById('modalTargetAddressName');
+      if (targetNameEl) {
+        targetNameEl.textContent = addressName || '';
+      }
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeDeleteModal() {
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+      activeDeleteFormId = null;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const confirmBtn = document.getElementById('confirmDeleteBtn');
+      const modal = document.getElementById('deleteConfirmModal');
+      const dialog = document.getElementById('deleteModalDialog');
+
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+          if (activeDeleteFormId) {
+            const form = document.getElementById(activeDeleteFormId);
+            if (form) {
+              form.submit();
+            }
+          }
+        });
+      }
+
+      if (modal && dialog) {
+        modal.addEventListener('click', function(e) {
+          if (!dialog.contains(e.target)) {
+            closeDeleteModal();
+          }
+        });
+      }
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
+          closeDeleteModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Change Profile Picture</title>
+</head>
+
+<body>
+
+    <h1>Change Profile Picture</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    {% if request.user.profile_image %}
+        <p>Current Profile Picture:</p>
+
+        <img
+            src="{{ request.user.profile_image.url }}"
+            alt="Current Profile Picture"
+            width="150"
+        >
+
+        <br><br>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <label>Select New Profile Picture</label>
+        <br>
+
+        <input
+            type="file"
+            name="profile_image"
+            accept="image/*"
+            required
+        >
+
+        <br><br>
+
+        <button type="submit">
+            Save Profile Picture
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{% url 'profile' %}">
+        Cancel
+    </a>
+
+</body>
+</html>
