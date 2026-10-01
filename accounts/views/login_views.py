@@ -3,12 +3,17 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.db.models import Q
 from ..models import User
+from django.views.decorators.cache import never_cache
 
 
 
 
-
+@never_cache
 def login_view(request):
+
+    if request.user.is_authenticated:
+        return redirect("home")
+
     if request.method == "POST":
         login_input = request.POST.get("login_input", "").strip()
         password = request.POST.get("password", "")
@@ -28,6 +33,8 @@ def login_view(request):
         if user is None:
             messages.error(request, "Invalid username/email or password.")
             return render(request, "accounts/login.html")
+
+        
 
         authenticated_user = authenticate(
             request,

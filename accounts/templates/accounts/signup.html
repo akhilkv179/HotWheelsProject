@@ -659,6 +659,7 @@
               class="text-input" 
               placeholder="e.g. SpeedDemon" 
               autocomplete="username"
+              value="{{ username|default:'' }}"
               required 
               autofocus
             >
@@ -683,6 +684,7 @@
               class="text-input" 
               placeholder="driver@hotwheels.com" 
               autocomplete="email"
+              value="{{ email|default:'' }}"
               required
             >
           </div>
@@ -705,6 +707,7 @@
               class="text-input" 
               placeholder="10-digit mobile number" 
               autocomplete="tel"
+              value="{{ phone|default:'' }}"
               required
             >
           </div>

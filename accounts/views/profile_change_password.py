@@ -9,7 +9,9 @@ from ..services.email_service import send_otp_email
 from django.utils import timezone
 from django.contrib.auth import update_session_auth_hash
 from datetime import datetime
+from django.views.decorators.cache import never_cache
 
+@never_cache
 @login_required
 def change_password(request):
 
@@ -30,7 +32,7 @@ def change_password(request):
 
     return render(request, "accounts/change_password.html")
 
-
+@never_cache
 def verify_password_change_otp(request):
 
     stored_otp = request.session.get("password_change_otp")
@@ -67,6 +69,7 @@ def verify_password_change_otp(request):
     
     return render(request,"accounts/verify_password_change_otp.html")
 
+@never_cache
 def set_new_password(request):
 
     if not request.session.get("password_change_verified"):

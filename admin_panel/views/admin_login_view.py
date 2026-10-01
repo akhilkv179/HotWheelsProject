@@ -1,11 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
-
+from django.views.decorators.cache import never_cache
 from accounts.models import User
 
-
+@never_cache
 def admin_login(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect("admin_dashboard")
+
+
     if request.method == "POST":
         u_name = request.POST.get("username", "").strip()
         p_word = request.POST.get("password", "")

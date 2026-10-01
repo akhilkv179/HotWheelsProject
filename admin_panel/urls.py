@@ -6,6 +6,7 @@ from .views.toggle_user_status_view import toggle_user_status
 from .views.admin_forgot_password_view import admin_forgot_password
 from .views.admin_verify_forgot_password_otp_view import admin_verify_forgot_password_otp
 from .views.admin_set_new_password_view import admin_set_new_password
+from .views.admin_logout import admin_logout
 
 
 urlpatterns = [
@@ -16,5 +17,6 @@ urlpatterns = [
     path("forgot-password/",admin_forgot_password,name="admin_forgot_password"),
     path("forgot-password/verify-otp/",admin_verify_forgot_password_otp,name="admin_verify_forgot_password_otp",),
     path("forgot-password/set-new-password/",admin_set_new_password,name="admin_set_new_password",),
+    path("admin_logout/", admin_logout, name="admin_logout"),
     
 ]

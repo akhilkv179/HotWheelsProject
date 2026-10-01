@@ -3,10 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from datetime import datetime
-
+from django.views.decorators.cache import never_cache
 from ..models import User
 
 
+@never_cache
 @login_required
 def verify_email_change_otp(request):
 

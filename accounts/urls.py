@@ -19,6 +19,7 @@ from .views.home_view import home_view
 
 
 urlpatterns = [
+    path("",home_view,name="home"),
     path("signup/", signup, name="signup"),
     path("verify-otp/",verify_otp, name="verify_otp"),
     path("resend-otp/", resend_otp, name="resend_otp"),
@@ -40,7 +41,7 @@ urlpatterns = [
     path("addresses/<int:address_id>/edit/",edit_address,name="edit_address"),
     path("addresses/<int:address_id>/delete/",delete_address,name="delete_address"),
     path("logout/",logout_view,name="logout"),
-    path("home/",home_view,name="home"),
+   
     
 
     

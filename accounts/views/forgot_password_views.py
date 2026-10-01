@@ -3,8 +3,9 @@ from django.shortcuts import render, redirect
 from ..models import User
 from ..services.otp_service import generate_otp, get_otp_expiry
 from ..services.email_service import send_otp_email
+from django.views.decorators.cache import never_cache
 
-
+@never_cache
 def forgot_password(request):
     if request.method == "POST":
         email = request.POST.get("email", "").strip()
@@ -23,6 +24,7 @@ def forgot_password(request):
         
 
         request.session["reset_email"] = user.email
+        
         otp = generate_otp()
         otp_expiry = get_otp_expiry()
 

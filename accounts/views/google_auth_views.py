@@ -1,15 +1,21 @@
 from django.conf import settings
 from django.shortcuts import redirect
 from urllib.parse import urlencode
+# ^ this converts a python dictionary into URL query parameters 
 from django.contrib.auth import login
 import secrets
 from django.contrib import messages
 from ..models import User
 import requests
+from django.views.decorators.cache import never_cache
+# ^This Python library allows your Django server to make HTTP requests to Google's servers.
 
 
-
+@never_cache
 def google_login(request):
+
+    if request.user.is_authenticated:
+        return redirect("home")
 
     action = request.GET.get("action")
 
@@ -41,7 +47,7 @@ def google_login(request):
     )
 
     return redirect(authorization_url)
-
+@never_cache
 def google_callback(request):
 
     state = request.GET.get("state")

@@ -450,12 +450,52 @@
     </div>
   </main>
 
-  <!-- Interactive JavaScript: OTP Box Sync & Timer -->
+  <!-- Interactive JavaScript: OTP Box Sync, Timer & Stale Back Prevention -->
   <script>
+    // Handle Browser Back Navigation & BFCache Restoration after successful OTP verification
+    (function handleStaleOtpNavigation() {
+      function checkStaleOtp(event) {
+        const isBfcache = Boolean(event && event.persisted);
+        const navEntries = window.performance && performance.getEntriesByType && performance.getEntriesByType('navigation');
+        const isBackForward = navEntries && navEntries.length > 0 
+          ? (navEntries[0].type === 'back_forward') 
+          : Boolean(window.performance && window.performance.navigation && window.performance.navigation.type === 2);
+        
+        const isBackNav = isBfcache || isBackForward;
+        const wasVerified = sessionStorage.getItem('otp_verified') === 'true';
+
+        // If user navigated back into this page after successfully verifying OTP
+        if (isBackNav && wasVerified) {
+          window.location.replace("{% url 'login' %}");
+          return;
+        }
+
+        // If this is a fresh navigation or an error message exists, clear any stale verified flag
+        if (!isBackNav) {
+          const hasError = document.querySelector('.alert-box:not(.success)');
+          if (hasError) {
+            sessionStorage.removeItem('otp_verified');
+          }
+        }
+      }
+
+      // Check on initial load/restore
+      checkStaleOtp();
+      // Listen for BFCache restoration (Back button in Chrome/Safari)
+      window.addEventListener('pageshow', checkStaleOtp);
+    })();
+
     document.addEventListener('DOMContentLoaded', function() {
       const boxes = Array.from(document.querySelectorAll('.otp-digit-box'));
       const realInput = document.getElementById('realOtpInput');
       const form = document.getElementById('otpForm');
+      const cancelLink = document.querySelector('.cancel-link');
+
+      if (cancelLink) {
+        cancelLink.addEventListener('click', function() {
+          sessionStorage.removeItem('otp_verified');
+        });
+      }
 
       function syncRealInput() {
         realInput.value = boxes.map(b => b.value).join('');
@@ -522,6 +562,9 @@
           e.preventDefault();
           const firstEmpty = boxes.find(b => !b.value);
           if (firstEmpty) firstEmpty.focus();
+        } else {
+          // Set verification flag upon successful form submission
+          sessionStorage.setItem('otp_verified', 'true');
         }
       });
 

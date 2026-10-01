@@ -5,8 +5,9 @@ from django.utils import timezone
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from ..models import User
+from django.views.decorators.cache import never_cache
 
-
+@never_cache
 def verify_reset_otp(request):
     if request.method == "POST":
         entered_otp = request.POST.get("otp", "").strip()
@@ -34,7 +35,7 @@ def verify_reset_otp(request):
 
     return render( request,"accounts/verify_reset_otp.html")
 
-
+@never_cache
 def reset_password(request):
     if not request.session.get("reset_otp_verified"):
         messages.error(request,"Please verify the OTP first.")

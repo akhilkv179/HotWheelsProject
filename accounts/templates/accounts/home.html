@@ -831,16 +831,25 @@
 
       <!-- User Profile Widget -->
       <div class="profile-widget">
-        <button class="avatar-btn" aria-label="Account Menu">
-          {% if request.user.is_authenticated and request.user.profile_image %}
-            <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
-          {% else %}
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}" class="avatar-btn" aria-label="My Profile">
+            {% if user.profile_image %}
+              <img src="{{ user.profile_image.url }}" alt="{{ user.username }}">
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            {% endif %}
+          </a>
+        {% else %}
+          <a href="{% url 'login' %}" class="avatar-btn" aria-label="Login">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
-          {% endif %}
-        </button>
+          </a>
+        {% endif %}
 
         <div class="profile-menu">
           {% if request.user.is_authenticated %}

@@ -1,3 +1,6 @@
+
+# otp verify after forgot the password
+
 from django.contrib import messages
 from django.shortcuts import redirect,render
 from ..models import User
@@ -6,9 +9,13 @@ from datetime import datetime
 from ..services.otp_service import generate_otp, get_otp_expiry
 from datetime import datetime, timedelta
 from ..services.email_service import send_otp_email
+from django.views.decorators.cache import never_cache
 
-
+@never_cache
 def verify_otp(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+
     if request.method == "POST":
         entered_otp = request.POST.get("otp", "").strip()
 
@@ -16,6 +23,8 @@ def verify_otp(request):
         stored_expiry = request.session.get("signup_otp_expiry")
 
         signup_data = request.session.get("signup_data")
+
+        
 
         # Check whether signup session data exists.
         if not stored_otp or not signup_data:
@@ -48,6 +57,12 @@ def verify_otp(request):
                 phone=signup_data["phone"],
                 password=signup_data["password_hash"],
             )
+
+            
+        
+
+        
+        
 
             user.save()
 
@@ -92,7 +107,7 @@ def verify_otp(request):
             "remaining_seconds": remaining_seconds
         }
     )
-
+@never_cache
 def resend_otp(request):
     signup_data = request.session.get("signup_data")
 

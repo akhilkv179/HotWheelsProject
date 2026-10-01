@@ -9,7 +9,7 @@ def admin_required(view_func):
     def wrapper(request, *args, **kwargs):
 
         if not request.user.is_authenticated:
-            return redirect("/admin_login/")
+            return redirect("admin_login")
 
         if not request.user.is_staff:
             return HttpResponseForbidden(

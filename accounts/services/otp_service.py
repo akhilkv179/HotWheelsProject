@@ -7,4 +7,4 @@ def generate_otp():
     return str(secrets.randbelow(900000) + 100000)
 
 def get_otp_expiry():
-    return timezone.now() + timedelta(minutes=1)
+    return timezone.now() + timedelta(minutes=5)

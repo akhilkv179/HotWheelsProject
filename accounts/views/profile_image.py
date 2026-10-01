@@ -1,9 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
 
-
+@never_cache
+@login_required
 def change_profile_image(request):
+
+    if request.user.is_authenticated:
+            return redirect("login")
+    
 
     user = request.user
 

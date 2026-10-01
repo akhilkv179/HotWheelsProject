@@ -1220,7 +1220,7 @@
 
       <!-- Logout Link -->
       <div class="sidebar-bottom">
-        <a href="{% url 'logout' %}" class="logout-item">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
@@ -1744,6 +1744,11 @@
         area.setAttribute('d', 'M 0 160 C 100 120, 180 140, 280 100 C 380 60, 480 120, 560 80 C 620 50, 660 35, 700 30 L 700 200 L 0 200 Z');
       }
     }
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
   </script>
 
 </body>

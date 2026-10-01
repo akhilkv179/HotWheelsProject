@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-
+from django.views.decorators.cache import never_cache
 from ..models import User
 from ..services.otp_service import generate_otp, get_otp_expiry
 from ..services.email_service import send_otp_email
@@ -10,9 +10,13 @@ from ..services.email_service import send_otp_email
 
 
 
-
-
+@never_cache
+@login_required
 def edit_profile(request):
+
+    if not request.user.is_authenticated:
+            return redirect("login")
+    
 
     user = request.user
 
