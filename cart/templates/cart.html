@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Cart</title>
+</head>
+<body>
+
+<h1>My Cart</h1>
+
+{% if cart_items %}
+
+    {% for item in cart_items %}
+
+        <div>
+            <h3>{{ item.product_variant.product.name }}</h3>
+
+            <p>Color: {{ item.product_variant.color }}</p>
+            <p>Size: {{ item.product_variant.size }}</p>
+            <p>Price: ₹{{ item.unit_price }}</p>
+
+            {% if item.is_available %}
+
+                <div>
+                    <a href="{% url 'update_cart_quantity' item.id 'decrease' %}">
+                        -
+                    </a>
+
+                    <span>{{ item.quantity }}</span>
+
+                    <a href="{% url 'update_cart_quantity' item.id 'increase' %}">
+                        +
+                    </a>
+                </div>
+
+                <p>Subtotal: ₹{{ item.subtotal }}</p>
+
+            {% else %}
+
+                <p>Product is currently unavailable.</p>
+
+            {% endif %}
+
+            <a href="{% url 'remove_from_cart' item.id %}">
+                Remove
+            </a>
+        </div>
+
+        <hr>
+
+    {% endfor %}
+
+    <h2>Total: ₹{{ total_price }}</h2>
+
+    <a href="{% url 'checkout' %}">
+        Proceed to Checkout
+    </a>
+
+{% else %}
+
+    <p>Your cart is empty.</p>
+
+{% endif %}
+
+</body>
+</html>

@@ -43,6 +43,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'admin_panel',
+    "categories",
+    'products',
+    'wishlist',
+    'cart',
+    'orders',
+    'payments',
+    "coupons",
+    "wallet",
+    "referrals",
+    "reviews",
+
 ]
 
 MIDDLEWARE = [

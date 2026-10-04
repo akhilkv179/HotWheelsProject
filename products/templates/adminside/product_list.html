@@ -1,0 +1,2038 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Management | Hot Wheels Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==================================================
+       RESET & DESIGN TOKENS
+       ================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0b0b0e;
+      --bg-sidebar: #070709;
+      --bg-card: #121217;
+      --bg-card-hover: #16161d;
+      --bg-row-hover: #181820;
+      --bg-input: #15151c;
+      --bg-modal: #14141a;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-input: rgba(255, 255, 255, 0.09);
+      --border-top-accent: #e51b24;
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff222e;
+      --accent-orange: #ff4d00;
+      --accent-coral: #f87171;
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --text-header: #c5c7d0;
+      --badge-active-bg: rgba(34, 197, 94, 0.12);
+      --badge-active-border: rgba(34, 197, 94, 0.28);
+      --badge-active-text: #22c55e;
+      --badge-blocked-bg: rgba(239, 68, 68, 0.12);
+      --badge-blocked-border: rgba(239, 68, 68, 0.28);
+      --badge-blocked-text: #ef4444;
+      --badge-offer-bg: rgba(245, 158, 11, 0.12);
+      --badge-offer-border: rgba(245, 158, 11, 0.3);
+      --badge-offer-text: #fbbf24;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR
+       ================================================== */
+    .admin-sidebar {
+      width: 250px;
+      min-width: 250px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 20px 24px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand-header {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: linear-gradient(180deg, var(--accent-orange), var(--accent-red));
+      border-radius: 2px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #555765;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      stroke: var(--text-dim);
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background-color: #16161d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+      margin-top: 20px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* ==================================================
+       MAIN CONTENT AREA
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(229, 27, 36, 0.04), transparent 70%);
+    }
+
+    /* Topbar */
+    .admin-topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 44px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .topbar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .topbar-badge .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+      box-shadow: 0 0 8px rgba(229, 27, 36, 0.8);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    .topbar-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 8px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .topbar-icon-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .topbar-icon-btn svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: 8px;
+    }
+
+    .profile-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1e1f26;
+      border: 1.5px solid rgba(229, 27, 36, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .profile-role {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      line-height: 1.2;
+    }
+
+    /* Content Viewport */
+    .content-viewport {
+      padding: 40px 44px 60px 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .header-text-block {
+      max-width: 600px;
+    }
+
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: clamp(26px, 3.5vw, 36px);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .btn-add-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 46px;
+      padding: 0 24px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(229, 27, 36, 0.45);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-add-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 26px rgba(229, 27, 36, 0.65);
+      filter: brightness(1.08);
+    }
+
+    .btn-add-primary svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2.5;
+    }
+
+    /* Alerts */
+    .alert-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-box {
+      background: rgba(229, 27, 36, 0.12);
+      border: 1px solid rgba(229, 27, 36, 0.35);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .alert-box.success {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.35);
+      border-left-color: #22c55e;
+      color: #86efac;
+    }
+
+    .alert-content-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-box svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .alert-dismiss-btn {
+      background: transparent;
+      border: none;
+      color: inherit;
+      opacity: 0.7;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 6px;
+    }
+
+    /* Card Table */
+    .dashboard-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-topbar {
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .card-count-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.08em;
+    }
+
+    /* Search & Filters */
+    .search-filter-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background-color: #171720;
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 0 12px;
+      height: 40px;
+      width: 250px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-input-box:focus-within {
+      border-color: rgba(229, 27, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .search-icon {
+      color: var(--text-dim);
+      margin-right: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .search-field {
+      flex: 1;
+      height: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .search-field::placeholder {
+      color: #555768;
+      font-size: 12.5px;
+    }
+
+    .sort-select {
+      height: 40px;
+      background-color: #171720;
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      color: var(--text-header);
+      padding: 0 12px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+
+    .sort-select:focus {
+      border-color: rgba(229, 27, 36, 0.6);
+    }
+
+    .btn-search-submit {
+      height: 40px;
+      padding: 0 16px;
+      background-color: #20202a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-search-submit:hover {
+      background-color: #272836;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-clear-search {
+      height: 40px;
+      padding: 0 14px;
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      color: #f87171;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-clear-search:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ff4d4d;
+    }
+
+    /* Table */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #23242e var(--bg-card);
+    }
+
+    .table-container::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: var(--bg-card);
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background-color: #23242e;
+      border-radius: 3px;
+    }
+
+    .premium-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    .premium-table th {
+      padding: 16px 20px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #717382;
+      background-color: #101015;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .premium-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+      color: #d1d5db;
+      vertical-align: middle;
+      transition: background-color 0.15s ease;
+    }
+
+    .premium-table tbody tr:hover td {
+      background-color: var(--bg-row-hover);
+    }
+
+    .premium-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Image Preview in Cell */
+    .product-thumb-wrap {
+      width: 64px;
+      height: 48px;
+      border-radius: 8px;
+      background-color: #1a1a23;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .product-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .product-no-img {
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .product-no-img svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.5;
+    }
+
+    .product-title-bold {
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .product-meta-sub {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .category-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #e5e7eb;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Price Styles */
+    .regular-price-del {
+      color: var(--text-dim);
+      font-size: 12.5px;
+      margin-right: 4px;
+      text-decoration: line-through;
+    }
+
+    .sale-price-strong {
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    /* Offer Badge */
+    .offer-tag-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 6px;
+      background-color: var(--badge-offer-bg);
+      border: 1px solid var(--badge-offer-border);
+      color: var(--badge-offer-text);
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .no-offer-dash {
+      color: var(--text-dim);
+      font-weight: 600;
+      padding-left: 6px;
+    }
+
+    /* Status Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .badge-active {
+      background-color: var(--badge-active-bg);
+      border: 1px solid var(--badge-active-border);
+      color: var(--badge-active-text);
+    }
+
+    .badge-active .badge-dot {
+      background-color: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+    }
+
+    .badge-inactive {
+      background-color: var(--badge-blocked-bg);
+      border: 1px solid var(--badge-blocked-border);
+      color: var(--badge-blocked-text);
+    }
+
+    .badge-inactive .badge-dot {
+      background-color: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    /* Action Buttons */
+    .action-buttons-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-action-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background-color: #171821;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      position: relative;
+    }
+
+    .btn-action-icon svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .btn-action-icon:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-action-icon.btn-edit:hover {
+      background-color: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    .btn-action-icon.btn-delete:hover {
+      background-color: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .btn-action-icon.btn-toggle-list:hover {
+      background-color: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .btn-action-icon.btn-offer:hover {
+      background-color: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.4);
+      color: #c084fc;
+    }
+
+    /* Empty Table */
+    .empty-state-row td {
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+    }
+
+    .empty-icon-wrap svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* Pagination */
+    .card-footer-pagination {
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border-subtle);
+      background-color: #0f1015;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-nav-arrow,
+    .page-link-num {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      border-radius: 6px;
+      background-color: #161720;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .page-nav-arrow:hover,
+    .page-link-num:hover {
+      background-color: #21222e;
+      color: #ffffff;
+    }
+
+    .page-link-num.active {
+      background-color: var(--accent-red);
+      border-color: var(--accent-red);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.4);
+    }
+
+    .page-nav-arrow.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Modal System */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      background-color: var(--bg-modal);
+      border: 1px solid var(--border-card);
+      border-top: 2px solid var(--border-top-accent);
+      border-radius: 16px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85);
+      position: relative;
+      transform: scale(0.96) translateY(8px);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-backdrop.open .modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      padding: 24px 28px 20px 28px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .modal-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .modal-subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+    }
+
+    .modal-close-btn:hover {
+      color: #ffffff;
+    }
+
+    .modal-body {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--text-header);
+      text-transform: uppercase;
+    }
+
+    .form-input {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-input:focus {
+      border-color: rgba(229, 27, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .modal-footer {
+      padding: 18px 28px 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      border-top: 1px solid var(--border-subtle);
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-modal-cancel {
+      height: 42px;
+      padding: 0 18px;
+      background-color: #1b1c24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-modal-submit {
+      height: 42px;
+      padding: 0 22px;
+      background-color: var(--accent-red);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .btn-modal-submit:hover {
+      background-color: var(--accent-red-hover);
+    }
+
+    /* Confirmation Modal Content */
+    .confirm-modal-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 32px 28px 24px 28px;
+    }
+
+    .confirm-icon-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .confirm-icon-badge.danger {
+      background: rgba(229, 27, 36, 0.12);
+      border: 1px solid rgba(229, 27, 36, 0.3);
+      color: var(--accent-red);
+    }
+
+    .confirm-icon-badge.warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .confirm-icon-badge svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .confirm-modal-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .confirm-modal-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+      max-width: 360px;
+    }
+
+    .confirm-modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        position: fixed;
+        left: -260px;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.7);
+      }
+      .admin-sidebar.mobile-open {
+        transform: translateX(260px);
+      }
+      .mobile-menu-btn {
+        display: flex;
+      }
+      .content-viewport {
+        padding: 28px 24px 50px 24px;
+      }
+      .admin-topbar {
+        padding: 0 24px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .btn-add-primary {
+        width: 100%;
+        justify-content: center;
+      }
+      .card-topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-filter-wrap {
+        width: 100%;
+      }
+      .search-input-box {
+        width: 100%;
+      }
+      .sort-select {
+        width: 100%;
+      }
+      .card-footer-pagination {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- 1. LEFT SIDEBAR -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+        <div class="brand-header">
+          <span class="brand-title">ADMIN</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="nav-group">
+            <span class="nav-group-label">CONTENT</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+              <span>Banners</span>
+            </a>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN CONTENT -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="topbar-badge">
+            <span class="badge-dot"></span>
+            <span>HOT WHEELS HUB &bull; ADMINISTRATOR CONSOLE</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" class="topbar-icon-btn" title="Focus search" onclick="document.getElementById('productSearchInput').focus();">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+
+          <button type="button" class="topbar-icon-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+
+          <div class="topbar-profile">
+            <div class="profile-avatar-circle">A</div>
+            <div class="profile-info">
+              <span class="profile-name">Chief Collector</span>
+              <span class="profile-role">SYSTEM ADMIN</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-viewport">
+
+        <!-- Flash Messages -->
+        {% if messages %}
+          <div class="alert-container">
+            {% for message in messages %}
+              <div class="alert-box {% if message.tags == 'success' %}success{% endif %}">
+                <div class="alert-content-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>{{ message }}</span>
+                </div>
+                <button type="button" class="alert-dismiss-btn" onclick="this.parentElement.remove();">&times;</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Page Header Row -->
+        <div class="page-header-row">
+          <div class="header-text-block">
+            <h1 class="page-title">PRODUCT MANAGEMENT</h1>
+            <p class="page-subtitle">Manage your Hot Wheels collection, track inventory, and update pricing.</p>
+          </div>
+
+          <a href="{% url 'admin_product_add' %}" class="btn-add-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>+ ADD PRODUCT</span>
+          </a>
+        </div>
+
+        <!-- Dashboard Card with Table -->
+        <div class="dashboard-card">
+
+          <!-- Card Header & Search/Filters -->
+          <div class="card-topbar">
+            <div class="card-title-group">
+              <h2 class="card-title">ALL PRODUCTS</h2>
+              {% if page_obj.paginator.count is not None %}
+                <span class="card-count-badge">{{ page_obj.paginator.count }} TOTAL</span>
+              {% endif %}
+            </div>
+
+            <!-- Search and Sort Form -->
+            <form method="GET" action="{% url 'admin_product_list' %}" class="search-filter-wrap">
+              <div class="search-input-box">
+                <span class="search-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  id="productSearchInput"
+                  name="search"
+                  value="{{ search_query }}"
+                  class="search-field"
+                  placeholder="Search by name or category..."
+                  autocomplete="off"
+                >
+              </div>
+
+              <!-- Sorting Dropdown -->
+              <select name="sort" class="sort-select" onchange="this.form.submit();">
+                <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest First</option>
+                <option value="price_low" {% if sort == "price_low" %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_high" {% if sort == "price_high" %}selected{% endif %}>Price: High to Low</option>
+                <option value="name_az" {% if sort == "name_az" %}selected{% endif %}>Name: A to Z</option>
+                <option value="name_za" {% if sort == "name_za" %}selected{% endif %}>Name: Z to A</option>
+              </select>
+
+              <button type="submit" class="btn-search-submit">
+                SEARCH
+              </button>
+
+              {% if search_query or sort != "newest" %}
+                <a href="{% url 'admin_product_list' %}" class="btn-clear-search">
+                  CLEAR
+                </a>
+              {% endif %}
+            </form>
+          </div>
+
+          <!-- Product Table -->
+          <div class="table-container">
+            <table class="premium-table">
+              <thead>
+                <tr>
+                  <th>IMAGE</th>
+                  <th>PRODUCT NAME</th>
+                  <th>CATEGORY</th>
+                  <th>REGULAR PRICE</th>
+                  <th>SALE PRICE</th>
+                  <th>OFFER</th>
+                  <th>STATUS</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product in page_obj %}
+                  <tr>
+                    <!-- IMAGE -->
+                    <td>
+                      <div class="product-thumb-wrap">
+                        {% with variant=product.variants.first %}
+                          {% if variant %}
+                            {% with image=variant.images.all|first %}
+                              {% if image %}
+                                <img
+                                  src="/media/{{ image.image_url }}"
+                                  alt="{{ product.name }}"
+                                  class="product-thumb-img"
+                                  loading="lazy"
+                                >
+                              {% else %}
+                                <div class="product-no-img">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2 11 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                                </div>
+                              {% endif %}
+                            {% endwith %}
+                          {% else %}
+                            <div class="product-no-img">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2 11 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                            </div>
+                          {% endif %}
+                        {% endwith %}
+                      </div>
+                    </td>
+
+                    <!-- PRODUCT NAME -->
+                    <td>
+                      <div class="product-title-bold">{{ product.name }}</div>
+                      <div class="product-meta-sub">
+                        {{ product.variants.count }} variant{% if product.variants.count != 1 %}s{% endif %} &bull; Threshold: {{ product.low_stock_threshold }}
+                      </div>
+                    </td>
+
+                    <!-- CATEGORY -->
+                    <td>
+                      <span class="category-badge">{{ product.category.name|default:"Unassigned" }}</span>
+                    </td>
+
+                    <!-- REGULAR PRICE -->
+                    <td>
+                      {% if product.offer_percentage %}
+                        <span class="regular-price-del">&pound;{{ product.regular_price }}</span>
+                      {% else %}
+                        <span>&pound;{{ product.regular_price }}</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- SALE PRICE -->
+                    <td>
+                      <span class="sale-price-strong">&pound;{{ product.sale_price }}</span>
+                    </td>
+
+                    <!-- OFFER -->
+                    <td>
+                      {% if product.offer_percentage %}
+                        <div class="offer-tag-badge" title="{{ product.offer_name }}">
+                          <span>{{ product.offer_percentage|floatformat:0 }}% OFF</span>
+                        </div>
+                      {% else %}
+                        <span class="no-offer-dash">-</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- STATUS -->
+                    <td>
+                      {% if product.is_active %}
+                        <span class="badge badge-active">
+                          <span class="badge-dot"></span>
+                          <span>LISTED</span>
+                        </span>
+                      {% else %}
+                        <span class="badge badge-inactive">
+                          <span class="badge-dot"></span>
+                          <span>UNLISTED</span>
+                        </span>
+                      {% endif %}
+                    </td>
+
+                    <!-- ACTIONS -->
+                    <td>
+                      <div class="action-buttons-wrap">
+
+                        <!-- Edit Product Button -->
+                        <a
+                          href="{% url 'admin_product_edit' product.id %}"
+                          class="btn-action-icon btn-edit"
+                          title="Edit Product"
+                          aria-label="Edit Product"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                          </svg>
+                        </a>
+
+                        <!-- Manage Offer Button (Opens Modal) -->
+                        <button
+                          type="button"
+                          class="btn-action-icon btn-offer btn-manage-offer"
+                          title="Add / Update Product Offer"
+                          aria-label="Add Offer"
+                          data-product-id="{{ product.id }}"
+                          data-product-name="{{ product.name }}"
+                          data-url="{% url 'admin_product_offer' product.id %}"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="5" x2="5" y2="19"/>
+                            <circle cx="6.5" cy="6.5" r="2.5"/>
+                            <circle cx="17.5" cy="17.5" r="2.5"/>
+                          </svg>
+                        </button>
+
+                        <!-- Toggle List/Unlist Form -->
+                        <form method="POST" action="{% url 'admin_product_list' %}" style="display:inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="product_id" value="{{ product.id }}">
+                          <button
+                            type="button"
+                            class="btn-action-icon btn-toggle-list btn-confirm-toggle"
+                            title="{% if product.is_active %}Unlist Product{% else %}List Product{% endif %}"
+                            aria-label="Toggle Status"
+                            data-action="{% if product.is_active %}unlist{% else %}list{% endif %}"
+                            data-name="{{ product.name }}"
+                          >
+                            {% if product.is_active %}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                              </svg>
+                            {% else %}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                            {% endif %}
+                          </button>
+                        </form>
+
+                        <!-- Delete Product Button (Opens Confirmation Modal) -->
+                        <form
+                          method="POST"
+                          action="{% url 'admin_product_edit' product.id %}"
+                          id="delete-product-form-{{ product.id }}"
+                          style="display:inline;"
+                        >
+                          {% csrf_token %}
+                          <input type="hidden" name="delete_product" value="1">
+                          <button
+                            type="button"
+                            class="btn-action-icon btn-delete btn-confirm-delete"
+                            title="Delete Product"
+                            aria-label="Delete Product"
+                            data-form-id="delete-product-form-{{ product.id }}"
+                            data-name="{{ product.name }}"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="3 6 5 6 21 6"/>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              <line x1="10" y1="11" x2="10" y2="17"/>
+                              <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                          </button>
+                        </form>
+
+                      </div>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr class="empty-state-row">
+                    <td colspan="8">
+                      <div class="empty-state-content">
+                        <div class="empty-icon-wrap">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                          </svg>
+                        </div>
+                        <p style="font-size: 15px; font-weight: 700; color: #ffffff;">No products found.</p>
+                        <p style="font-size: 13px; color: var(--text-dim);">
+                          {% if search_query %}
+                            No product matching "{{ search_query }}" was found. Try clearing your filters.
+                          {% else %}
+                            Get started by adding your first Hot Wheels die-cast item.
+                          {% endif %}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          {% if page_obj.paginator.num_pages > 1 %}
+            <div class="card-footer-pagination">
+              <span class="pagination-info">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+              </span>
+
+              <nav class="pagination-bar" aria-label="Product Pagination">
+                {% if page_obj.has_previous %}
+                  <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-nav-arrow" aria-label="Previous Page">&lsaquo;</a>
+                {% else %}
+                  <span class="page-nav-arrow disabled">&lsaquo;</span>
+                {% endif %}
+
+                {% for p in page_obj.paginator.page_range %}
+                  {% if p == page_obj.number %}
+                    <span class="page-link-num active">{{ p }}</span>
+                  {% elif p >= page_obj.number|add:"-2" and p <= page_obj.number|add:"2" %}
+                    <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">{{ p }}</a>
+                  {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-nav-arrow" aria-label="Next Page">&rsaquo;</a>
+                {% else %}
+                  <span class="page-nav-arrow disabled">&rsaquo;</span>
+                {% endif %}
+              </nav>
+            </div>
+          {% endif %}
+
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==================================================
+       MODALS
+       ================================================== -->
+
+  <!-- PRODUCT OFFER MODAL -->
+  <div class="modal-backdrop" id="productOfferModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">PRODUCT OFFER</h3>
+          <p class="modal-subtitle">Apply promotional discount to <span id="offerTargetProductName" style="color:#ffffff; font-weight:700;"></span>.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('productOfferModal');">&times;</button>
+      </div>
+
+      <form method="POST" id="productOfferForm" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="offer_name">Offer Name</label>
+            <input
+              type="text"
+              id="offer_name"
+              name="offer_name"
+              class="form-input"
+              placeholder="e.g. Redline Special Promo"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="discount_value">Discount Percentage (%)</label>
+            <input
+              type="number"
+              id="discount_value"
+              name="discount_value"
+              class="form-input"
+              placeholder="e.g. 15"
+              min="1"
+              max="100"
+              step="0.01"
+              required
+            >
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="offer_start_date">Start Date</label>
+              <input
+                type="datetime-local"
+                id="offer_start_date"
+                name="start_date"
+                class="form-input"
+                required
+              >
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="offer_end_date">End Date</label>
+              <input
+                type="datetime-local"
+                id="offer_end_date"
+                name="end_date"
+                class="form-input"
+                required
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('productOfferModal');">Cancel</button>
+          <button type="submit" class="btn-modal-submit">Apply Offer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="deleteConfirmModal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="confirm-modal-content">
+        <div class="confirm-icon-badge danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </div>
+        <h3 class="confirm-modal-title">Delete Product?</h3>
+        <p class="confirm-modal-desc">
+          Are you sure you want to delete <span id="deleteTargetName" style="color:#ffffff; font-weight:700;"></span>? This will unlist and remove the product from customer view.
+        </p>
+        <div class="confirm-modal-actions">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('deleteConfirmModal');">Cancel</button>
+          <button type="button" id="confirmDeleteSubmitBtn" class="btn-modal-submit">Delete Product</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS TOGGLE CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="toggleConfirmModal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="confirm-modal-content">
+        <div class="confirm-icon-badge warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h3 class="confirm-modal-title" id="toggleModalTitle">Confirm Action</h3>
+        <p class="confirm-modal-desc">
+          Are you sure you want to <span id="toggleActionWord" style="color:#ffffff; font-weight:700;"></span> <span id="toggleTargetName" style="color:#ffffff; font-weight:700;"></span>?
+        </p>
+        <div class="confirm-modal-actions">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('toggleConfirmModal');">Cancel</button>
+          <button type="button" id="confirmToggleSubmitBtn" class="btn-modal-submit">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mobile menu toggle
+      const mobileToggle = document.getElementById('mobileMenuToggle');
+      const sidebar = document.getElementById('adminSidebar');
+      if (mobileToggle && sidebar) {
+        mobileToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          sidebar.classList.toggle('mobile-open');
+        });
+        document.addEventListener('click', function(e) {
+          if (sidebar.classList.contains('mobile-open') && !sidebar.contains(e.target) && e.target !== mobileToggle) {
+            sidebar.classList.remove('mobile-open');
+          }
+        });
+      }
+
+      // Escape key to dismiss modals
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.modal-backdrop.open').forEach(function(m) {
+            closeModal(m.id);
+          });
+        }
+      });
+
+      // Click outside to dismiss modal
+      document.querySelectorAll('.modal-backdrop').forEach(function(m) {
+        m.addEventListener('click', function(e) {
+          if (e.target === this) {
+            closeModal(this.id);
+          }
+        });
+      });
+
+      // Manage Offer modal trigger
+      document.querySelectorAll('.btn-manage-offer').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const url = this.getAttribute('data-url');
+          const name = this.getAttribute('data-product-name');
+
+          const form = document.getElementById('productOfferForm');
+          const target = document.getElementById('offerTargetProductName');
+
+          if (form) form.action = url;
+          if (target) target.textContent = name || '';
+
+          const startInput = document.getElementById('offer_start_date');
+          const endInput = document.getElementById('offer_end_date');
+          if (startInput && !startInput.value) {
+            startInput.value = new Date().toISOString().slice(0, 16);
+          }
+          if (endInput && !endInput.value) {
+            const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            endInput.value = nextWeek.toISOString().slice(0, 16);
+          }
+
+          openModal('productOfferModal');
+        });
+      });
+
+      // Delete confirmation
+      let pendingDeleteForm = null;
+      document.querySelectorAll('.btn-confirm-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const formId = this.getAttribute('data-form-id');
+          const name = this.getAttribute('data-name');
+
+          pendingDeleteForm = document.getElementById(formId);
+          document.getElementById('deleteTargetName').textContent = '"' + (name || 'this product') + '"';
+
+          openModal('deleteConfirmModal');
+        });
+      });
+
+      document.getElementById('confirmDeleteSubmitBtn').addEventListener('click', function() {
+        if (pendingDeleteForm) {
+          pendingDeleteForm.submit();
+        }
+      });
+
+      // Toggle status confirmation
+      let pendingToggleForm = null;
+      document.querySelectorAll('.btn-confirm-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const action = this.getAttribute('data-action');
+          const name = this.getAttribute('data-name');
+          pendingToggleForm = this.closest('form');
+
+          document.getElementById('toggleModalTitle').textContent = action === 'unlist' ? 'Unlist Product?' : 'List Product?';
+          document.getElementById('toggleActionWord').textContent = action;
+          document.getElementById('toggleTargetName').textContent = '"' + (name || 'this product') + '"';
+
+          openModal('toggleConfirmModal');
+        });
+      });
+
+      document.getElementById('confirmToggleSubmitBtn').addEventListener('click', function() {
+        if (pendingToggleForm) {
+          pendingToggleForm.submit();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
