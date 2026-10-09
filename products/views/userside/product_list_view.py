@@ -16,11 +16,7 @@ def product_list(request):
     min_price = request.GET.get("min_price", "").strip()
     max_price = request.GET.get("max_price", "").strip()
 
-    products = Product.objects.filter(
-        is_active=True,
-        category__is_active=True,
-        variants__is_active=True
-    ).select_related(
+    products = Product.objects.filter(is_active=True,is_deleted = False,category__is_active=True,category__is_deleted = False,variants__is_active=True).select_related(
         "category"
     ).prefetch_related(
         "variants__images",
@@ -79,11 +75,7 @@ def product_list(request):
         try:
             min_price_value = Decimal(min_price)
 
-            products = [
-                product
-                for product in products
-                if product.sale_price >= min_price_value
-            ]
+            products = [product for product in products if product.sale_price >= min_price_value]
 
         except InvalidOperation:
             pass
@@ -92,11 +84,7 @@ def product_list(request):
         try:
             max_price_value = Decimal(max_price)
 
-            products = [
-                product
-                for product in products
-                if product.sale_price <= max_price_value
-            ]
+            products = [product for product in products if product.sale_price <= max_price_value]
 
         except InvalidOperation:
             pass

@@ -1,10 +1,11 @@
+import re
+from decimal import Decimal, InvalidOperation
+from django.contrib import messages
+from django.core.files.storage import default_storage
 from django.shortcuts import render, redirect
 from admin_panel.decorators import admin_required
-from django.contrib import messages
 from categories.models import Category
-from decimal import Decimal, InvalidOperation
 from products.models import Product, ProductVariant, ProductImage
-from django.core.files.storage import default_storage
 
 
 
@@ -19,7 +20,6 @@ def product_add(request):
         regular_price = request.POST.get("regular_price", "").strip()
         low_stock_threshold = request.POST.get("low_stock_threshold", "").strip()
         category_id = request.POST.get("category", "").strip()
-        product_images = request.FILES.getlist("product_images")
 
         variant_colors = request.POST.getlist("variant_color[]")
         variant_sizes = request.POST.getlist("variant_size[]")
@@ -28,20 +28,68 @@ def product_add(request):
 
         MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
+        allowed_types = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+        ]
+
         if not name:
             messages.error(request, "Product name is required.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
+        if not re.fullmatch(r"[A-Za-z]+(?:\s+[A-Za-z]+)*", name):
+            messages.error(request, "Product name must contain only letters and spaces.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
+        if len(name) > 255:
+            messages.error(request, "Product name must not exceed 255 characters.")
             return render(request, "adminside/product_add.html", {"categories": categories})
 
         if not description:
             messages.error(request, "Product description is required.")
             return render(request, "adminside/product_add.html", {"categories": categories})
 
+        description_word_count = len(description.split())
+
+        if description_word_count < 10:
+            messages.error(request, "Product description must contain at least 10 words.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
         if not regular_price:
-            messages.error(request, "Base price is required.")
+            messages.error(request, "Regular price is required.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
+        try:
+            regular_price = Decimal(regular_price)
+        except InvalidOperation:
+            messages.error(request, "Regular price must be a valid number.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
+        if regular_price <= Decimal("0"):
+            messages.error(request, "Regular price must be greater than 0.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
+        if regular_price > Decimal("99999999.99"):
+            messages.error(request, "Regular price cannot exceed 99,999,999.99.")
             return render(request, "adminside/product_add.html", {"categories": categories})
 
         if not low_stock_threshold:
             messages.error(request, "Low stock threshold is required.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
+        try:
+            low_stock_threshold = int(low_stock_threshold)
+        except ValueError:
+            messages.error(request, "Low stock threshold must be a whole number.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
+        if low_stock_threshold < 0:
+            messages.error(request, "Low stock threshold cannot be negative.")
+            return render(request, "adminside/product_add.html", {"categories": categories})
+
+        if low_stock_threshold > 1000000:
+            messages.error(request, "Low stock threshold cannot exceed 1,000,000.")
             return render(request, "adminside/product_add.html", {"categories": categories})
 
         if not category_id:
@@ -55,26 +103,6 @@ def product_add(request):
 
         if not category:
             messages.error(request, "Please select a valid active category.")
-            return render(request, "adminside/product_add.html", {"categories": categories})
-
-        try:
-            regular_price = Decimal(regular_price)
-        except InvalidOperation:
-            messages.error(request, "Base price must be a valid number.")
-            return render(request, "adminside/product_add.html", {"categories": categories})
-
-        if regular_price <= 0:
-            messages.error(request, "Base price must be greater than 0.")
-            return render(request, "adminside/product_add.html", {"categories": categories})
-
-        try:
-            low_stock_threshold = int(low_stock_threshold)
-        except ValueError:
-            messages.error(request, "Low stock threshold must be a whole number.")
-            return render(request, "adminside/product_add.html", {"categories": categories})
-
-        if low_stock_threshold < 0:
-            messages.error(request, "Low stock threshold cannot be negative.")
             return render(request, "adminside/product_add.html", {"categories": categories})
 
         if not (
@@ -95,39 +123,24 @@ def product_add(request):
             messages.error(request, "Please add at least one product variant.")
             return render(request, "adminside/product_add.html", {"categories": categories})
 
-        if len(product_images) < 3:
-            messages.error(request, "Please upload at least 3 images.")
-            return render(request, "adminside/product_add.html", {"categories": categories})
+        #Looping through the variant color for add image#
 
-        allowed_types = [
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-        ]
+        for index in range(len(variant_colors)):
 
-        for image in product_images:
+            variant_images = request.FILES.getlist(f"variant_images_{index}")
 
-            if image.content_type not in allowed_types:
-                messages.error(
-                    request,
-                    "Only JPG, PNG, and WEBP images are allowed."
-                )
-                return render(
-                    request,
-                    "adminside/product_add.html",
-                    {"categories": categories}
-                )
+            if len(variant_images) != 3:
+                messages.error(request,f"Variant {index + 1} must have exactly 3 images.")
+                return render(request,"adminside/product_add.html",{"categories": categories})
 
-            if image.size > MAX_IMAGE_SIZE:
-                messages.error(
-                    request,
-                    "Each image must be 5 MB or smaller."
-                )
-                return render(
-                    request,
-                    "adminside/product_add.html",
-                    {"categories": categories}
-                )
+            for image in variant_images:
+                if image.content_type not in allowed_types:
+                    messages.error(request,"Only JPG, PNG, and WEBP images are allowed.")
+                    return render(request,"adminside/product_add.html",{"categories": categories})
+
+                if image.size > MAX_IMAGE_SIZE:
+                    messages.error(request,"Each image must be 5 MB or smaller.")
+                    return render(request,"adminside/product_add.html",{"categories": categories})
 
         for color, size, price, stock in zip(
             variant_colors,
@@ -136,21 +149,30 @@ def product_add(request):
             variant_stocks
         ):
 
-            if not color.strip():
-                messages.error(request, "Variant color is required.")
-                return render(
-                    request,
-                    "adminside/product_add.html",
-                    {"categories": categories}
-                )
+            color = color.strip()
+            size = size.strip()
 
-            if not size.strip():
-                messages.error(request, "Variant size is required.")
-                return render(
+            if not color:
+                messages.error(request, "Variant colour is required.")
+                return render(request, "adminside/product_add.html", {"categories": categories})
+
+            if not re.fullmatch(r"[A-Za-z]+(?:\s+[A-Za-z]+)*", color):
+                messages.error(
                     request,
-                    "adminside/product_add.html",
-                    {"categories": categories}
+                    "Variant colour must contain only letters and spaces."
                 )
+                return render(request, "adminside/product_add.html", {"categories": categories})
+
+            if len(color) > 100:
+                messages.error(
+                    request,
+                    "Variant colour must not exceed 100 characters."
+                )
+                return render(request, "adminside/product_add.html", {"categories": categories})
+
+            if not size:
+                messages.error(request, "Variant size is required.")
+                return render(request, "adminside/product_add.html", {"categories": categories})
 
             try:
                 price = Decimal(price)
@@ -159,11 +181,21 @@ def product_add(request):
                     request,
                     "Variant price must be a valid number."
                 )
-                return render(
+                return render(request, "adminside/product_add.html", {"categories": categories})
+
+            if price <= Decimal("0"):
+                messages.error(
                     request,
-                    "adminside/product_add.html",
-                    {"categories": categories}
+                    "Variant price must be greater than 0."
                 )
+                return render(request, "adminside/product_add.html", {"categories": categories})
+
+            if price > Decimal("99999999.99"):
+                messages.error(
+                    request,
+                    "Variant price cannot exceed 99,999,999.99."
+                )
+                return render(request, "adminside/product_add.html", {"categories": categories})
 
             try:
                 stock = int(stock)
@@ -172,33 +204,21 @@ def product_add(request):
                     request,
                     "Variant stock must be a whole number."
                 )
-                return render(
-                    request,
-                    "adminside/product_add.html",
-                    {"categories": categories}
-                )
-
-            if price <= 0:
-                messages.error(
-                    request,
-                    "Variant price must be greater than 0."
-                )
-                return render(
-                    request,
-                    "adminside/product_add.html",
-                    {"categories": categories}
-                )
+                return render(request, "adminside/product_add.html", {"categories": categories})
 
             if stock < 0:
                 messages.error(
                     request,
                     "Variant stock cannot be negative."
                 )
-                return render(
+                return render(request, "adminside/product_add.html", {"categories": categories})
+
+            if stock > 1000000:
+                messages.error(
                     request,
-                    "adminside/product_add.html",
-                    {"categories": categories}
+                    "Variant stock cannot exceed 1,000,000."
                 )
+                return render(request, "adminside/product_add.html", {"categories": categories})
 
         product = Product.objects.create(
             name=name,
@@ -208,13 +228,15 @@ def product_add(request):
             category=category,
         )
 
-        first_variant = None
+        #enumerate gives each item an index number#
 
-        for color, size, price, stock in zip(
-            variant_colors,
-            variant_sizes,
-            variant_prices,
-            variant_stocks
+        for index, (color, size, price, stock) in enumerate(
+            zip(
+                variant_colors,
+                variant_sizes,
+                variant_prices,
+                variant_stocks
+            )
         ):
 
             variant = ProductVariant.objects.create(
@@ -225,27 +247,27 @@ def product_add(request):
                 stock_quantity=int(stock),
             )
 
-            if first_variant is None:
-                first_variant = variant
-
-        for index, image in enumerate(product_images):
-
-            file_path = f"products/{product.id}/{image.name}"
-
-            saved_path = default_storage.save(
-                file_path,
-                image
+            variant_images = request.FILES.getlist(
+                f"variant_images_{index}"
             )
 
-            ProductImage.objects.create(
-                product_variant=first_variant,
-                image_url=saved_path,
-                is_primary=(index == 0),
-                sort_order=index,
-            )
+            for image_index, image in enumerate(variant_images):
+
+                file_path = f"products/{product.id}/variants/{variant.id}/{image.name}"
+
+                saved_path = default_storage.save(
+                    file_path,
+                    image
+                )
+
+                ProductImage.objects.create(
+                    product_variant=variant,
+                    image_url=saved_path,
+                    is_primary=(image_index == 0),
+                    sort_order=image_index,
+                )
 
         messages.success(request, "Product added successfully.")
-
         return redirect("admin_product_list")
 
     return render(

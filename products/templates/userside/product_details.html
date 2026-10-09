@@ -58,11 +58,12 @@
       position: fixed;
       top: 84px;
       right: 24px;
-      z-index: 1000;
+      z-index: 9999;
       display: flex;
       flex-direction: column;
       gap: 10px;
       max-width: 400px;
+      pointer-events: none;
     }
 
     .toast-message {
@@ -82,10 +83,19 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      pointer-events: auto;
     }
 
     .toast-message.success {
       border-left-color: var(--badge-stock-green);
+    }
+
+    .toast-message.error {
+      border-left-color: var(--accent-red);
+    }
+
+    .toast-message.warning {
+      border-left-color: var(--badge-stock-amber);
     }
 
     .toast-close-btn {
@@ -364,7 +374,48 @@
       gap: 48px;
     }
 
-    /* Breadcrumbs */
+    /* Breadcrumbs & Header Navigation */
+    .breadcrumbs-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-breadcrumb-cancel {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 7px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-breadcrumb-cancel:hover {
+      background: rgba(229, 27, 36, 0.12);
+      border-color: rgba(229, 27, 36, 0.4);
+      color: #ffffff;
+      transform: translateX(-2px);
+    }
+
+    .btn-breadcrumb-cancel svg {
+      transition: transform 0.15s ease;
+    }
+
+    .btn-breadcrumb-cancel:hover svg {
+      transform: translateX(-2px);
+    }
+
     .breadcrumbs-bar {
       display: flex;
       align-items: center;
@@ -832,6 +883,40 @@
       color: var(--accent-red);
       border-color: rgba(229, 27, 36, 0.6);
       background-color: rgba(229, 27, 36, 0.1);
+    }
+
+    .btn-cancel-action {
+      height: 52px;
+      padding: 0 22px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-cancel-action:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #ef4444;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-cancel-action:active {
+      transform: translateY(0);
     }
 
     /* Trust Guarantees */
@@ -1312,7 +1397,8 @@
         flex-direction: column;
       }
       .btn-add-cart-main,
-      .btn-wishlist-action {
+      .btn-wishlist-action,
+      .btn-cancel-action {
         width: 100%;
         justify-content: center;
       }
@@ -1361,7 +1447,7 @@
         <ul class="nav-links">
           <li><a href="{% url 'home' %}" class="nav-link">HOME</a></li>
           <li><a href="{% url 'user_product_list' %}" class="nav-link active">SHOP</a></li>
-          <li><a href="{% url 'home' %}#featured" class="nav-link">COLLECTIONS</a></li>
+          <li><a href="{% url 'user_category_list' %}" class="nav-link">COLLECTIONS</a></li>
           <li><a href="{% url 'home' %}#about" class="nav-link">ABOUT</a></li>
         </ul>
       </nav>
@@ -1456,17 +1542,33 @@
   <!-- Main Viewport -->
   <main class="details-viewport">
 
-    <!-- Interactive Breadcrumbs -->
-    <nav class="breadcrumbs-bar" aria-label="Breadcrumb">
-      {% for breadcrumb in breadcrumbs %}
-        {% if breadcrumb.url %}
-          <a href="{{ breadcrumb.url }}">{{ breadcrumb.name }}</a>
-          <span class="chevron">/</span>
-        {% else %}
-          <span class="current">{{ breadcrumb.name }}</span>
-        {% endif %}
-      {% endfor %}
-    </nav>
+    <!-- Interactive Breadcrumbs & Navigation -->
+    <div class="breadcrumbs-header-row">
+      <nav class="breadcrumbs-bar" aria-label="Breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          {% if breadcrumb.url %}
+            <a href="{{ breadcrumb.url }}">{{ breadcrumb.name }}</a>
+            <span class="chevron">/</span>
+          {% else %}
+            <span class="current">{{ breadcrumb.name }}</span>
+          {% endif %}
+        {% endfor %}
+      </nav>
+
+      <button
+        type="button"
+        class="btn-breadcrumb-cancel"
+        id="breadcrumbCancelBtn"
+        onclick="goBackToRecentPage()"
+        title="Cancel and return to recent page"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        <span>Cancel</span>
+      </button>
+    </div>
 
     <!-- Two-Column Product Showcase -->
     <div class="showcase-grid">
@@ -1662,7 +1764,7 @@
             {% if request.user.is_authenticated %}
               <a
                 id="wishlistBtn"
-                href="{% if first_variant.wishlist_item_id %}{% url 'wishlist_remove' first_variant.wishlist_item_id %}{% else %}{% url 'wishlist_add' first_variant.id %}{% endif %}"
+                href="{% url 'wishlist_add' first_variant.id %}"
                 class="btn-wishlist-action {% if first_variant.wishlist_item_id %}active{% endif %}"
               >
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="{% if first_variant.wishlist_item_id %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
@@ -1685,6 +1787,21 @@
                 <span>Add to Wishlist</span>
               </a>
             {% endif %}
+
+            <!-- Cancel / Return to Recent Page Button -->
+            <button
+              type="button"
+              class="btn-cancel-action"
+              id="cancelBtn"
+              onclick="goBackToRecentPage()"
+              title="Cancel and return to recent page"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              <span>CANCEL</span>
+            </button>
           {% endwith %}
         </div>
 
@@ -1989,8 +2106,7 @@
       "stock_status": "{{ v.stock_status }}",
       "wishlist_item_id": {% if v.wishlist_item_id %}{{ v.wishlist_item_id }}{% else %}null{% endif %},
       "addToCartUrl": "{% url 'add_to_cart' v.id %}",
-      "wishlistAddUrl": "{% url 'wishlist_add' v.id %}",
-      "wishlistRemoveUrl": "{% if v.wishlist_item_id %}{% url 'wishlist_remove' v.wishlist_item_id %}{% else %}null{% endif %}"
+      "wishlistAddUrl": "{% url 'wishlist_add' v.id %}"
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
   ]
@@ -2172,15 +2288,14 @@
 
           // Update Wishlist Button
           if (wishlistBtn && wishlistText && isUserAuthenticated) {
-            if (variant.wishlist_item_id && variant.wishlistRemoveUrl !== "null") {
+            wishlistBtn.setAttribute("href", variant.wishlistAddUrl);
+            if (variant.wishlist_item_id) {
               wishlistBtn.classList.add("active");
-              wishlistBtn.setAttribute("href", variant.wishlistRemoveUrl);
               wishlistText.textContent = "Saved to Wishlist";
               const svg = wishlistBtn.querySelector("svg");
               if (svg) svg.setAttribute("fill", "currentColor");
             } else {
               wishlistBtn.classList.remove("active");
-              wishlistBtn.setAttribute("href", variant.wishlistAddUrl);
               wishlistText.textContent = "Add to Wishlist";
               const svg = wishlistBtn.querySelector("svg");
               if (svg) svg.setAttribute("fill", "none");
@@ -2189,6 +2304,66 @@
         });
       });
     })();
+
+    // ----------------------------------------------------
+    // Return to Recent Page (Cancel Action)
+    // ----------------------------------------------------
+    function goBackToRecentPage() {
+      const fallbackUrl = "{% url 'user_product_list' %}";
+      const referrer = document.referrer;
+
+      // 1. If referrer exists and belongs to the same site
+      if (referrer && referrer.startsWith(window.location.origin)) {
+        try {
+          const referrerUrl = new URL(referrer);
+          // Only navigate if it's not the exact same product details page
+          if (referrerUrl.pathname !== window.location.pathname) {
+            window.location.href = referrer;
+            return;
+          }
+        } catch (e) {
+          // Fallback if URL parsing fails
+        }
+      }
+
+      // 2. If browser has history entries in the current session
+      if (window.history.length > 1) {
+        window.history.back();
+        // Fallback safety timeout if history.back() does not navigate
+        setTimeout(function () {
+          window.location.href = fallbackUrl;
+        }, 350);
+        return;
+      }
+
+      // 3. Default fallback to products listing
+      window.location.href = fallbackUrl;
+    }
+
+    window.goBackToRecentPage = goBackToRecentPage;
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const cancelBtn = document.getElementById("cancelBtn");
+      if (cancelBtn) {
+        cancelBtn.addEventListener("click", goBackToRecentPage);
+      }
+      const breadcrumbCancelBtn = document.getElementById("breadcrumbCancelBtn");
+      if (breadcrumbCancelBtn) {
+        breadcrumbCancelBtn.addEventListener("click", goBackToRecentPage);
+      }
+    });
+
+    // Auto-dismiss toast messages after 4 seconds
+    setTimeout(function () {
+      document.querySelectorAll(".toast-message").forEach(function (toast) {
+        toast.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(20px)";
+        setTimeout(function () {
+          toast.remove();
+        }, 400);
+      });
+    }, 4000);
   </script>
 </body>
 </html>

@@ -1,10 +1,11 @@
 from django.urls import path
-from .views.adminside.product_list_view import product_list
+from .views.adminside.product_list_view import product_list,product_variant
 from .views.adminside.product_add_view import product_add
 from .views.adminside.product_edit_view import product_edit
 from .views.adminside.product_offer_view import product_offer,toggle_product_offer
 from .views.userside.product_list_view import product_list as user_product_list
 from .views.userside.product_details_view import product_details
+from .views.adminside.product_delete_view import delete_product,restore_product
 
 urlpatterns = [
     path("admin_productslist/",product_list,name="admin_product_list"),
@@ -14,5 +15,8 @@ urlpatterns = [
     path("admin_productoffer_toggle/<int:offer_id>/",toggle_product_offer,name="admin_product_offer_toggle"),
     path("products/", user_product_list, name="user_product_list"),
     path("products/<int:product_id>/", product_details, name="user_product_details"),
+    path("productvariant/<int:product_id>",product_variant,name="product_variant"),
+    path("products/<int:product_id>/delete/",delete_product,name="delete_product"),
+    path("products/<int:product_id>/restore/",restore_product,name="restore_product"),
 
 ]

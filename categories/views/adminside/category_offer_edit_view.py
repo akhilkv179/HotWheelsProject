@@ -7,7 +7,7 @@ from admin_panel.decorators import admin_required
 from categories.models import CategoryOffer
 
 
-@admin_required
+
 def category_offer_edit(request, offer_id):
     offer = get_object_or_404(CategoryOffer, id=offer_id)
 

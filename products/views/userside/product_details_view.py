@@ -96,8 +96,7 @@ def product_details(request, product_id):
 
         for variant in variants:
             variant.wishlist_item_id = wishlist_items.get(
-                variant.id
-            )
+                variant.id)
 
     else:
         for variant in variants:

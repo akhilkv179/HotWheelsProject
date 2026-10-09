@@ -131,9 +131,9 @@ def google_callback(request):
         user.set_unusable_password()
         user.save()
 
-        if user.is_blocked:
-            messages.error(request, "Your account has been blocked.")
-            return redirect("login")
+    if user.is_blocked:
+        messages.error(request, "Your account has been blocked.")
+        return redirect("login")
 
     login(request, user)
 

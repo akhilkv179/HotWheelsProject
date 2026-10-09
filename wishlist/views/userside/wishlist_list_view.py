@@ -22,6 +22,8 @@ def wishlist_list(request):
         variant = item.product_variant
         product = variant.product
 
+        #frontent is managing the item.is_available by showing add to wishlist or unavailable#
+
         if not product.is_active or not product.category.is_active or not variant.is_active:
             item.is_available = False
         elif variant.stock_quantity <= 0:

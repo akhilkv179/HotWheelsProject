@@ -1,0 +1,1544 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Garage | Hot Wheels Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==================================================
+       RESET & FIGMA DESIGN SYSTEM TOKENS
+       ================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-page: #111216;
+      --bg-header: #0e0f13;
+      --bg-card: #17181e;
+      --bg-card-inner: #121318;
+      --bg-input: #1f2027;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.06);
+      --border-input: rgba(255, 255, 255, 0.08);
+      --accent-coral: #fca5a5;
+      --accent-coral-subtle: rgba(252, 165, 165, 0.12);
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff2a34;
+      --text-white: #ffffff;
+      --text-muted: #8e90a0;
+      --text-dim: #5c5e6e;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+      --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Flash Toast Notifications */
+    .toast-messages {
+      position: fixed;
+      top: 88px;
+      right: 28px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+    }
+
+    .toast-message {
+      background: rgba(23, 24, 30, 0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-left: 3px solid var(--accent-red);
+      border-top: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      color: #f4f4f6;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 500;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.65);
+      animation: fadeInRight 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .toast-message.success {
+      border-left-color: #22c55e;
+    }
+
+    .toast-message.error {
+      border-left-color: var(--accent-red);
+    }
+
+    .toast-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px 4px;
+    }
+
+    .toast-close-btn:hover {
+      color: #ffffff;
+    }
+
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ==================================================
+       TOP NAVBAR (MATCHING FIGMA & PROJECT STANDARDS)
+       ================================================== */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 74px;
+      background: rgba(14, 15, 19, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 4vw, 64px);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(24px, 4vw, 56px);
+    }
+
+    .brand-logo-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-white);
+    }
+
+    .brand-logo-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #1c1c24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-red);
+      flex-shrink: 0;
+    }
+
+    .brand-logo-badge svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--accent-red);
+    }
+
+    .brand-hub-text {
+      font-family: var(--font-heading);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .header-nav-link {
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #92929e;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .header-nav-link:hover {
+      color: #ffffff;
+    }
+
+    .header-nav-link.active {
+      color: var(--accent-coral);
+      font-weight: 800;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .header-icon-btn {
+      background: transparent;
+      border: none;
+      color: #8e90a0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: color 0.15s ease, transform 0.15s ease;
+      position: relative;
+    }
+
+    .header-icon-btn:hover {
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+
+    .header-icon-btn svg {
+      width: 19px;
+      height: 19px;
+      stroke-width: 1.8;
+    }
+
+    .cart-badge-dot {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 7px;
+      height: 7px;
+      background-color: var(--accent-red);
+      border-radius: 50%;
+      border: 1.5px solid var(--bg-header);
+    }
+
+    /* Profile Avatar */
+    .avatar-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #202028;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      color: #ffffff;
+      transition: border-color 0.15s ease;
+    }
+
+    .avatar-circle:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-circle svg {
+      width: 17px;
+      height: 17px;
+      stroke: #9ca3af;
+    }
+
+    /* ==================================================
+       MAIN CONTENT: YOUR GARAGE + TELEMETRY
+       ================================================== */
+    .cart-main-wrapper {
+      flex: 1;
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 48px clamp(20px, 4vw, 40px) 72px;
+    }
+
+    .cart-grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 390px;
+      gap: 36px;
+      align-items: start;
+    }
+
+    @media (max-width: 1040px) {
+      .cart-grid-layout {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+
+    /* ==================================================
+       LEFT COLUMN: YOUR GARAGE
+       ================================================== */
+    .garage-section-header {
+      margin-bottom: 28px;
+    }
+
+    .garage-title {
+      font-family: var(--font-heading);
+      font-size: clamp(28px, 3.5vw, 36px);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      text-transform: uppercase;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+
+    .garage-subtitle-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .garage-bullet-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-coral);
+      display: inline-block;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px rgba(252, 165, 165, 0.4);
+    }
+
+    /* Cart Items List */
+    .cart-items-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Individual Product Card (Figma Accurate) */
+    .cart-product-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 22px;
+      align-items: stretch;
+      position: relative;
+      transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
+    }
+
+    .cart-product-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .cart-product-card.unavailable {
+      opacity: 0.65;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Product Thumbnail */
+    .cart-thumb-wrap {
+      width: 120px;
+      height: 100px;
+      border-radius: 10px;
+      background-color: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .cart-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .cart-product-card:hover .cart-thumb-img {
+      transform: scale(1.04);
+    }
+
+    .cart-no-img-icon {
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cart-no-img-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke-width: 1.5;
+    }
+
+    /* Middle Details Column */
+    .cart-info-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cart-info-top {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .category-tag-pill {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--accent-coral);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .cart-item-title {
+      font-size: 18.5px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .cart-item-title a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .cart-item-title a:hover {
+      color: var(--accent-coral);
+    }
+
+    .cart-item-variant-spec {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 12px;
+    }
+
+    .badge-unavailable-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #f87171;
+      margin-bottom: 8px;
+    }
+
+    /* Quantity Capsule Controls */
+    .quantity-capsule {
+      display: inline-flex;
+      align-items: center;
+      background-color: #202229;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 3px 8px;
+      gap: 12px;
+      align-self: flex-start;
+    }
+
+    .qty-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .qty-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .qty-btn.disabled {
+      color: var(--text-dim);
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .qty-number {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #ffffff;
+      min-width: 16px;
+      text-align: center;
+      user-select: none;
+    }
+
+    /* Right Action / Price Column */
+    .cart-action-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-shrink: 0;
+      padding-left: 12px;
+    }
+
+    .btn-cart-remove {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-cart-remove:hover {
+      color: #f87171;
+      transform: scale(1.1);
+    }
+
+    .btn-cart-remove svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.7;
+    }
+
+    .cart-item-price-wrap {
+      text-align: right;
+    }
+
+    .cart-item-price-val {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    /* Subtle Faint Separator Below Cart Section */
+    .garage-items-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.05);
+      margin: 24px 0 20px;
+    }
+
+    /* Pagination (Exact Figma Style) */
+    .cart-pagination-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 26px;
+      margin-bottom: 20px;
+    }
+
+    .cart-page-sq-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
+      background-color: #191a20;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .cart-page-sq-btn:hover {
+      background-color: #22232c;
+      color: #ffffff;
+    }
+
+    .cart-page-sq-btn.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .cart-page-sq-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 2.2;
+    }
+
+    .cart-page-num-active {
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
+      background-color: var(--accent-coral);
+      color: #111216;
+      font-size: 13.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 14px rgba(252, 165, 165, 0.35);
+    }
+
+    /* Continue Shopping Link */
+    .continue-shopping-bar {
+      margin-top: 14px;
+    }
+
+    .continue-shopping-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease, transform 0.15s ease;
+    }
+
+    .continue-shopping-link:hover {
+      color: #ffffff;
+      transform: translateX(-3px);
+    }
+
+    .continue-shopping-link svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.2;
+    }
+
+    /* ==================================================
+       RIGHT COLUMN: TELEMETRY (CART SUMMARY)
+       ================================================== */
+    .telemetry-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 18px;
+      padding: 34px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+      position: sticky;
+      top: 100px;
+    }
+
+    .telemetry-header {
+      display: flex;
+      align-items: baseline;
+    }
+
+    .telemetry-heading {
+      font-family: var(--font-heading);
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+
+    .telemetry-dot {
+      color: var(--accent-coral);
+    }
+
+    /* Apply Coupon Section */
+    .coupon-section-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .coupon-section-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-coral);
+    }
+
+    .coupon-select-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .coupon-select {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 12px 14px;
+      padding-right: 36px;
+      color: #9ca3af;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .coupon-select:focus {
+      border-color: rgba(252, 165, 165, 0.4);
+      color: #ffffff;
+    }
+
+    .coupon-select-arrow {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-dim);
+    }
+
+    .coupon-select-arrow svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 2;
+    }
+
+    .btn-apply-coupon {
+      width: 100%;
+      background-color: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 7px;
+      padding: 13px 18px;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-apply-coupon:hover {
+      background-color: var(--accent-red-hover);
+      box-shadow: 0 4px 16px rgba(229, 27, 36, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-apply-coupon:active {
+      transform: translateY(0);
+    }
+
+    /* Gauge / Telemetry Divider with Dot */
+    .telemetry-divider-gauge {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      position: relative;
+      margin: 4px 0 2px;
+    }
+
+    .telemetry-gauge-dot {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-coral);
+      box-shadow: 0 0 6px rgba(252, 165, 165, 0.6);
+    }
+
+    /* Total Row */
+    .telemetry-total-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .telemetry-total-label {
+      font-size: 17px;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .telemetry-total-amount {
+      font-family: var(--font-heading);
+      font-size: 34px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.03em;
+    }
+
+    /* Proceed to Checkout Button */
+    .btn-proceed-checkout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background-color: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 15px 22px;
+      text-decoration: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 4px 20px rgba(229, 27, 36, 0.35);
+    }
+
+    .btn-proceed-checkout:hover {
+      background-color: var(--accent-red-hover);
+      box-shadow: 0 6px 25px rgba(229, 27, 36, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-proceed-checkout:active {
+      transform: translateY(0);
+    }
+
+    .btn-proceed-checkout.disabled {
+      background-color: #2a2a35;
+      color: #666675;
+      box-shadow: none;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .checkout-flag-icon {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+    }
+
+    /* Security Footnote */
+    .telemetry-security-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #717382;
+      letter-spacing: 0.05em;
+      margin-top: -6px;
+    }
+
+    .telemetry-security-row svg {
+      width: 13px;
+      height: 13px;
+      stroke-width: 2;
+      color: #717382;
+    }
+
+    /* ==================================================
+       EMPTY CART STATE
+       ================================================== */
+    .empty-garage-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 64px 32px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .empty-garage-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-coral);
+      margin-bottom: 4px;
+    }
+
+    .empty-garage-icon-wrap svg {
+      width: 30px;
+      height: 30px;
+      stroke-width: 1.7;
+    }
+
+    .empty-garage-heading {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .empty-garage-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      max-width: 380px;
+      line-height: 1.5;
+    }
+
+    .btn-explore-cars {
+      margin-top: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--accent-red);
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-explore-cars:hover {
+      background-color: var(--accent-red-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ==================================================
+       SITE FOOTER (MATCHING FIGMA & PROJECT STANDARDS)
+       ================================================== */
+    .site-footer {
+      background-color: #0e0f13;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 56px clamp(20px, 4vw, 64px) 36px;
+      margin-top: auto;
+    }
+
+    .footer-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .footer-top-grid {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr 1fr;
+      gap: clamp(32px, 6vw, 64px);
+    }
+
+    @media (max-width: 768px) {
+      .footer-top-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+    }
+
+    .footer-brand-box {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .footer-brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #1c1c24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-red);
+    }
+
+    .footer-brand-logo svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--accent-red);
+    }
+
+    .footer-brand-bio {
+      font-size: 13.5px;
+      color: #92929e;
+      line-height: 1.6;
+      max-width: 320px;
+    }
+
+    .footer-col-title {
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-coral);
+      margin-bottom: 18px;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-links-list a {
+      color: #8e90a0;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .footer-links-list a:hover {
+      color: #ffffff;
+    }
+
+    .footer-social-icons {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .social-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8e90a0;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .social-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .social-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .footer-social-handles {
+      font-size: 12px;
+      color: #717382;
+      font-weight: 500;
+    }
+
+    .footer-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 28px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .copyright-text {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #686877;
+      text-transform: uppercase;
+    }
+
+    .footer-accent-line {
+      width: 90px;
+      height: 2px;
+      background: linear-gradient(90deg, #e58878 0%, #e51b24 100%);
+      border-radius: 2px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .cart-product-card {
+        flex-direction: column;
+        gap: 14px;
+      }
+      .cart-thumb-wrap {
+        width: 100%;
+        height: 160px;
+      }
+      .cart-action-col {
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        align-items: center;
+        padding-left: 0;
+        border-top: 1px solid var(--border-subtle);
+        padding-top: 12px;
+        margin-top: 8px;
+      }
+      .telemetry-card {
+        padding: 24px 20px;
+      }
+      .header-nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Flash Toast Messages -->
+  {% if messages %}
+    <div class="toast-messages">
+      {% for message in messages %}
+        <div class="toast-message {{ message.tags }}">
+          <span>{{ message }}</span>
+          <button type="button" class="toast-close-btn" onclick="this.parentElement.remove();">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Top Navbar (Matching Figma) -->
+  <header class="site-header">
+    <div class="header-left">
+      <a href="{% url 'home' %}" class="brand-logo-link">
+        <div class="brand-logo-badge">
+          <!-- Flame Emblem -->
+          <svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/><path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/><path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/></svg>
+        </div>
+        <span class="brand-hub-text">HUB</span>
+      </a>
+
+      <nav>
+        <ul class="header-nav">
+          <li><a href="{% url 'home' %}" class="header-nav-link active">HOME</a></li>
+          <li><a href="{% url 'user_product_list' %}" class="header-nav-link">SHOP</a></li>
+          <li><a href="{% url 'user_category_list' %}" class="header-nav-link">COLLECTIONS</a></li>
+          <li><a href="{% url 'home' %}#about" class="header-nav-link">ABOUT</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <!-- Search -->
+      <a href="{% url 'user_product_list' %}" class="header-icon-btn" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </a>
+
+      <!-- Wishlist -->
+      <a href="{% url 'wishlist' %}" class="header-icon-btn" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </a>
+
+      <!-- Cart Active -->
+      <a href="{% url 'cart_list' %}" class="header-icon-btn active" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        {% if cart_items %}<span class="cart-badge-dot"></span>{% endif %}
+      </a>
+
+      <!-- User Avatar / Profile -->
+      <div class="profile-widget">
+        <a href="{% url 'profile' %}" class="avatar-circle" aria-label="Profile">
+          {% if request.user.is_authenticated and request.user.profile_image %}
+            <img src="/media/{{ request.user.profile_image }}" alt="{{ request.user.name|default:'User' }}">
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          {% endif %}
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="cart-main-wrapper">
+    <div class="cart-grid-layout">
+
+      <!-- ==============================================
+           LEFT COLUMN: YOUR GARAGE
+           ============================================== -->
+      <section class="garage-content-col">
+
+        <!-- Title & Subtitle -->
+        <div class="garage-section-header">
+          <h1 class="garage-title">YOUR GARAGE</h1>
+          <div class="garage-subtitle-row">
+            <span class="garage-bullet-dot"></span>
+            <span>
+              {% if cart_items %}
+                {{ cart_items|length }} item{{ cart_items|length|pluralize }} ready for checkout
+              {% else %}
+                0 items ready for checkout
+              {% endif %}
+            </span>
+          </div>
+        </div>
+
+        {% if cart_items %}
+          <!-- Cart Items List -->
+          <div class="cart-items-container">
+            {% for item in cart_items %}
+              <div class="cart-product-card {% if not item.is_available %}unavailable{% endif %}">
+
+                <!-- 1. Thumbnail Image -->
+                <div class="cart-thumb-wrap">
+                  {% with image=item.product_variant.images.all.0 %}
+                    {% if image %}
+                      <img
+                        src="{% if 'http' in image.image_url %}{{ image.image_url }}{% elif '/media/' in image.image_url %}{{ image.image_url }}{% else %}/media/{{ image.image_url }}{% endif %}"
+                        alt="{{ item.product_variant.product.name }}"
+                        class="cart-thumb-img"
+                        loading="lazy"
+                      >
+                    {% else %}
+                      <div class="cart-no-img-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      </div>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+
+                <!-- 2. Middle Details (Category Tag, Title, Color/Size Specs, Qty Capsule) -->
+                <div class="cart-info-col">
+                  <div class="cart-info-top">
+                    <!-- Category Badge -->
+                    <span class="category-tag-pill">
+                      {{ item.product_variant.product.category.name|default:"HOT WHEELS"|upper }}
+                    </span>
+
+                    <!-- Product Name -->
+                    <h2 class="cart-item-title" title="{{ item.product_variant.product.name }}">
+                      <a href="{% url 'user_product_details' item.product_variant.product.id %}">
+                        {{ item.product_variant.product.name }}
+                      </a>
+                    </h2>
+
+                    <!-- Variant Specs (Color / Size) -->
+                    <p class="cart-item-variant-spec">
+                      {{ item.product_variant.color }}{% if item.product_variant.size %} / {{ item.product_variant.size }}{% endif %}
+                    </p>
+
+                    {% if not item.is_available %}
+                      <span class="badge-unavailable-pill">
+                        &bull; Currently Unavailable
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Quantity Controls Capsule -->
+                  <div class="quantity-capsule">
+                    {% if item.is_available %}
+                      <a
+                        href="{% url 'update_cart_quantity' item.id 'decrease' %}"
+                        class="qty-btn"
+                        title="Decrease quantity"
+                        aria-label="Decrease quantity"
+                      >&minus;</a>
+                    {% else %}
+                      <span class="qty-btn disabled">&minus;</span>
+                    {% endif %}
+
+                    <span class="qty-number">{{ item.quantity }}</span>
+
+                    {% if item.is_available %}
+                      <a
+                        href="{% url 'update_cart_quantity' item.id 'increase' %}"
+                        class="qty-btn"
+                        title="Increase quantity"
+                        aria-label="Increase quantity"
+                      >+</a>
+                    {% else %}
+                      <span class="qty-btn disabled">+</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- 3. Right Action & Price (Trash Can + Price) -->
+                <div class="cart-action-col">
+                  <!-- Remove / Trash Button -->
+                  <a
+                    href="{% url 'remove_from_cart' item.id %}"
+                    class="btn-cart-remove"
+                    title="Remove item"
+                    aria-label="Remove item"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <line x1="10" y1="11" x2="10" y2="17"/>
+                      <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                  </a>
+
+                  <!-- Item Subtotal Price -->
+                  <div class="cart-item-price-wrap">
+                    <span class="cart-item-price-val">&#8377;<span class="format-number">{{ item.subtotal|floatformat:0 }}</span></span>
+                  </div>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- Subtle Separator -->
+          <div class="garage-items-divider"></div>
+
+          <!-- Pagination (Matching Figma Exact Component) -->
+          <div class="cart-pagination-wrap" aria-label="Cart pagination">
+            <span class="cart-page-sq-btn disabled" aria-label="Previous page">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg>
+            </span>
+            <span class="cart-page-num-active">1</span>
+            <span class="cart-page-sq-btn disabled" aria-label="Next page">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          </div>
+
+        {% else %}
+          <!-- Empty Garage State -->
+          <div class="empty-garage-card">
+            <div class="empty-garage-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </div>
+            <h2 class="empty-garage-heading">Your Garage is Empty</h2>
+            <p class="empty-garage-text">
+              Fuel up your personal garage with authentic die-cast models and limited edition race cars.
+            </p>
+            <a href="{% url 'user_product_list' %}" class="btn-explore-cars">
+              EXPLORE VEHICLES
+            </a>
+          </div>
+        {% endif %}
+
+        <!-- Continue Shopping Link -->
+        <div class="continue-shopping-bar">
+          <a href="{% url 'user_product_list' %}" class="continue-shopping-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>CONTINUE SHOPPING</span>
+          </a>
+        </div>
+
+      </section>
+
+      <!-- ==============================================
+           RIGHT COLUMN: TELEMETRY (SUMMARY CARD)
+           ============================================== -->
+      <aside class="telemetry-aside">
+        <div class="telemetry-card">
+
+          <!-- Heading: Telemetry. -->
+          <div class="telemetry-header">
+            <h2 class="telemetry-heading">Telemetry<span class="telemetry-dot">.</span></h2>
+          </div>
+
+          <!-- Coupon Box -->
+          <div class="coupon-section-group">
+            <label class="coupon-section-label" for="cartCouponSelect">APPLY COUPON</label>
+            <div class="coupon-select-wrap">
+              <select id="cartCouponSelect" class="coupon-select" aria-label="Select Coupon">
+                <option value="">Select a coupon</option>
+                <option value="REDLINE10">REDLINE10 - 10% Off</option>
+                <option value="GARAGE20">GARAGE20 - 20% Off</option>
+                <option value="SPEEDVIP">SPEEDVIP - Special Discount</option>
+              </select>
+              <div class="coupon-select-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+            <button type="button" class="btn-apply-coupon" id="btnApplyCoupon">
+              APPLY COUPON
+            </button>
+          </div>
+
+          <!-- Telemetry Gauge Line with Dot -->
+          <div class="telemetry-divider-gauge">
+            <span class="telemetry-gauge-dot"></span>
+          </div>
+
+          <!-- Total Row -->
+          <div class="telemetry-total-row">
+            <span class="telemetry-total-label">Total</span>
+            <span class="telemetry-total-amount">&#8377;<span class="format-number">{{ total_price|floatformat:0 }}</span></span>
+          </div>
+
+          <!-- Proceed to Checkout Button -->
+          {% if cart_items %}
+            <a href="{% url 'checkout' %}" class="btn-proceed-checkout">
+              <span>PROCEED TO CHECKOUT</span>
+              <svg viewBox="0 0 24 24" class="checkout-flag-icon">
+                <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/>
+              </svg>
+            </a>
+          {% else %}
+            <span class="btn-proceed-checkout disabled">
+              <span>PROCEED TO CHECKOUT</span>
+              <svg viewBox="0 0 24 24" class="checkout-flag-icon">
+                <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/>
+              </svg>
+            </span>
+          {% endif %}
+
+          <!-- Security Footnote -->
+          <div class="telemetry-security-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>Secure 256-bit encryption</span>
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Site Footer (Exact Match with Reference) -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-top-grid">
+
+        <!-- Col 1: Brand & Bio -->
+        <div class="footer-brand-box">
+          <div class="footer-brand-logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/><path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/><path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/></svg>
+          </div>
+          <p class="footer-brand-bio">
+            Precision engineering meets ultimate speed. The premier destination for serious die-cast collectors.
+          </p>
+        </div>
+
+        <!-- Col 2: Company -->
+        <div>
+          <h4 class="footer-col-title">Company</h4>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'home' %}#about">About Us</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">FAQ</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Connect -->
+        <div>
+          <h4 class="footer-col-title">Connect</h4>
+          <div class="footer-social-icons">
+            <a href="#" class="social-btn" aria-label="Network">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </a>
+            <a href="#" class="social-btn" aria-label="Web">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </a>
+            <a href="#" class="social-btn" aria-label="Media">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </a>
+          </div>
+          <div class="footer-social-handles">Instagram / Facebook / YouTube</div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Line -->
+      <div class="footer-bottom-row">
+        <span class="copyright-text">&copy; 2024 HOT WHEELS HUB. ALL RIGHTS RESERVED.</span>
+        <div class="footer-accent-line"></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Number formatting and coupon helper script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Format prices with thousand separators (e.g. 2,499)
+      document.querySelectorAll(".format-number").forEach(function (el) {
+        const val = parseFloat(el.textContent.replace(/,/g, '').trim());
+        if (!isNaN(val)) {
+          el.textContent = new Intl.NumberFormat('en-IN').format(val);
+        }
+      });
+
+      // Coupon interactive feedback
+      const applyCouponBtn = document.getElementById("btnApplyCoupon");
+      const couponSelect = document.getElementById("cartCouponSelect");
+      if (applyCouponBtn && couponSelect) {
+        applyCouponBtn.addEventListener("click", function () {
+          const selected = couponSelect.value;
+          if (!selected) {
+            alert("Please select a coupon to apply.");
+          } else {
+            alert("Coupon " + selected + " applied to your cart!");
+          }
+        });
+      }
+
+      // Auto-dismiss toast messages after 4 seconds
+      setTimeout(function () {
+        document.querySelectorAll(".toast-message").forEach(function (toast) {
+          toast.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+          toast.style.opacity = "0";
+          toast.style.transform = "translateX(20px)";
+          setTimeout(function () {
+            toast.remove();
+          }, 400);
+        });
+      }, 4000);
+    });
+  </script>
+</body>
+</html>

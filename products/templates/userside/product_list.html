@@ -92,9 +92,25 @@
       line-height: 1;
     }
 
+    .toast-message.success {
+      border-left-color: #22c55e;
+    }
+
+    .toast-message.warning {
+      border-left-color: #f59e0b;
+    }
+
+    .toast-message.error {
+      border-left-color: var(--accent-red);
+    }
+
     @keyframes fadeInRight {
       from { opacity: 0; transform: translateX(20px); }
       to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     /* ==================================================
@@ -375,6 +391,32 @@
       letter-spacing: 0.05em;
     }
 
+    .search-popover-clear-btn {
+      height: 42px;
+      padding: 0 16px;
+      background: #181822;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #b0b0c0;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .search-popover-clear-btn:hover {
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.3);
+      background: #22222d;
+    }
+
     /* ==================================================
        MAIN TWO-COLUMN WORKSPACE
        ================================================== */
@@ -623,13 +665,22 @@
 
     .catalog-header-block {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding-bottom: 4px;
+    }
+
+    .catalog-header-text {
+      display: flex;
       flex-direction: column;
       gap: 5px;
     }
 
     .catalog-title {
       font-family: var(--font-heading);
-      font-size: 38px;
+      font-size: clamp(26px, 3.2vw, 38px);
       font-weight: 900;
       letter-spacing: -0.025em;
       color: #ffffff;
@@ -637,9 +688,172 @@
     }
 
     .catalog-subtitle {
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--text-muted);
       font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .active-search-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(229, 136, 120, 0.12);
+      border: 1px solid rgba(229, 136, 120, 0.28);
+      color: #f7a799;
+      font-size: 11.5px;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .active-search-badge strong {
+      color: #ffffff;
+    }
+
+    .clear-search-badge-btn {
+      color: #e58878;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: bold;
+      transition: color 0.15s ease;
+      cursor: pointer;
+    }
+
+    .clear-search-badge-btn:hover {
+      color: #ffffff;
+    }
+
+    /* On-Page Dedicated Search Bar */
+    .catalog-search-bar-form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .catalog-search-box-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .catalog-search-icon {
+      position: absolute;
+      left: 14px;
+      width: 15px;
+      height: 15px;
+      color: #727284;
+      pointer-events: none;
+      transition: color 0.15s ease;
+    }
+
+    .catalog-search-input {
+      width: 290px;
+      height: 42px;
+      background: #14141e;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 9px;
+      padding: 0 34px 0 38px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12.5px;
+      outline: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .catalog-search-input:focus {
+      border-color: var(--accent-coral);
+      width: 330px;
+      background: #1a1a26;
+      box-shadow: 0 0 16px rgba(229, 136, 120, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .catalog-search-box-wrap:focus-within .catalog-search-icon {
+      color: var(--accent-coral);
+    }
+
+    .catalog-search-input::placeholder {
+      color: #656578;
+    }
+
+    .catalog-clear-search-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: #777788;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease;
+    }
+
+    .catalog-clear-search-btn:hover {
+      color: #ffffff;
+    }
+
+    .catalog-search-submit-btn {
+      height: 42px;
+      padding: 0 18px;
+      background: linear-gradient(180deg, #242432 0%, #1a1a24 100%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 9px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .catalog-search-submit-btn:hover {
+      background: var(--accent-coral);
+      color: #0e0e12;
+      border-color: var(--accent-coral);
+      box-shadow: 0 4px 18px rgba(229, 136, 120, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .catalog-search-clear-btn {
+      height: 42px;
+      padding: 0 16px;
+      background: #181822;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9px;
+      color: #b0b0c0;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .catalog-search-clear-btn:hover {
+      background: #242432;
+      color: #ffffff;
+      border-color: rgba(229, 136, 120, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 12px rgba(229, 136, 120, 0.15);
+      transform: translateY(-1px);
     }
 
     /* Products Grid: Exact 4-column card grid */
@@ -657,6 +871,7 @@
       display: flex;
       flex-direction: column;
       position: relative;
+      cursor: pointer;
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
@@ -823,6 +1038,8 @@
       text-decoration: none;
       flex-shrink: 0;
       margin-top: 1px;
+      position: relative;
+      z-index: 2;
     }
 
     .diecast-heart-btn:hover {
@@ -895,8 +1112,10 @@
       justify-content: center;
       text-decoration: none;
       cursor: pointer;
-      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
       flex-shrink: 0;
+      position: relative;
+      z-index: 2;
     }
 
     .action-circle-btn:hover {
@@ -928,9 +1147,21 @@
       box-shadow: none;
     }
 
+    .action-circle-btn.btn-cart-success {
+      background: #15803d !important;
+      border-color: #22c55e !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.45) !important;
+      transform: scale(1.08) !important;
+    }
+
     .action-circle-btn svg {
       width: 15px;
       height: 15px;
+    }
+
+    .spin-icon {
+      animation: spin 0.75s linear infinite;
     }
 
     /* ==================================================
@@ -1159,6 +1390,30 @@
       }
     }
 
+    @media (max-width: 768px) {
+      .catalog-header-block {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .catalog-search-bar-form {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+      .catalog-search-box-wrap {
+        flex: 1 1 100%;
+      }
+      .catalog-search-input {
+        width: 100%;
+      }
+      .catalog-search-input:focus {
+        width: 100%;
+      }
+      .catalog-search-submit-btn,
+      .catalog-search-clear-btn {
+        flex: 1;
+      }
+    }
+
     @media (max-width: 600px) {
       .header-nav {
         display: none;
@@ -1175,17 +1430,17 @@
 
 <body>
 
-  <!-- Flash Messages -->
-  {% if messages %}
-    <div class="toast-messages">
+  <!-- Flash Messages & Toast Container -->
+  <div class="toast-messages" id="toastContainer">
+    {% if messages %}
       {% for message in messages %}
         <div class="toast-message {% if message.tags %}{{ message.tags }}{% endif %}">
           <span>{{ message }}</span>
           <button type="button" class="toast-close-btn" onclick="this.closest('.toast-message').remove()">✕</button>
         </div>
       {% endfor %}
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
 
   <!-- Top Header Navigation -->
   <header class="site-header">
@@ -1205,7 +1460,7 @@
         <ul class="header-nav">
           <li><a href="{% url 'home' %}" class="header-nav-link">HOME</a></li>
           <li><a href="{% url 'user_product_list' %}" class="header-nav-link active">SHOP</a></li>
-          <li><a href="{% url 'home' %}#featured" class="header-nav-link">COLLECTIONS</a></li>
+          <li><a href="{% url 'user_category_list' %}" class="header-nav-link">COLLECTIONS</a></li>
           <li><a href="{% url 'home' %}#about" class="header-nav-link">ABOUT</a></li>
         </ul>
       </nav>
@@ -1295,6 +1550,13 @@
     <input type="hidden" name="max_price" value="{{ max_price }}">
     <input type="hidden" name="sort" value="{{ sort }}">
     <button type="submit" class="search-popover-btn">Search</button>
+    {% if search_query %}
+      <a
+        href="{% url 'user_product_list' %}?category={{ selected_category|urlencode }}&min_price={{ min_price|urlencode }}&max_price={{ max_price|urlencode }}&sort={{ sort|urlencode }}"
+        class="search-popover-clear-btn"
+        title="Clear Search"
+      >Clear</a>
+    {% endif %}
   </form>
 
   <!-- Main Catalog Two-Column Layout -->
@@ -1316,37 +1578,7 @@
           <input type="hidden" name="search" value="{{ search_query }}">
         {% endif %}
 
-        <!-- 1. QUICK FINDS -->
-        <div class="filter-card">
-          <div class="filter-card-header">QUICK FINDS</div>
-          <div class="filter-options-list">
-            <label class="custom-control-label">
-              <input
-                type="radio"
-                name="sort"
-                value="newest"
-                {% if sort == "newest" or not sort %}checked{% endif %}
-                onchange="this.form.submit()"
-              >
-              <span class="custom-box"></span>
-              <span>New Arrivals</span>
-            </label>
-
-            <label class="custom-control-label">
-              <input
-                type="radio"
-                name="sort"
-                value="price_low"
-                {% if sort == "price_low" %}checked{% endif %}
-                onchange="this.form.submit()"
-              >
-              <span class="custom-box"></span>
-              <span>On Sale</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- 2. PRICE (₹) -->
+        <!-- 1. PRICE (₹) -->
         <div class="filter-card">
           <div class="filter-card-header">PRICE (₹)</div>
           <div class="price-inputs-row">
@@ -1380,7 +1612,7 @@
           <button type="submit" class="btn-apply-filters">Apply Price</button>
         </div>
 
-        <!-- 3. CATEGORIES -->
+        <!-- 2. CATEGORIES -->
         <div class="filter-card">
           <div class="filter-card-header">CATEGORIES</div>
           <div class="filter-options-list">
@@ -1412,7 +1644,7 @@
           </div>
         </div>
 
-        <!-- 4. SORT BY -->
+        <!-- 3. SORT BY -->
         <div class="filter-card">
           <div class="filter-card-header">SORT BY</div>
           <div class="filter-options-list">
@@ -1489,30 +1721,84 @@
     <!-- RIGHT COLUMN: Products Grid & Pagination -->
     <section class="catalog-main-content">
 
-      <!-- Header Section -->
+      <!-- Header Section with Dedicated Search Bar -->
       <div class="catalog-header-block">
-        <h1 class="catalog-title">
-          {% if selected_category %}
-            {% for cat in categories %}
-              {% if selected_category == cat.id|stringformat:"s" %}
-                {{ cat.name }}
-              {% endif %}
-            {% endfor %}
-          {% elif search_query %}
-            Results for "{{ search_query }}"
-          {% else %}
-            All Models
-          {% endif %}
-        </h1>
-        <p class="catalog-subtitle">
-          Showing {{ page_obj.start_index|default:0 }}-{{ page_obj.end_index|default:0 }} of {{ page_obj.paginator.count|default:0 }} results
-        </p>
+        <div class="catalog-header-text">
+          <h1 class="catalog-title">
+            {% if selected_category %}
+              {% for cat in categories %}
+                {% if selected_category == cat.id|stringformat:"s" %}
+                  {{ cat.name }}
+                {% endif %}
+              {% endfor %}
+            {% elif search_query %}
+              Results for "{{ search_query }}"
+            {% else %}
+              All Models
+            {% endif %}
+          </h1>
+          <p class="catalog-subtitle">
+            Showing {{ page_obj.start_index|default:0 }}-{{ page_obj.end_index|default:0 }} of {{ page_obj.paginator.count|default:0 }} results
+            {% if search_query %}
+              <span class="active-search-badge">
+                Filtered by: "<strong>{{ search_query }}</strong>"
+                <a
+                  href="{% url 'user_product_list' %}?category={{ selected_category|urlencode }}&min_price={{ min_price|urlencode }}&max_price={{ max_price|urlencode }}&sort={{ sort|urlencode }}"
+                  class="clear-search-badge-btn"
+                  title="Remove search filter"
+                >✕</a>
+              </span>
+            {% endif %}
+          </p>
+        </div>
+
+        <!-- On-Page Search Bar -->
+        <form method="GET" action="{% url 'user_product_list' %}" class="catalog-search-bar-form">
+          <div class="catalog-search-box-wrap">
+            <svg class="catalog-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              name="search"
+              id="catalogSearchInput"
+              class="catalog-search-input"
+              placeholder="Search diecast castings..."
+              value="{{ search_query }}"
+              autocomplete="off"
+            >
+            {% if search_query %}
+              <a
+                href="{% url 'user_product_list' %}?category={{ selected_category|urlencode }}&min_price={{ min_price|urlencode }}&max_price={{ max_price|urlencode }}&sort={{ sort|urlencode }}"
+                class="catalog-clear-search-btn"
+                title="Clear Search"
+                aria-label="Clear Search"
+              >✕</a>
+            {% endif %}
+          </div>
+
+          <!-- Preserve other active filters -->
+          <input type="hidden" name="category" value="{{ selected_category }}">
+          <input type="hidden" name="min_price" value="{{ min_price }}">
+          <input type="hidden" name="max_price" value="{{ max_price }}">
+          <input type="hidden" name="sort" value="{{ sort }}">
+
+          <button type="submit" class="catalog-search-submit-btn">Search</button>
+          <a
+            href="{% url 'user_product_list' %}?category={{ selected_category|urlencode }}&min_price={{ min_price|urlencode }}&max_price={{ max_price|urlencode }}&sort={{ sort|urlencode }}"
+            class="catalog-search-clear-btn"
+            id="catalogSearchClearBtn"
+            title="Clear Search"
+            {% if not search_query %}style="display: none;"{% endif %}
+          >Clear</a>
+        </form>
       </div>
 
       <!-- Models Grid -->
       <div class="models-grid">
         {% for product in page_obj %}
-          <article class="diecast-card">
+          <article class="diecast-card" data-details-url="{% url 'user_product_details' product.id %}">
 
             <!-- Media Preview with Pedestal Lighting -->
             <div class="diecast-media-box">
@@ -1568,29 +1854,22 @@
                 {% with variant=product.variants.all.0 %}
                   {% if variant %}
                     {% if request.user.is_authenticated %}
-                      {% if variant.wishlist_item_id %}
-                        <a
-                          href="{% url 'wishlist_remove' variant.wishlist_item_id %}"
-                          class="diecast-heart-btn active"
-                          title="Remove from wishlist"
-                          aria-label="Remove from wishlist"
-                        >
+                      <a
+                        href="{% url 'wishlist_add' variant.id %}"
+                        class="diecast-heart-btn {% if variant.wishlist_item_id %}active{% endif %}"
+                        title="{% if variant.wishlist_item_id %}Remove from wishlist{% else %}Add to wishlist{% endif %}"
+                        aria-label="{% if variant.wishlist_item_id %}Remove from wishlist{% else %}Add to wishlist{% endif %}"
+                      >
+                        {% if variant.wishlist_item_id %}
                           <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                           </svg>
-                        </a>
-                      {% else %}
-                        <a
-                          href="{% url 'wishlist_add' variant.id %}"
-                          class="diecast-heart-btn"
-                          title="Add to wishlist"
-                          aria-label="Add to wishlist"
-                        >
+                        {% else %}
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                           </svg>
-                        </a>
-                      {% endif %}
+                        {% endif %}
+                      </a>
                     {% else %}
                       <a
                         href="{% url 'login' %}"
@@ -1628,29 +1907,6 @@
                     {% endwith %}
                   {% endif %}
                 </div>
-
-                {% with v_first=product.variants.all.0 %}
-                  {% if v_first and v_first.stock_quantity > 0 %}
-                    <a
-                      href="{% url 'add_to_cart' v_first.id %}"
-                      class="action-circle-btn {% if forloop.first or product.offer_percentage %}highlight-red{% endif %}"
-                      title="Add to Cart"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                        <circle cx="9" cy="21" r="1"/>
-                        <circle cx="20" cy="21" r="1"/>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                      </svg>
-                    </a>
-                  {% else %}
-                    <span class="action-circle-btn disabled-btn" title="Vaulted / Sold Out">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                      </svg>
-                    </span>
-                  {% endif %}
-                {% endwith %}
               </div>
 
             </div>
@@ -1659,7 +1915,20 @@
         {% empty %}
           <div class="empty-models-box">
             <h3 style="font-size: 18px; color: #ffffff; margin-bottom: 8px;">No Models Found</h3>
-            <p style="font-size: 13px;">No diecast cars match your current filters. Try changing your selection.</p>
+            <p style="font-size: 13px;">
+              {% if search_query %}
+                No diecast castings match your search for "<strong>{{ search_query }}</strong>".
+              {% else %}
+                No diecast cars match your current filters. Try changing your selection.
+              {% endif %}
+            </p>
+            {% if search_query or selected_category or min_price or max_price %}
+              <div style="margin-top: 14px;">
+                <a href="{% url 'user_product_list' %}" class="btn-reset-filters" style="display: inline-block; padding: 8px 18px; background: #1c1c26; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #ffffff; text-decoration: none;">
+                  Reset All Filters & Search
+                </a>
+              </div>
+            {% endif %}
           </div>
         {% endfor %}
       </div>
@@ -1766,15 +2035,22 @@
 
   <script>
     (function () {
-      // Toggle search bar in header
+      // Header search toggle button: focus on-page catalog search bar smoothly
       const searchToggleBtn = document.getElementById("searchToggleBtn");
+      const catalogSearchInput = document.getElementById("catalogSearchInput");
       const searchPopover = document.getElementById("searchPopover");
-      if (searchToggleBtn && searchPopover) {
+
+      if (searchToggleBtn) {
         searchToggleBtn.addEventListener("click", function () {
-          searchPopover.classList.toggle("open");
-          if (searchPopover.classList.contains("open")) {
-            const input = searchPopover.querySelector(".search-input-main");
-            if (input) input.focus();
+          if (catalogSearchInput) {
+            catalogSearchInput.focus();
+            catalogSearchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else if (searchPopover) {
+            searchPopover.classList.toggle("open");
+            if (searchPopover.classList.contains("open")) {
+              const input = searchPopover.querySelector(".search-input-main");
+              if (input) input.focus();
+            }
           }
         });
       }
@@ -1787,8 +2063,84 @@
           sidebarFilters.classList.toggle("open");
         });
       }
+
+      // Dynamic Clear button behavior
+      const catalogSearchClearBtn = document.getElementById("catalogSearchClearBtn");
+      const hasInitialSearchQuery = {% if search_query %}true{% else %}false{% endif %};
+
+      if (catalogSearchInput && catalogSearchClearBtn) {
+        catalogSearchInput.addEventListener("input", function () {
+          if (catalogSearchInput.value.trim().length > 0 || hasInitialSearchQuery) {
+            catalogSearchClearBtn.style.display = "inline-flex";
+          } else {
+            catalogSearchClearBtn.style.display = "none";
+          }
+        });
+
+        catalogSearchClearBtn.addEventListener("click", function (e) {
+          if (!hasInitialSearchQuery) {
+            e.preventDefault();
+            catalogSearchInput.value = "";
+            catalogSearchClearBtn.style.display = "none";
+            catalogSearchInput.focus();
+          }
+        });
+      }
+
+      // ==================================================
+      // PRODUCT CARD NAVIGATION & AJAX ADD-TO-CART
+      // ==================================================
+      const toastContainer = document.getElementById("toastContainer");
+
+      function showToast(message, type = "success", duration = 3500) {
+        if (!toastContainer) return;
+        const toast = document.createElement("div");
+        toast.className = "toast-message " + type;
+        toast.innerHTML = "<span>" + message + "</span><button type=\"button\" class=\"toast-close-btn\" aria-label=\"Close\">✕</button>";
+        const closeBtn = toast.querySelector(".toast-close-btn");
+        if (closeBtn) {
+          closeBtn.addEventListener("click", function () {
+            toast.remove();
+          });
+        }
+        toastContainer.appendChild(toast);
+        setTimeout(function () {
+          if (toast.isConnected) {
+            toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+            toast.style.opacity = "0";
+            toast.style.transform = "translateX(20px)";
+            setTimeout(function () {
+              toast.remove();
+            }, 300);
+          }
+        }, duration);
+      }
+
+      // 1. Whole card click navigates to product details
+      document.querySelectorAll(".diecast-card").forEach(function (card) {
+        card.addEventListener("click", function (e) {
+          // If clicked wishlist or any interactive link/button, do not trigger card navigation
+          if (
+            e.target.closest(".diecast-heart-btn") ||
+            e.target.closest("a") ||
+            e.target.closest("button")
+          ) {
+            return;
+          }
+          const detailsUrl = card.getAttribute("data-details-url");
+          if (detailsUrl) {
+            window.location.href = detailsUrl;
+          }
+        });
+      });
+
+      // 2. Prevent card navigation when clicking wishlist button
+      document.querySelectorAll(".diecast-heart-btn").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+          e.stopPropagation();
+        });
+      });
     })();
   </script>
 </body>
-</html>
 </html>

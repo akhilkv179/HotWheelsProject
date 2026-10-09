@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
   <style>
     *, *::before, *::after {
@@ -153,11 +154,16 @@
       background-color: rgba(255, 255, 255, 0.03);
     }
 
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
     .nav-item.active {
       color: #ffffff;
       background-color: #16161d;
       border: 1px solid rgba(255, 255, 255, 0.06);
       font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .nav-item.active svg {
@@ -176,20 +182,15 @@
       gap: 10px;
       padding: 10px 12px;
       border-radius: 8px;
-      color: #8c8d98;
+      color: var(--accent-coral);
       text-decoration: none;
       font-size: 13px;
       font-weight: 600;
+      transition: background-color 0.15s ease;
     }
 
     .logout-item:hover {
-      color: #f87171;
       background-color: rgba(239, 68, 68, 0.08);
-    }
-
-    .logout-item svg {
-      width: 17px;
-      height: 17px;
     }
 
     .admin-main {
@@ -197,23 +198,20 @@
       display: flex;
       flex-direction: column;
       min-width: 0;
-      background-color: var(--bg-dark);
-      background-image: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(229, 27, 36, 0.04), transparent 70%);
     }
 
     .admin-topbar {
-      height: 72px;
+      height: 70px;
+      background-color: rgba(11, 11, 14, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 44px;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
     }
 
     .topbar-badge {
@@ -310,6 +308,127 @@
       resize: vertical;
     }
 
+    .form-file-input {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .form-file-input::file-selector-button {
+      background-color: #1f202c;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      color: #ffffff;
+      padding: 8px 14px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 12px;
+      transition: background-color 0.15s ease;
+    }
+
+    .form-file-input::file-selector-button:hover {
+      background-color: #2b2c3d;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* Category Image Preview & Crop Controls */
+    .category-image-preview-card {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #171722;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .preview-thumb-box {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      border-radius: 8px;
+      background: #0d0d12;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .preview-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .crop-status-badge {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 3px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .preview-actions-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .btn-crop-action {
+      height: 32px;
+      padding: 0 12px;
+      background: rgba(96, 165, 250, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      border-radius: 6px;
+      color: #60a5fa;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      width: fit-content;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-crop-action:hover {
+      background: rgba(96, 165, 250, 0.22);
+      color: #93c5fd;
+    }
+
+    .btn-remove-preview {
+      background: transparent;
+      border: none;
+      color: #f87171;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      width: fit-content;
+      transition: color 0.15s ease;
+    }
+
+    .btn-remove-preview:hover {
+      color: #ef4444;
+      text-decoration: underline;
+    }
+
     .form-actions {
       display: flex;
       align-items: center;
@@ -332,6 +451,12 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-cancel:hover {
+      background-color: #252634;
+      color: #ffffff;
     }
 
     .btn-submit {
@@ -348,10 +473,125 @@
       border-radius: 8px;
       cursor: pointer;
       box-shadow: 0 4px 14px rgba(229, 27, 36, 0.4);
+      transition: background-color 0.15s ease;
     }
 
     .btn-submit:hover {
       background-color: var(--accent-red-hover);
+    }
+
+    /* Modal Backdrop & Window */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(4, 4, 6, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1050;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background-color: #14141a;
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 720px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .modal-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 24px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .cropper-tool-btn {
+      height: 34px;
+      padding: 0 11px;
+      background-color: #1c1d27;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 7px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background-color 0.15s ease;
+    }
+
+    .cropper-tool-btn:hover {
+      background-color: #272836;
+    }
+
+    .cropper-tool-btn.active {
+      background-color: var(--accent-red);
+      border-color: var(--accent-red);
+      color: #ffffff;
+    }
+
+    .btn-modal-cancel {
+      height: 40px;
+      padding: 0 18px;
+      background-color: #1b1c24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-modal-submit {
+      height: 40px;
+      padding: 0 20px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
 
     @media (max-width: 1024px) {
@@ -451,7 +691,7 @@
         </div>
 
         <div class="dashboard-card">
-          <form method="POST">
+          <form method="POST" action="{% url 'admin_category_add' %}" enctype="multipart/form-data" id="addCategoryForm">
             {% csrf_token %}
             <div class="form-group">
               <label class="form-label" for="categoryName">Category Name</label>
@@ -463,6 +703,38 @@
               <textarea id="categoryDescription" name="description" class="form-textarea" placeholder="Detailed description of this die-cast category..." required></textarea>
             </div>
 
+            <div class="form-group">
+              <label class="form-label" for="categoryImage">Category Image</label>
+              <input
+                type="file"
+                id="categoryImage"
+                name="image"
+                class="form-file-input"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+              >
+              <span class="form-hint">Accepted formats: JPG, JPEG, PNG, WEBP</span>
+
+              <!-- Image Preview Card with Crop & Remove Buttons -->
+              <div id="imagePreviewCard" class="category-image-preview-card" style="display: none;">
+                <div class="preview-thumb-box">
+                  <img id="imagePreviewImg" src="" alt="Category preview">
+                  <span class="crop-status-badge" id="cropStatusBadge" style="display: none;">CROPPED</span>
+                </div>
+                <div class="preview-actions-box">
+                  <button type="button" class="btn-crop-action" id="openCropBtn">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                      <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                    </svg>
+                    <span>Crop Image</span>
+                  </button>
+                  <button type="button" class="btn-remove-preview" id="removeImageBtn">
+                    ✕ Remove Image
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div class="form-actions">
               <a href="{% url 'admin_category_list' %}" class="btn-cancel">Cancel</a>
               <button type="submit" class="btn-submit">Add Category</button>
@@ -472,5 +744,164 @@
       </div>
     </main>
   </div>
+
+  <!-- CROPPER MODAL -->
+  <div class="modal-backdrop" id="cropperModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">CROP CATEGORY IMAGE</h3>
+          <p class="modal-subtitle">Refine frame, aspect ratio, and composition.</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeCropperBtn">&times;</button>
+      </div>
+
+      <div style="padding: 18px 22px;">
+        <div style="width: 100%; height: 360px; background-color: #08080b; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <img id="cropperTargetImg" src="" alt="To crop" style="max-width: 100%; max-height: 100%; display: block;">
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="cropper-tool-btn active" data-aspect="1">1:1 Square</button>
+            <button type="button" class="cropper-tool-btn" data-aspect="1.3333">4:3 Standard</button>
+            <button type="button" class="cropper-tool-btn" data-aspect="1.7777">16:9 Banner</button>
+            <button type="button" class="cropper-tool-btn" data-aspect="NaN">Free</button>
+          </div>
+
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="cropper-tool-btn" id="rotateLeftBtn" title="Rotate -90°">↺ 90°</button>
+            <button type="button" class="cropper-tool-btn" id="rotateRightBtn" title="Rotate +90°">↻ 90°</button>
+            <button type="button" class="cropper-tool-btn" id="zoomInBtn" title="Zoom In">+ Zoom</button>
+            <button type="button" class="cropper-tool-btn" id="zoomOutBtn" title="Zoom Out">- Zoom</button>
+            <button type="button" class="cropper-tool-btn" id="resetCropBtn" title="Reset">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 16px 22px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-modal-cancel" id="cancelCropBtn">Cancel</button>
+        <button type="button" class="btn-modal-submit" id="applyCropBtn">Apply &amp; Save Crop</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script>
+    (function() {
+      let cropperInstance = null;
+      const fileInput = document.getElementById('categoryImage');
+      const previewCard = document.getElementById('imagePreviewCard');
+      const previewImg = document.getElementById('imagePreviewImg');
+      const cropBadge = document.getElementById('cropStatusBadge');
+      const cropperModal = document.getElementById('cropperModal');
+      const cropperTargetImg = document.getElementById('cropperTargetImg');
+
+      function openCropper(srcUrl) {
+        cropperTargetImg.crossOrigin = 'anonymous';
+        cropperTargetImg.src = srcUrl;
+        cropperModal.classList.add('open');
+
+        if (cropperInstance) {
+          cropperInstance.destroy();
+          cropperInstance = null;
+        }
+
+        document.querySelectorAll('[data-aspect]').forEach(b => b.classList.remove('active'));
+        const defBtn = document.querySelector('[data-aspect="1"]');
+        if (defBtn) defBtn.classList.add('active');
+
+        cropperInstance = new Cropper(cropperTargetImg, {
+          aspectRatio: 1,
+          viewMode: 2,
+          autoCropArea: 0.9,
+          responsive: true,
+          restore: false,
+          guides: true,
+          center: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          checkCrossOrigin: false,
+        });
+      }
+
+      function closeCropper() {
+        cropperModal.classList.remove('open');
+        if (cropperInstance) {
+          cropperInstance.destroy();
+          cropperInstance = null;
+        }
+      }
+
+      fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          const objUrl = URL.createObjectURL(file);
+          previewImg.src = objUrl;
+          previewCard.style.display = 'flex';
+          cropBadge.style.display = 'none';
+          openCropper(objUrl);
+        }
+      });
+
+      document.getElementById('openCropBtn').addEventListener('click', function() {
+        if (previewImg.src) openCropper(previewImg.src);
+      });
+
+      document.getElementById('removeImageBtn').addEventListener('click', function() {
+        fileInput.value = '';
+        previewCard.style.display = 'none';
+      });
+
+      document.getElementById('closeCropperBtn').addEventListener('click', closeCropper);
+      document.getElementById('cancelCropBtn').addEventListener('click', closeCropper);
+
+      document.querySelectorAll('[data-aspect]').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('[data-aspect]').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          const val = parseFloat(this.getAttribute('data-aspect'));
+          if (cropperInstance) cropperInstance.setAspectRatio(isNaN(val) ? NaN : val);
+        });
+      });
+
+      document.getElementById('rotateLeftBtn').addEventListener('click', () => cropperInstance && cropperInstance.rotate(-90));
+      document.getElementById('rotateRightBtn').addEventListener('click', () => cropperInstance && cropperInstance.rotate(90));
+      document.getElementById('zoomInBtn').addEventListener('click', () => cropperInstance && cropperInstance.zoom(0.1));
+      document.getElementById('zoomOutBtn').addEventListener('click', () => cropperInstance && cropperInstance.zoom(-0.1));
+      document.getElementById('resetCropBtn').addEventListener('click', () => cropperInstance && cropperInstance.reset());
+
+      document.getElementById('applyCropBtn').addEventListener('click', function() {
+        if (!cropperInstance) return;
+
+        const canvas = cropperInstance.getCroppedCanvas({
+          maxWidth: 1600,
+          maxHeight: 1600,
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+        });
+
+        if (!canvas) return;
+
+        canvas.toBlob(function(blob) {
+          if (!blob) return;
+
+          const fileObj = new File([blob], 'category_add_cropped_' + Date.now() + '.jpg', {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          });
+
+          const dt = new DataTransfer();
+          dt.items.add(fileObj);
+          fileInput.files = dt.files;
+
+          previewImg.src = URL.createObjectURL(blob);
+          cropBadge.style.display = 'inline-block';
+          closeCropper();
+        }, 'image/jpeg', 0.92);
+      });
+    })();
+  </script>
 </body>
 </html>
+

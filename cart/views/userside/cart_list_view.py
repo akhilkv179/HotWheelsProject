@@ -5,8 +5,8 @@ from cart.models import Cart
 
 def cart_list(request):
 
-    if not request.user.is_authenticated:
-        return redirect("login")
+    # if not request.user.is_authenticated:
+    #     return redirect("login")
 
     cart, created = Cart.objects.get_or_create(
         user=request.user
@@ -40,9 +40,7 @@ def cart_list(request):
         if item.is_available:
             total_price += item.subtotal
 
-    return render(
-        request,
-        "userside/cart.html",
+    return render(request,"userside/cart.html",
         {
             "cart": cart,
             "cart_items": cart_items,

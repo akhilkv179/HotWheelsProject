@@ -32,26 +32,17 @@ def update_cart_quantity(request, item_id, action):
         or not category.is_active
         or variant.stock_quantity <= 0
     ):
-        messages.error(
-            request,
-            "This product is currently unavailable."
-        )
+        messages.error(request,"This product is currently unavailable.")
         return redirect("cart_list")
 
     if action == "increase":
 
         if cart_item.quantity >= MAX_QUANTITY:
-            messages.error(
-                request,
-                f"You can add a maximum of {MAX_QUANTITY} items."
-            )
+            messages.error(request,f"You can add a maximum of {MAX_QUANTITY} items.")
             return redirect("cart_list")
 
         if cart_item.quantity >= variant.stock_quantity:
-            messages.error(
-                request,
-                "You cannot add more than the available stock."
-            )
+            messages.error(request,"You cannot add more than the available stock.")
             return redirect("cart_list")
 
         cart_item.quantity += 1
@@ -61,10 +52,7 @@ def update_cart_quantity(request, item_id, action):
 
         if cart_item.quantity <= 1:
             cart_item.delete()
-            messages.success(
-                request,
-                "Product removed from cart."
-            )
+            messages.success(request,"Product removed from cart.")
             return redirect("cart_list")
 
         cart_item.quantity -= 1

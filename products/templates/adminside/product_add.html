@@ -642,84 +642,425 @@
       line-height: 1.4;
     }
 
-    /* Variants Table */
-    .variants-table-wrap {
+    /* ==================================================
+       FORM SECTIONS STACK & VARIANT CARDS
+       ================================================== */
+    .form-sections-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
       width: 100%;
-      overflow-x: auto;
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      background-color: rgba(0, 0, 0, 0.2);
     }
 
-    .variants-table {
+    .form-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Variants Stack Container */
+    .variants-stack-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
       width: 100%;
-      border-collapse: collapse;
-      text-align: left;
     }
 
-    .variants-table th {
-      padding: 12px 14px;
-      font-size: 10.5px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      background-color: #101015;
-      border-bottom: 1px solid var(--border-subtle);
-      white-space: nowrap;
-    }
-
-    .variants-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      vertical-align: middle;
-    }
-
-    .variants-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .variants-table tbody tr:hover td {
-      background-color: rgba(255, 255, 255, 0.02);
-    }
-
-    .v-input {
-      width: 100%;
-      background-color: #171720;
+    .variant-card {
+      background: #14141c;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 6px;
-      padding: 8px 10px;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .variant-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .variant-card.has-error {
+      border-color: rgba(239, 68, 68, 0.7);
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
+    }
+
+    .variant-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .variant-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .variant-number-badge {
+      background: linear-gradient(135deg, #e51b24, #ff4d00);
       color: #ffffff;
-      font-family: inherit;
-      font-size: 12.5px;
-      font-weight: 500;
-      outline: none;
-    }
-
-    .v-input:focus {
-      border-color: rgba(229, 27, 36, 0.6);
-      background-color: #1c1d27;
-    }
-
-    .v-delete-btn {
-      background: transparent;
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      color: #f87171;
-      width: 32px;
-      height: 32px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
       border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(229, 27, 36, 0.35);
+    }
+
+    .variant-color-title {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .btn-remove-variant {
       display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 6px;
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-remove-variant:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #ffffff;
+    }
+
+    .btn-remove-variant:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .variant-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .variant-specs-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .variant-specs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Variant Dedicated Images Section */
+    .variant-images-box {
+      background: #0d0d12;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .variant-images-box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .variant-images-box-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-header);
+    }
+
+    .badge-slots-status {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2.5px 8px;
+      border-radius: 4px;
+      background: rgba(229, 27, 36, 0.14);
+      color: #f87171;
+      border: 1px solid rgba(229, 27, 36, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-slots-status.complete {
+      background: rgba(34, 197, 94, 0.12);
+      color: #22c55e;
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-choose-all-slots {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #1c1d27;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-choose-all-slots:hover {
+      background: #252636;
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    /* Slots 3-Column Grid */
+    .variant-slots-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .variant-slots-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .image-slot-card {
+      background: #171722;
+      border: 1.5px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 200px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .image-slot-card:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .image-slot-card.has-image {
+      border-style: solid;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .image-slot-card.is-primary-slot {
+      border-color: rgba(229, 27, 36, 0.55);
+    }
+
+    .slot-tag {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 4;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(10, 10, 15, 0.88);
+      color: #9ca3af;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(4px);
+    }
+
+    .slot-tag.primary {
+      background: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 2px 8px rgba(229, 27, 36, 0.45);
+    }
+
+    .slot-drop-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 12px;
+      cursor: pointer;
+      gap: 8px;
+      text-align: center;
+      transition: background-color 0.15s ease;
+    }
+
+    .slot-drop-area:hover,
+    .slot-drop-area.dragover {
+      background-color: rgba(229, 27, 36, 0.05);
+    }
+
+    .slot-upload-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #121218;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-red);
+    }
+
+    .slot-label-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .slot-hint-text {
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+
+    .slot-preview-area {
+      position: relative;
+      width: 100%;
+      padding-top: 75%; /* 4:3 Aspect Ratio */
+      background: #09090c;
+      overflow: hidden;
+    }
+
+    .slot-preview-area img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .slot-overlay-remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(229, 27, 36, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background-color 0.15s ease, color 0.15s ease;
+      z-index: 6;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      transition: all 0.15s ease;
     }
 
-    .v-delete-btn:hover {
-      background-color: rgba(239, 68, 68, 0.15);
+    .slot-overlay-remove-btn:hover {
+      background: #ff222e;
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(229, 27, 36, 0.65);
+    }
+
+    .slot-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 8px 10px;
+      background: #111116;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-slot-act {
+      flex: 1;
+      height: 28px;
+      background: #1d1e28;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 5px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-slot-act:hover {
+      background: #272838;
       color: #ffffff;
     }
 
+    .btn-slot-act.remove {
+      flex: 1;
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.25);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .btn-slot-act.remove:hover {
+      background: rgba(239, 68, 68, 0.22);
+      color: #ffffff;
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .btn-slot-act.replace {
+      flex: 1;
+      color: #60a5fa;
+      border-color: rgba(96, 165, 250, 0.25);
+    }
+
+    .btn-slot-act.replace:hover {
+      background: rgba(96, 165, 250, 0.15);
+      color: #ffffff;
+    }
+
+    .btn-slot-act.set-primary {
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .btn-slot-act.set-primary:hover {
+      background: rgba(245, 158, 11, 0.15);
+      color: #ffffff;
+    }
+
+    .slot-primary-active-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #22c55e;
+      flex: 1;
+      text-align: center;
+    }
+
+    /* Add Variant Buttons */
     .btn-add-variant {
       display: inline-flex;
       align-items: center;
@@ -743,202 +1084,49 @@
       border-color: rgba(255, 255, 255, 0.2);
     }
 
-    /* Media Upload Section */
-    .dropzone-container {
-      border: 2px dashed rgba(229, 27, 36, 0.35);
-      background: rgba(229, 27, 36, 0.02);
-      border-radius: 12px;
-      padding: 32px 20px;
-      text-align: center;
-      cursor: pointer;
+    .add-variant-footer {
       display: flex;
-      flex-direction: column;
+      justify-content: center;
+      padding-top: 6px;
+    }
+
+    .btn-add-variant-large {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
-    }
-
-    .dropzone-container:hover,
-    .dropzone-container.dragover {
-      border-color: var(--accent-red);
-      background-color: rgba(229, 27, 36, 0.06);
-      transform: scale(0.995);
-    }
-
-    .dropzone-icon-circle {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: #191a24;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent-red);
-    }
-
-    .dropzone-title {
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      background: rgba(229, 27, 36, 0.05);
+      border: 1.5px dashed rgba(229, 27, 36, 0.35);
+      border-radius: 9px;
+      color: #ffffff;
       font-family: var(--font-heading);
-      font-size: 15px;
+      font-size: 12.5px;
       font-weight: 800;
-      color: #ffffff;
-    }
-
-    .dropzone-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      max-width: 280px;
-      line-height: 1.5;
-    }
-
-    .dropzone-req-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background-color: #171720;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--accent-orange);
-    }
-
-    /* Images Preview Grid */
-    .images-preview-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 14px;
-      margin-top: 10px;
-    }
-
-    .image-preview-card {
-      position: relative;
-      background-color: #171722;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: border-color 0.2s ease, transform 0.2s ease;
-    }
-
-    .image-preview-card:hover {
-      border-color: rgba(229, 27, 36, 0.5);
-      transform: translateY(-2px);
-    }
-
-    .image-preview-card.is-primary {
-      border-color: var(--accent-red);
-      box-shadow: 0 0 14px rgba(229, 27, 36, 0.35);
-    }
-
-    .thumb-wrapper {
-      position: relative;
-      width: 100%;
-      padding-top: 100%; /* 1:1 Aspect */
-      background-color: #0d0d12;
-      overflow: hidden;
-    }
-
-    .thumb-wrapper img {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .primary-tag-pill {
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      background: var(--accent-red);
-      color: #ffffff;
-      font-size: 9.5px;
-      font-weight: 900;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      padding: 2px 7px;
-      border-radius: 4px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-      z-index: 2;
-    }
-
-    .thumb-actions-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px;
-      background-color: #121218;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      gap: 6px;
-    }
-
-    .btn-thumb-action {
-      flex: 1;
-      height: 28px;
-      background-color: #1d1e28;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 5px;
-      color: var(--text-muted);
-      font-size: 11px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
       cursor: pointer;
-      transition: background-color 0.15s ease, color 0.15s ease;
+      transition: all 0.2s ease;
     }
 
-    .btn-thumb-action:hover {
-      background-color: #272838;
-      color: #ffffff;
+    .btn-add-variant-large:hover {
+      background: rgba(229, 27, 36, 0.12);
+      border-color: var(--accent-red);
+      transform: translateY(-1px);
     }
 
-    .btn-thumb-action.delete-img {
-      flex: 0 0 28px;
-      color: #f87171;
-      border-color: rgba(239, 68, 68, 0.25);
+    /* Checklist Grid */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
     }
 
-    .btn-thumb-action.delete-img:hover {
-      background-color: rgba(239, 68, 68, 0.18);
-      color: #ffffff;
-    }
-
-    .image-counter-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background-color: rgba(255, 255, 255, 0.04);
-      color: var(--text-muted);
-    }
-
-    .image-counter-pill.valid {
-      background-color: var(--badge-active-bg);
-      color: var(--badge-active-text);
-      border: 1px solid var(--badge-active-border);
-    }
-
-    .image-counter-pill.invalid {
-      background-color: rgba(239, 68, 68, 0.12);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.28);
-    }
-
-    /* Info Checklist Card */
-    .checklist-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    @media (max-width: 768px) {
+      .checklist-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .checklist-item {
@@ -956,6 +1144,16 @@
       stroke: var(--accent-red);
       flex-shrink: 0;
       margin-top: 1px;
+    }
+
+    /* Form Bottom Actions */
+    .form-bottom-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 14px;
+      padding-top: 10px;
+      padding-bottom: 30px;
     }
 
     /* ==================================================
@@ -1374,31 +1572,19 @@
         >
           {% csrf_token %}
 
-          <!-- Real hidden file input populated via DataTransfer -->
-          <input
-            type="file"
-            id="realFileInput"
-            name="product_images"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
-            style="display: none;"
-          >
+          <div class="form-sections-stack">
 
-          <div class="form-grid-layout">
-
-            <!-- LEFT COLUMN: Core Specs & Variants -->
-            <div class="form-column">
-
-              <!-- CARD 1: Core Specifications -->
-              <section class="admin-card">
-                <div class="card-header-block">
-                  <div class="card-title-wrap">
-                    <h2 class="card-title">Core Specifications</h2>
-                    <span class="card-desc">Master catalog naming, category classification, and base pricing.</span>
-                  </div>
+            <!-- SECTION 1: Product Information -->
+            <section class="admin-card">
+              <div class="card-header-block">
+                <div class="card-title-wrap">
+                  <h2 class="card-title">Product Information</h2>
+                  <span class="card-desc">Master catalog naming, category classification, and base retail pricing.</span>
                 </div>
+              </div>
 
-                <div class="form-group">
+              <div class="form-grid-2col">
+                <div class="form-group" style="grid-column: 1 / -1;">
                   <label class="form-label" for="productName">
                     Product Title <span class="required-star">*</span>
                   </label>
@@ -1428,7 +1614,7 @@
                 <div class="form-row-2">
                   <div class="form-group">
                     <label class="form-label" for="basePrice">
-                      Base Retail Price ($) <span class="required-star">*</span>
+                      Regular Price ($) <span class="required-star">*</span>
                     </label>
                     <input
                       type="number"
@@ -1444,7 +1630,7 @@
 
                   <div class="form-group">
                     <label class="form-label" for="lowStockThreshold">
-                      Low Stock Alert Threshold <span class="required-star">*</span>
+                      Low Stock Threshold <span class="required-star">*</span>
                     </label>
                     <input
                       type="number"
@@ -1459,7 +1645,7 @@
                   </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="grid-column: 1 / -1;">
                   <label class="form-label" for="productDescription">
                     Collector Notes &amp; Description <span class="required-star">*</span>
                   </label>
@@ -1471,173 +1657,84 @@
                     required
                   ></textarea>
                 </div>
-              </section>
+              </div>
+            </section>
 
-              <!-- CARD 2: Product Variants -->
-              <section class="admin-card">
-                <div class="card-header-block">
-                  <div class="card-title-wrap">
-                    <h2 class="card-title">Inventory Variants</h2>
-                    <span class="card-desc">Colorways, scale ratios, specific pricing, and warehouse stock units.</span>
-                  </div>
-                  <button type="button" class="btn-add-variant" id="addVariantBtn">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
-                      <line x1="12" y1="5" x2="12" y2="19"/>
-                      <line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    <span>Add Variant</span>
-                  </button>
+            <!-- SECTION 2: Product Variants & Dedicated Images -->
+            <section class="admin-card">
+              <div class="card-header-block">
+                <div class="card-title-wrap">
+                  <h2 class="card-title">Product Variants &amp; Dedicated Images</h2>
+                  <span class="card-desc">Each variant must have its own Color, Size, Price, Stock, and exactly 3 images. Image 1 is the primary cover for that variant.</span>
                 </div>
+                <button type="button" class="btn-add-variant" id="addVariantBtn">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span>Add Variant</span>
+                </button>
+              </div>
 
-                <div class="variants-table-wrap">
-                  <table class="variants-table">
-                    <thead>
-                      <tr>
-                        <th style="min-width: 140px;">Colorway / Finish</th>
-                        <th style="min-width: 110px;">Scale / Size</th>
-                        <th style="min-width: 100px;">Price ($)</th>
-                        <th style="min-width: 90px;">Stock</th>
-                        <th style="width: 50px; text-align: center;">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody id="variantsContainer">
-                      <!-- Default First Variant Row -->
-                      <tr class="variant-row">
-                        <td>
-                          <input
-                            type="text"
-                            name="variant_color[]"
-                            class="v-input"
-                            placeholder="e.g. Spectraflame Blue"
-                            value="Spectraflame Blue"
-                            required
-                          >
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            name="variant_size[]"
-                            class="v-input"
-                            placeholder="e.g. 1:64"
-                            value="1:64 Scale"
-                            required
-                          >
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            name="variant_price[]"
-                            class="v-input v-price"
-                            step="0.01"
-                            min="0.01"
-                            placeholder="29.99"
-                            required
-                          >
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            name="variant_stock[]"
-                            class="v-input"
-                            min="0"
-                            placeholder="50"
-                            value="25"
-                            required
-                          >
-                        </td>
-                        <td style="text-align: center;">
-                          <button type="button" class="v-delete-btn" title="Remove Variant" onclick="removeVariantRow(this)">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                              <polyline points="3 6 5 6 21 6"/>
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+              <!-- Container for all Variant Cards -->
+              <div class="variants-stack-container" id="variantsContainer">
+                <!-- Variant cards populated dynamically by JavaScript -->
+              </div>
+
+              <!-- Bottom Add Variant Button -->
+              <div class="add-variant-footer">
+                <button type="button" class="btn-add-variant-large" id="addVariantBtnBottom">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span>Add Another Product Variant</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- SECTION 3: Catalog Standards -->
+            <section class="admin-card checklist-card">
+              <div class="card-header-block">
+                <div class="card-title-wrap">
+                  <h2 class="card-title">Catalog Quality Checklist</h2>
+                  <span class="card-desc">Standards for multi-variant collector catalog listings.</span>
                 </div>
-                <span class="field-hint">At least one variant is required. The first image will be linked to your primary variant.</span>
-              </section>
+              </div>
 
-            </div>
-
-            <!-- RIGHT COLUMN: Media & Checklist -->
-            <div class="form-column">
-
-              <!-- CARD 3: Master Media Assets (Cropper.js Flow) -->
-              <section class="admin-card">
-                <div class="card-header-block">
-                  <div class="card-title-wrap">
-                    <h2 class="card-title">Product Media</h2>
-                    <span class="card-desc">High resolution images. Minimum 3 images required.</span>
-                  </div>
-                  <span class="image-counter-pill invalid" id="imageCountBadge">
-                    0 / 3 Images
-                  </span>
+              <div class="checklist-grid">
+                <div class="checklist-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>Exactly 3 Images per Variant:</strong> Each variant requires front profile, angle 3/4 view, and packaging / chassis photos.</span>
                 </div>
-
-                <!-- Dropzone Area -->
-                <div class="dropzone-container" id="dropzoneContainer">
-                  <div class="dropzone-icon-circle">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                      <circle cx="8.5" cy="8.5" r="1.5"/>
-                      <polyline points="21 15 16 10 5 21"/>
-                    </svg>
-                  </div>
-                  <div class="dropzone-title">Click or Drop Images Here</div>
-                  <div class="dropzone-subtitle">
-                    Select at least 3 photos. You can crop, resize, and choose your primary cover asset below.
-                  </div>
-                  <div class="dropzone-req-badge">
-                    JPG, PNG, WEBP • Max 5MB Each
-                  </div>
-                  <!-- Hidden auxiliary input for picking files -->
-                  <input
-                    type="file"
-                    id="pickerFileInput"
-                    multiple
-                    accept="image/jpeg,image/png,image/webp"
-                    style="display: none;"
-                  >
+                <div class="checklist-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>Variant Primary Cover:</strong> Image 1 in each variant card serves as that variant's primary cover photo.</span>
                 </div>
-
-                <!-- Gallery Preview Grid -->
-                <div class="images-preview-grid" id="galleryPreviewGrid">
-                  <!-- Dynamically populated image cards -->
+                <div class="checklist-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>Independent Assets:</strong> Uploading images for Blue does not affect Red. Every variant has its own isolated set of 3 images.</span>
                 </div>
-              </section>
-
-              <!-- CARD 4: Publishing Checklist & Guidelines -->
-              <section class="admin-card">
-                <div class="card-header-block">
-                  <div class="card-title-wrap">
-                    <h2 class="card-title">Release Checklist</h2>
-                    <span class="card-desc">Quality standards for Hot Wheels collectors.</span>
-                  </div>
+                <div class="checklist-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>Crop &amp; Refine:</strong> Use the interactive crop editor on any asset before catalog publication.</span>
                 </div>
+              </div>
+            </section>
 
-                <div class="checklist-list">
-                  <div class="checklist-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span><strong>Minimum 3 Images:</strong> Ensure front, angled profile, and packaging / chassis views are captured.</span>
-                  </div>
-                  <div class="checklist-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span><strong>Primary Cover Image:</strong> Designate the best shot as Primary Cover using the "Set Cover" button.</span>
-                  </div>
-                  <div class="checklist-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span><strong>Scale &amp; Details:</strong> Mention accurate diecast scale (1:64, 1:43, 1:18) and casting code for authenticity.</span>
-                  </div>
-                  <div class="checklist-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span><strong>Instant Crop Tool:</strong> Use the interactive crop editor on any asset before catalog publication.</span>
-                  </div>
-                </div>
-              </section>
-
+            <!-- Bottom Save Action Bar -->
+            <div class="form-bottom-actions">
+              <a href="{% url 'admin_product_list' %}" class="btn-cancel">
+                Cancel
+              </a>
+              <button type="submit" form="productAddForm" class="btn-save-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                <span>Save Product</span>
+              </button>
             </div>
 
           </div>
@@ -1712,22 +1809,20 @@
   <script>
     (function () {
       // ----------------------------------------------------------------
-      // State Management for Images
+      // State Management for Variants and Images
       // ----------------------------------------------------------------
-      let uploadedItems = []; // Array of { id, file, originalUrl, displayUrl, croppedBlob, isPrimary }
+      let variants = [];
       let cropperInstance = null;
-      let activeCropItemId = null;
+      let activeCropTarget = null; // { vId, slotIdx }
 
-      const dropzone = document.getElementById("dropzoneContainer");
-      const pickerInput = document.getElementById("pickerFileInput");
-      const realFileInput = document.getElementById("realFileInput");
-      const gallery = document.getElementById("galleryPreviewGrid");
-      const imageCountBadge = document.getElementById("imageCountBadge");
-      const cropperModal = document.getElementById("cropperModal");
-      const cropperTargetImage = document.getElementById("cropperTargetImage");
+      const variantsContainer = document.getElementById("variantsContainer");
+      const addVariantBtn = document.getElementById("addVariantBtn");
+      const addVariantBtnBottom = document.getElementById("addVariantBtnBottom");
       const productForm = document.getElementById("productAddForm");
       const clientErrorContainer = document.getElementById("clientErrorContainer");
       const clientErrorMessage = document.getElementById("clientErrorMessage");
+      const cropperModal = document.getElementById("cropperModal");
+      const cropperTargetImage = document.getElementById("cropperTargetImage");
 
       function showError(msg) {
         clientErrorMessage.textContent = msg;
@@ -1739,168 +1834,500 @@
         clientErrorContainer.style.display = "none";
       }
 
+      function escapeHtml(text) {
+        if (!text) return "";
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
       // ----------------------------------------------------------------
-      // Image Selection & Dropzone
+      // Create Variant Card
       // ----------------------------------------------------------------
-      dropzone.addEventListener("click", () => pickerInput.click());
+      function createVariantCard(initialData) {
+        const vId = "v_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
+        const basePriceVal = document.getElementById("basePrice").value || "29.99";
 
-      dropzone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropzone.classList.add("dragover");
-      });
+        const variantObj = {
+          id: vId,
+          slots: [null, null, null], // Exactly 3 slots
+        };
+        variants.push(variantObj);
 
-      dropzone.addEventListener("dragleave", () => {
-        dropzone.classList.remove("dragover");
-      });
+        const vIndex = variants.length - 1;
+        const card = document.createElement("div");
+        card.className = "variant-card";
+        card.id = vId;
+        card.setAttribute("data-variant-id", vId);
 
-      dropzone.addEventListener("drop", (e) => {
-        e.preventDefault();
-        dropzone.classList.remove("dragover");
-        if (e.dataTransfer && e.dataTransfer.files) {
-          handleIncomingFiles(e.dataTransfer.files);
+        const defaultColor = initialData && initialData.color ? initialData.color : (vIndex === 0 ? "Spectraflame Blue" : "Chrome Red");
+        const defaultSize = initialData && initialData.size ? initialData.size : "1:64 Scale";
+        const defaultPrice = initialData && initialData.price ? initialData.price : basePriceVal;
+        const defaultStock = initialData && initialData.stock ? initialData.stock : "25";
+
+        card.innerHTML = `
+          <!-- Real hidden file input populated on submit -->
+          <input type="file" name="variant_images_${vIndex}" multiple class="variant-hidden-file-input" style="display: none;">
+
+          <!-- Card Header -->
+          <div class="variant-card-header">
+            <div class="variant-title-wrap">
+              <span class="variant-number-badge">VARIANT ${vIndex + 1}</span>
+              <span class="variant-color-title">${escapeHtml(defaultColor)}</span>
+            </div>
+            <button type="button" class="btn-remove-variant" title="Remove Variant" onclick="removeVariantCard('${vId}')">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              <span>Remove Variant</span>
+            </button>
+          </div>
+
+          <!-- Variant Specs Grid -->
+          <div class="variant-specs-grid">
+            <div class="form-group">
+              <label class="form-label">Colour / Finish <span class="required-star">*</span></label>
+              <input
+                type="text"
+                name="variant_color[]"
+                class="form-input v-color-input"
+                placeholder="e.g. Spectraflame Blue"
+                value="${escapeHtml(defaultColor)}"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Scale / Size <span class="required-star">*</span></label>
+              <input
+                type="text"
+                name="variant_size[]"
+                class="form-input"
+                placeholder="e.g. 1:64 Scale"
+                value="${escapeHtml(defaultSize)}"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Price ($) <span class="required-star">*</span></label>
+              <input
+                type="number"
+                name="variant_price[]"
+                class="form-input v-price-input"
+                step="0.01"
+                min="0.01"
+                placeholder="29.99"
+                value="${escapeHtml(defaultPrice)}"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Stock Units <span class="required-star">*</span></label>
+              <input
+                type="number"
+                name="variant_stock[]"
+                class="form-input"
+                min="0"
+                placeholder="25"
+                value="${escapeHtml(defaultStock)}"
+                required
+              >
+            </div>
+          </div>
+
+          <!-- Variant Dedicated Images Section -->
+          <div class="variant-images-box">
+            <div class="variant-images-box-header">
+              <div class="variant-images-box-title">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>Variant Images</span>
+                <span class="badge-slots-status" id="badge_${vId}">0 / 3 Images</span>
+              </div>
+              <div class="variant-images-box-actions">
+                <button type="button" class="btn-choose-all-slots" onclick="triggerBatchUpload('${vId}')">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Select 3 Images</span>
+                </button>
+                <input type="file" multiple accept="image/jpeg,image/png,image/webp" id="batch_${vId}" style="display: none;" onchange="handleBatchFileSelect('${vId}', this)">
+              </div>
+            </div>
+
+            <!-- Exactly 3 Image Slots -->
+            <div class="variant-slots-row">
+              <!-- Slot 0: Image 1 (Primary) -->
+              <div class="image-slot-card is-primary-slot" id="slot_${vId}_0" data-slot="0">
+                <span class="slot-tag primary">★ Primary</span>
+                <div class="slot-drop-area" onclick="triggerSingleSlot('${vId}', 0)">
+                  <div class="slot-upload-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                  </div>
+                  <span class="slot-label-text">Image 1</span>
+                  <span class="slot-hint-text">Primary Cover Photo</span>
+                </div>
+                <div class="slot-preview-area" style="display: none;">
+                  <img src="" alt="Variant Image 1">
+                  <button type="button" class="slot-overlay-remove-btn" onclick="removeSlot('${vId}', 0)" title="Remove image to change it">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="slot-actions-row" style="display: none;">
+                  <button type="button" class="btn-slot-act crop" onclick="openCrop('${vId}', 0)" title="Crop Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                      <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                    </svg>
+                    <span>Crop</span>
+                  </button>
+                  <button type="button" class="btn-slot-act replace" onclick="triggerSingleSlot('${vId}', 0)" title="Change / Replace Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    <span>Change</span>
+                  </button>
+                  <button type="button" class="btn-slot-act remove" onclick="removeSlot('${vId}', 0)" title="Remove Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Remove</span>
+                  </button>
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="file_${vId}_0" style="display: none;" onchange="handleSingleSlotFile('${vId}', 0, this)">
+              </div>
+
+              <!-- Slot 1: Image 2 -->
+              <div class="image-slot-card" id="slot_${vId}_1" data-slot="1">
+                <span class="slot-tag">Image 2</span>
+                <div class="slot-drop-area" onclick="triggerSingleSlot('${vId}', 1)">
+                  <div class="slot-upload-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                  </div>
+                  <span class="slot-label-text">Image 2</span>
+                  <span class="slot-hint-text">Angle / Profile</span>
+                </div>
+                <div class="slot-preview-area" style="display: none;">
+                  <img src="" alt="Variant Image 2">
+                  <button type="button" class="slot-overlay-remove-btn" onclick="removeSlot('${vId}', 1)" title="Remove image to change it">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="slot-actions-row" style="display: none;">
+                  <button type="button" class="btn-slot-act crop" onclick="openCrop('${vId}', 1)" title="Crop Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                      <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                    </svg>
+                    <span>Crop</span>
+                  </button>
+                  <button type="button" class="btn-slot-act replace" onclick="triggerSingleSlot('${vId}', 1)" title="Change / Replace Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    <span>Change</span>
+                  </button>
+                  <button type="button" class="btn-slot-act remove" onclick="removeSlot('${vId}', 1)" title="Remove Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Remove</span>
+                  </button>
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="file_${vId}_1" style="display: none;" onchange="handleSingleSlotFile('${vId}', 1, this)">
+              </div>
+
+              <!-- Slot 2: Image 3 -->
+              <div class="image-slot-card" id="slot_${vId}_2" data-slot="2">
+                <span class="slot-tag">Image 3</span>
+                <div class="slot-drop-area" onclick="triggerSingleSlot('${vId}', 2)">
+                  <div class="slot-upload-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                  </div>
+                  <span class="slot-label-text">Image 3</span>
+                  <span class="slot-hint-text">Packaging / Chassis</span>
+                </div>
+                <div class="slot-preview-area" style="display: none;">
+                  <img src="" alt="Variant Image 3">
+                  <button type="button" class="slot-overlay-remove-btn" onclick="removeSlot('${vId}', 2)" title="Remove image to change it">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="slot-actions-row" style="display: none;">
+                  <button type="button" class="btn-slot-act crop" onclick="openCrop('${vId}', 2)" title="Crop Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                      <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                    </svg>
+                    <span>Crop</span>
+                  </button>
+                  <button type="button" class="btn-slot-act replace" onclick="triggerSingleSlot('${vId}', 2)" title="Change / Replace Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    <span>Change</span>
+                  </button>
+                  <button type="button" class="btn-slot-act remove" onclick="removeSlot('${vId}', 2)" title="Remove Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Remove</span>
+                  </button>
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="file_${vId}_2" style="display: none;" onchange="handleSingleSlotFile('${vId}', 2, this)">
+              </div>
+            </div>
+          </div>
+        `;
+
+        variantsContainer.appendChild(card);
+
+        // Update color title dynamically
+        const colorInput = card.querySelector(".v-color-input");
+        const colorTitle = card.querySelector(".variant-color-title");
+        colorInput.addEventListener("input", function () {
+          const currentIdx = Array.from(variantsContainer.querySelectorAll(".variant-card")).indexOf(card);
+          colorTitle.textContent = this.value.trim() || `Variant ${currentIdx + 1}`;
+        });
+
+        // Drag & drop on each slot
+        for (let s = 0; s < 3; s++) {
+          setupSlotDragAndDrop(vId, s);
         }
-      });
 
-      pickerInput.addEventListener("change", (e) => {
-        if (e.target.files) {
-          handleIncomingFiles(e.target.files);
-          pickerInput.value = ""; // reset picker
+        reindexVariants();
+      }
+
+      function setupSlotDragAndDrop(vId, slotIdx) {
+        const slotCard = document.getElementById(`slot_${vId}_${slotIdx}`);
+        if (!slotCard) return;
+
+        const dropArea = slotCard.querySelector(".slot-drop-area");
+        dropArea.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropArea.classList.add("dragover");
+        });
+        dropArea.addEventListener("dragleave", () => {
+          dropArea.classList.remove("dragover");
+        });
+        dropArea.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dropArea.classList.remove("dragover");
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            setSlotFile(vId, slotIdx, e.dataTransfer.files[0]);
+          }
+        });
+      }
+
+      // ----------------------------------------------------------------
+      // Re-index Variants (Sequential 0, 1, 2...)
+      // ----------------------------------------------------------------
+      function reindexVariants() {
+        const cards = variantsContainer.querySelectorAll(".variant-card");
+        cards.forEach((card, idx) => {
+          // Re-label badge
+          const badge = card.querySelector(".variant-number-badge");
+          if (badge) badge.textContent = `VARIANT ${idx + 1}`;
+
+          // Re-label hidden file input name to variant_images_0, variant_images_1, etc.
+          const hiddenInput = card.querySelector(".variant-hidden-file-input");
+          if (hiddenInput) {
+            hiddenInput.name = `variant_images_${idx}`;
+          }
+
+          // Disable remove if only 1 variant exists
+          const removeBtn = card.querySelector(".btn-remove-variant");
+          if (removeBtn) {
+            removeBtn.disabled = (cards.length <= 1);
+          }
+        });
+      }
+
+      window.removeVariantCard = function (vId) {
+        if (variants.length <= 1) {
+          showError("At least one product variant is required.");
+          return;
         }
-      });
 
-      function handleIncomingFiles(fileList) {
+        const idx = variants.findIndex((v) => v.id === vId);
+        if (idx !== -1) {
+          variants[idx].slots.forEach((s) => {
+            if (s && s.previewUrl) URL.revokeObjectURL(s.previewUrl);
+          });
+          variants.splice(idx, 1);
+        }
+
+        const card = document.getElementById(vId);
+        if (card) card.remove();
+        reindexVariants();
+      };
+
+      // ----------------------------------------------------------------
+      // Slot Upload & Image Management
+      // ----------------------------------------------------------------
+      window.triggerSingleSlot = function (vId, slotIdx) {
+        const input = document.getElementById(`file_${vId}_${slotIdx}`);
+        if (input) input.click();
+      };
+
+      window.handleSingleSlotFile = function (vId, slotIdx, input) {
+        if (!input.files || input.files.length === 0) return;
+        const file = input.files[0];
+        input.value = "";
+        setSlotFile(vId, slotIdx, file);
+      };
+
+      window.triggerBatchUpload = function (vId) {
+        const input = document.getElementById(`batch_${vId}`);
+        if (input) input.click();
+      };
+
+      window.handleBatchFileSelect = function (vId, input) {
+        if (!input.files || input.files.length === 0) return;
+        const files = Array.from(input.files).slice(0, 3); // Maximum 3
+        input.value = "";
+
+        files.forEach((file, i) => {
+          if (i < 3) {
+            setSlotFile(vId, i, file);
+          }
+        });
+      };
+
+      function setSlotFile(vId, slotIdx, file) {
         hideError();
         const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-        const maxSize = 5 * 1024 * 1024; // 5 MB
+        const maxSize = 5 * 1024 * 1024;
 
-        for (let i = 0; i < fileList.length; i++) {
-          const file = fileList[i];
-
-          if (!allowedTypes.includes(file.type)) {
-            showError(`"${file.name}" has an unsupported format. Only JPG, PNG, and WEBP are allowed.`);
-            continue;
-          }
-
-          if (file.size > maxSize) {
-            showError(`"${file.name}" exceeds the 5 MB file size limit.`);
-            continue;
-          }
-
-          const objUrl = URL.createObjectURL(file);
-          const isFirstItem = uploadedItems.length === 0;
-
-          uploadedItems.push({
-            id: "img_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
-            file: file,
-            originalUrl: objUrl,
-            displayUrl: objUrl,
-            croppedBlob: null,
-            isPrimary: isFirstItem
-          });
+        if (!allowedTypes.includes(file.type)) {
+          showError(`"${file.name}" has an unsupported format. Only JPG, PNG, and WEBP are allowed.`);
+          return;
+        }
+        if (file.size > maxSize) {
+          showError(`"${file.name}" exceeds the 5 MB file size limit.`);
+          return;
         }
 
-        renderGallery();
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant) return;
+
+        if (variant.slots[slotIdx] && variant.slots[slotIdx].previewUrl) {
+          URL.revokeObjectURL(variant.slots[slotIdx].previewUrl);
+        }
+
+        const previewUrl = URL.createObjectURL(file);
+        variant.slots[slotIdx] = {
+          file: file,
+          previewUrl: previewUrl,
+          croppedBlob: null,
+        };
+
+        updateSlotUI(vId, slotIdx);
+        updateVariantBadge(vId);
       }
 
-      // ----------------------------------------------------------------
-      // Gallery Rendering
-      // ----------------------------------------------------------------
-      function renderGallery() {
-        gallery.innerHTML = "";
+      function updateSlotUI(vId, slotIdx) {
+        const slotCard = document.getElementById(`slot_${vId}_${slotIdx}`);
+        if (!slotCard) return;
 
-        // Update count indicator
-        const total = uploadedItems.length;
-        imageCountBadge.textContent = `${total} / 3 Images`;
-        if (total >= 3) {
-          imageCountBadge.className = "image-counter-pill valid";
+        const variant = variants.find((v) => v.id === vId);
+        const data = variant ? variant.slots[slotIdx] : null;
+
+        const dropArea = slotCard.querySelector(".slot-drop-area");
+        const previewArea = slotCard.querySelector(".slot-preview-area");
+        const actionsRow = slotCard.querySelector(".slot-actions-row");
+        const img = previewArea.querySelector("img");
+
+        if (data) {
+          img.src = data.previewUrl;
+          dropArea.style.display = "none";
+          previewArea.style.display = "block";
+          actionsRow.style.display = "flex";
+          slotCard.classList.add("has-image");
         } else {
-          imageCountBadge.className = "image-counter-pill invalid";
-        }
-
-        uploadedItems.forEach((item, index) => {
-          const card = document.createElement("div");
-          card.className = "image-preview-card" + (item.isPrimary ? " is-primary" : "");
-
-          card.innerHTML = `
-            <div class="thumb-wrapper">
-              <img src="${item.displayUrl}" alt="Product asset ${index + 1}">
-              ${item.isPrimary ? '<span class="primary-tag-pill">Primary</span>' : ''}
-            </div>
-            <div class="thumb-actions-bar">
-              <button type="button" class="btn-thumb-action crop-trigger" data-id="${item.id}" title="Crop Image">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
-                  <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
-                </svg>
-                <span>Crop</span>
-              </button>
-              ${
-                !item.isPrimary
-                  ? `<button type="button" class="btn-thumb-action set-primary" data-id="${item.id}" title="Set as Primary Cover">
-                      Cover
-                    </button>`
-                  : ''
-              }
-              <button type="button" class="btn-thumb-action delete-img" data-id="${item.id}" title="Remove Image">
-                ✕
-              </button>
-            </div>
-          `;
-
-          // Event bindings
-          card.querySelector(".crop-trigger").addEventListener("click", () => openCropper(item.id));
-          const primaryBtn = card.querySelector(".set-primary");
-          if (primaryBtn) {
-            primaryBtn.addEventListener("click", () => setPrimary(item.id));
-          }
-          card.querySelector(".delete-img").addEventListener("click", () => deleteItem(item.id));
-
-          gallery.appendChild(card);
-        });
-      }
-
-      function setPrimary(itemId) {
-        uploadedItems.forEach((it) => {
-          it.isPrimary = it.id === itemId;
-        });
-        renderGallery();
-      }
-
-      function deleteItem(itemId) {
-        const idx = uploadedItems.findIndex((it) => it.id === itemId);
-        if (idx !== -1) {
-          const wasPrimary = uploadedItems[idx].isPrimary;
-          URL.revokeObjectURL(uploadedItems[idx].originalUrl);
-          if (uploadedItems[idx].displayUrl !== uploadedItems[idx].originalUrl) {
-            URL.revokeObjectURL(uploadedItems[idx].displayUrl);
-          }
-          uploadedItems.splice(idx, 1);
-
-          // If the deleted image was primary, designate the first remaining as primary
-          if (wasPrimary && uploadedItems.length > 0) {
-            uploadedItems[0].isPrimary = true;
-          }
-          renderGallery();
+          img.src = "";
+          dropArea.style.display = "flex";
+          previewArea.style.display = "none";
+          actionsRow.style.display = "none";
+          slotCard.classList.remove("has-image");
         }
       }
 
-      // ----------------------------------------------------------------
-      // Cropper Modal Workflow
-      // ----------------------------------------------------------------
-      function openCropper(itemId) {
-        activeCropItemId = itemId;
-        const target = uploadedItems.find((it) => it.id === itemId);
-        if (!target) return;
+      function updateVariantBadge(vId) {
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant) return;
+        const count = variant.slots.filter((s) => s !== null).length;
+        const badge = document.getElementById(`badge_${vId}`);
+        if (badge) {
+          badge.textContent = `${count} / 3 Images`;
+          if (count === 3) {
+            badge.className = "badge-slots-status complete";
+          } else {
+            badge.className = "badge-slots-status";
+          }
+        }
+      }
 
-        cropperTargetImage.src = target.displayUrl;
+      window.removeSlot = function (vId, slotIdx) {
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant || !variant.slots[slotIdx]) return;
+
+        if (variant.slots[slotIdx].previewUrl) {
+          URL.revokeObjectURL(variant.slots[slotIdx].previewUrl);
+        }
+        variant.slots[slotIdx] = null;
+        updateSlotUI(vId, slotIdx);
+        updateVariantBadge(vId);
+      };
+
+      // ----------------------------------------------------------------
+      // Interactive Cropper Workflow
+      // ----------------------------------------------------------------
+      window.openCrop = function (vId, slotIdx) {
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant || !variant.slots[slotIdx]) return;
+
+        activeCropTarget = { vId, slotIdx };
+        cropperTargetImage.src = variant.slots[slotIdx].previewUrl;
         cropperModal.classList.add("active");
 
         if (cropperInstance) {
           cropperInstance.destroy();
         }
-
         cropperInstance = new Cropper(cropperTargetImage, {
-          aspectRatio: 1, // Default Square for catalog
+          aspectRatio: 1,
           viewMode: 2,
           autoCropArea: 0.9,
           responsive: true,
@@ -1910,23 +2337,22 @@
           highlight: false,
           cropBoxMovable: true,
           cropBoxResizable: true,
-          toggleDragModeOnDblclick: false,
         });
-      }
+      };
 
-      function closeCropper() {
+      function closeCropModal() {
         cropperModal.classList.remove("active");
         if (cropperInstance) {
           cropperInstance.destroy();
           cropperInstance = null;
         }
-        activeCropItemId = null;
+        activeCropTarget = null;
       }
 
-      document.getElementById("closeCropperModalBtn").addEventListener("click", closeCropper);
-      document.getElementById("cancelCropBtn").addEventListener("click", closeCropper);
+      document.getElementById("closeCropperModalBtn").addEventListener("click", closeCropModal);
+      document.getElementById("cancelCropBtn").addEventListener("click", closeCropModal);
 
-      // Aspect Ratio Toggles
+      // Cropper toolbar controls
       document.querySelectorAll("[data-aspect]").forEach((btn) => {
         btn.addEventListener("click", function () {
           document.querySelectorAll("[data-aspect]").forEach((b) => b.classList.remove("active"));
@@ -1938,19 +2364,18 @@
         });
       });
 
-      // Cropper Tools
       document.getElementById("rotateLeftBtn").addEventListener("click", () => cropperInstance && cropperInstance.rotate(-90));
       document.getElementById("rotateRightBtn").addEventListener("click", () => cropperInstance && cropperInstance.rotate(90));
       document.getElementById("zoomInBtn").addEventListener("click", () => cropperInstance && cropperInstance.zoom(0.1));
       document.getElementById("zoomOutBtn").addEventListener("click", () => cropperInstance && cropperInstance.zoom(-0.1));
       document.getElementById("resetCropBtn").addEventListener("click", () => cropperInstance && cropperInstance.reset());
 
-      // Apply Crop
       document.getElementById("applyCropBtn").addEventListener("click", function () {
-        if (!cropperInstance || !activeCropItemId) return;
+        if (!cropperInstance || !activeCropTarget) return;
 
-        const target = uploadedItems.find((it) => it.id === activeCropItemId);
-        if (!target) return;
+        const { vId, slotIdx } = activeCropTarget;
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant || !variant.slots[slotIdx]) return;
 
         const canvas = cropperInstance.getCroppedCanvas({
           maxWidth: 1920,
@@ -1963,16 +2388,13 @@
           function (blob) {
             if (!blob) return;
 
-            // Revoke prior cropped display URL if any
-            if (target.displayUrl !== target.originalUrl) {
-              URL.revokeObjectURL(target.displayUrl);
-            }
+            URL.revokeObjectURL(variant.slots[slotIdx].previewUrl);
+            const newUrl = URL.createObjectURL(blob);
+            variant.slots[slotIdx].croppedBlob = blob;
+            variant.slots[slotIdx].previewUrl = newUrl;
 
-            target.croppedBlob = blob;
-            target.displayUrl = URL.createObjectURL(blob);
-
-            renderGallery();
-            closeCropper();
+            updateSlotUI(vId, slotIdx);
+            closeCropModal();
           },
           "image/jpeg",
           0.92
@@ -1980,97 +2402,27 @@
       });
 
       // ----------------------------------------------------------------
-      // Dynamic Variants Management
+      // Add Variant Button Bindings
       // ----------------------------------------------------------------
-      const variantsContainer = document.getElementById("variantsContainer");
-      const addVariantBtn = document.getElementById("addVariantBtn");
-
-      addVariantBtn.addEventListener("click", function () {
-        const row = document.createElement("tr");
-        row.className = "variant-row";
-        const basePriceVal = document.getElementById("basePrice").value || "";
-
-        row.innerHTML = `
-          <td>
-            <input
-              type="text"
-              name="variant_color[]"
-              class="v-input"
-              placeholder="e.g. Chrome / Red"
-              required
-            >
-          </td>
-          <td>
-            <input
-              type="text"
-              name="variant_size[]"
-              class="v-input"
-              placeholder="e.g. 1:64 Scale"
-              value="1:64 Scale"
-              required
-            >
-          </td>
-          <td>
-            <input
-              type="number"
-              name="variant_price[]"
-              class="v-input v-price"
-              step="0.01"
-              min="0.01"
-              placeholder="29.99"
-              value="${basePriceVal}"
-              required
-            >
-          </td>
-          <td>
-            <input
-              type="number"
-              name="variant_stock[]"
-              class="v-input"
-              min="0"
-              placeholder="50"
-              value="15"
-              required
-            >
-          </td>
-          <td style="text-align: center;">
-            <button type="button" class="v-delete-btn" title="Remove Variant" onclick="removeVariantRow(this)">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-              </svg>
-            </button>
-          </td>
-        `;
-
-        variantsContainer.appendChild(row);
-      });
-
-      window.removeVariantRow = function (btn) {
-        const rows = variantsContainer.querySelectorAll(".variant-row");
-        if (rows.length <= 1) {
-          showError("At least one product variant is required.");
-          return;
-        }
-        btn.closest("tr").remove();
-      };
+      addVariantBtn.addEventListener("click", () => createVariantCard());
+      addVariantBtnBottom.addEventListener("click", () => createVariantCard());
 
       // Auto-propagate base price changes to empty variant price inputs
       document.getElementById("basePrice").addEventListener("input", function (e) {
         const val = e.target.value;
-        const prices = variantsContainer.querySelectorAll(".v-price");
+        const prices = variantsContainer.querySelectorAll(".v-price-input");
         prices.forEach((p) => {
           if (!p.value) p.value = val;
         });
       });
 
       // ----------------------------------------------------------------
-      // Form Submission & DataTransfer Assembly
+      // Form Submission Validation & File Assembly
       // ----------------------------------------------------------------
       productForm.addEventListener("submit", function (e) {
         hideError();
 
-        // 1. Validate Form Fields
+        // 1. Validate Product Information
         const name = document.getElementById("productName").value.trim();
         const category = document.getElementById("categorySelect").value.trim();
         const price = parseFloat(document.getElementById("basePrice").value);
@@ -2091,7 +2443,7 @@
 
         if (isNaN(price) || price <= 0) {
           e.preventDefault();
-          showError("Please enter a valid base price greater than zero.");
+          showError("Please enter a valid regular price greater than zero.");
           return;
         }
 
@@ -2108,86 +2460,111 @@
         }
 
         // 2. Validate Variants
-        const variantRows = variantsContainer.querySelectorAll(".variant-row");
-        if (variantRows.length === 0) {
+        const cards = variantsContainer.querySelectorAll(".variant-card");
+        if (cards.length === 0) {
           e.preventDefault();
-          showError("Please configure at least one variant.");
+          showError("Please add at least one product variant.");
           return;
         }
 
-        for (let row of variantRows) {
-          const color = row.querySelector("[name='variant_color[]']").value.trim();
-          const size = row.querySelector("[name='variant_size[]']").value.trim();
-          const vPrice = parseFloat(row.querySelector("[name='variant_price[]']").value);
-          const stock = parseInt(row.querySelector("[name='variant_stock[]']").value, 10);
+        for (let idx = 0; idx < cards.length; idx++) {
+          const card = cards[idx];
+          const colorInput = card.querySelector("[name='variant_color[]']");
+          const sizeInput = card.querySelector("[name='variant_size[]']");
+          const priceInput = card.querySelector("[name='variant_price[]']");
+          const stockInput = card.querySelector("[name='variant_stock[]']");
 
-          if (!color) {
+          const colorVal = colorInput.value.trim();
+          const sizeVal = sizeInput.value.trim();
+          const priceVal = parseFloat(priceInput.value);
+          const stockVal = parseInt(stockInput.value, 10);
+
+          if (!colorVal) {
             e.preventDefault();
-            showError("Variant colorway/finish cannot be empty.");
+            showError(`Variant ${idx + 1} colour is required.`);
+            colorInput.focus();
             return;
           }
-          if (!size) {
+          if (!sizeVal) {
             e.preventDefault();
-            showError("Variant scale/size cannot be empty.");
+            showError(`Variant ${idx + 1} size is required.`);
+            sizeInput.focus();
             return;
           }
-          if (isNaN(vPrice) || vPrice <= 0) {
+          if (isNaN(priceVal) || priceVal <= 0) {
             e.preventDefault();
-            showError("Variant price must be greater than zero.");
+            showError(`Variant ${idx + 1} price must be greater than zero.`);
+            priceInput.focus();
             return;
           }
-          if (isNaN(stock) || stock < 0) {
+          if (isNaN(stockVal) || stockVal < 0) {
             e.preventDefault();
-            showError("Variant stock units cannot be negative.");
+            showError(`Variant ${idx + 1} stock units cannot be negative.`);
+            stockInput.focus();
             return;
           }
+
+          // Check that this variant has EXACTLY 3 images
+          const vId = card.getAttribute("data-variant-id");
+          const variantObj = variants.find((v) => v.id === vId);
+
+          const has3 = variantObj && variantObj.slots[0] && variantObj.slots[1] && variantObj.slots[2];
+          if (!has3) {
+            e.preventDefault();
+            card.classList.add("has-error");
+            showError(`Variant ${idx + 1} must have exactly 3 images.`);
+            card.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+          } else {
+            card.classList.remove("has-error");
+          }
+
+          // Assemble DataTransfer for this variant (exactly 3 files)
+          const dt = new DataTransfer();
+          for (let s = 0; s < 3; s++) {
+            const slotData = variantObj.slots[s];
+            const blob = slotData.croppedBlob || slotData.file;
+            const originalName = slotData.file.name || `image_${s + 1}.jpg`;
+            const ext = slotData.croppedBlob ? ".jpg" : (originalName.match(/\.[^/.]+$/) || [".jpg"])[0];
+            const base = originalName.replace(/\.[^/.]+$/, "");
+            const filename = `${base}_slot${s + 1}${ext}`;
+
+            const fileObj = new File([blob], filename, {
+              type: blob.type || "image/jpeg",
+              lastModified: Date.now(),
+            });
+            dt.items.add(fileObj);
+          }
+
+          const hiddenInput = card.querySelector(".variant-hidden-file-input");
+          hiddenInput.name = `variant_images_${idx}`;
+          hiddenInput.files = dt.files;
         }
 
-        // 3. Validate Images (Minimum 3 images)
-        if (uploadedItems.length < 3) {
-          e.preventDefault();
-          showError(`Please upload at least 3 images. You currently have ${uploadedItems.length}.`);
-          return;
-        }
-
-        // 4. Populate DataTransfer: ensure primary image is at index 0
-        const dt = new DataTransfer();
-        const sortedItems = [...uploadedItems].sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
-
-        sortedItems.forEach((item, idx) => {
-          const blob = item.croppedBlob || item.file;
-          // Generate a clean filename with .jpg extension if cropped
-          const baseName = item.file.name.replace(/\.[^/.]+$/, "");
-          const ext = item.croppedBlob ? ".jpg" : (item.file.name.match(/\.[^/.]+$/) || [".jpg"])[0];
-          const filename = `${baseName}_${idx}${ext}`;
-
-          const fileObj = new File([blob], filename, {
-            type: blob.type || "image/jpeg",
-            lastModified: Date.now(),
-          });
-
-          dt.items.add(fileObj);
-        });
-
-        realFileInput.files = dt.files;
-
-        // Button state
+        // Submit state
         const submitBtn = document.getElementById("submitBtn");
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `<span>Saving Product...</span>`;
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<span>Saving Product...</span>`;
+        }
       });
 
-      // ----------------------------------------------------------------
       // Mobile Drawer Toggle
-      // ----------------------------------------------------------------
       const menuBtn = document.getElementById("mobileMenuToggle");
       const sidebar = document.getElementById("adminSidebar");
-
       if (menuBtn && sidebar) {
         menuBtn.addEventListener("click", () => {
           sidebar.classList.toggle("open");
         });
       }
+
+      // Initialize with default first variant
+      createVariantCard({
+        color: "Spectraflame Blue",
+        size: "1:64 Scale",
+        price: "29.99",
+        stock: "25"
+      });
     })();
   </script>
 </body>

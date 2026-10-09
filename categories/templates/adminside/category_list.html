@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
   <style>
     /* ==================================================
@@ -870,6 +871,55 @@
       color: #f87171;
     }
 
+    /* Restore Category Button */
+    .btn-action-icon.btn-restore {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+
+    .btn-action-icon.btn-restore:hover {
+      background-color: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.5);
+      color: #10b981;
+    }
+
+    /* Toggle List/Unlist Button */
+    .btn-action-icon.btn-toggle-list:hover {
+      background-color: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .btn-action-icon.disabled,
+    .btn-action-icon:disabled {
+      opacity: 0.3 !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      filter: grayscale(1) !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    tr.category-row-deleted {
+      opacity: 0.62;
+    }
+
+    tr.category-row-deleted .category-name-text {
+      text-decoration: line-through;
+      color: #9ca3af;
+    }
+
+    .badge-deleted {
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .badge-deleted .badge-dot {
+      background-color: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
     /* Add Offer Button */
     .btn-action-icon.btn-offer-add:hover {
       background-color: rgba(34, 197, 94, 0.15);
@@ -1133,6 +1183,50 @@
       line-height: 1.5;
     }
 
+    .form-file-input {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-file-input:focus {
+      border-color: rgba(229, 27, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .form-file-input::file-selector-button {
+      background-color: #22232d;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 14px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .form-file-input::file-selector-button:hover {
+      background-color: var(--accent-red);
+      border-color: var(--accent-red);
+    }
+
+    .form-hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
     .form-row-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1222,6 +1316,24 @@
       height: 26px;
     }
 
+    .toggle-icon-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .toggle-icon-badge svg {
+      width: 26px;
+      height: 26px;
+    }
+
     .delete-modal-title {
       font-family: var(--font-heading);
       font-size: 20px;
@@ -1250,6 +1362,127 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       width: 100%;
+    }
+
+    /* Category Image Preview & Crop Controls */
+    .category-image-preview-card {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #171722;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .preview-thumb-box {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      background: #0d0d12;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .preview-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .crop-status-badge {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 3px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .preview-actions-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .btn-crop-action {
+      height: 32px;
+      padding: 0 12px;
+      background: rgba(96, 165, 250, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      border-radius: 6px;
+      color: #60a5fa;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      width: fit-content;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-crop-action:hover {
+      background: rgba(96, 165, 250, 0.22);
+      color: #93c5fd;
+    }
+
+    .btn-remove-preview {
+      background: transparent;
+      border: none;
+      color: #f87171;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      width: fit-content;
+      transition: color 0.15s ease;
+    }
+
+    .btn-remove-preview:hover {
+      color: #ef4444;
+      text-decoration: underline;
+    }
+
+    /* Cropper Tool Controls */
+    .cropper-tool-btn {
+      height: 34px;
+      padding: 0 11px;
+      background-color: #1c1d27;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 7px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .cropper-tool-btn:hover {
+      background-color: #272836;
+    }
+
+    .cropper-tool-btn.active {
+      background-color: var(--accent-red);
+      border-color: var(--accent-red);
+      color: #ffffff;
     }
 
     /* ==================================================
@@ -1612,7 +1845,7 @@
               </thead>
               <tbody>
                 {% for category in page_obj %}
-                  <tr>
+                  <tr class="category-row {% if category.is_deleted %}category-row-deleted{% endif %}" id="category-row-{{ category.id }}">
                     <!-- CATEGORY NAME -->
                     <td>
                       <div class="category-name-cell">
@@ -1660,7 +1893,12 @@
 
                     <!-- STATUS -->
                     <td>
-                      {% if category.is_active %}
+                      {% if category.is_deleted %}
+                        <span class="badge badge-deleted">
+                          <span class="badge-dot"></span>
+                          <span>DELETED</span>
+                        </span>
+                      {% elif category.is_active %}
                         <span class="badge badge-active">
                           <span class="badge-dot"></span>
                           <span>LISTED</span>
@@ -1680,90 +1918,129 @@
                         <!-- Edit Category Button -->
                         <button
                           type="button"
-                          class="btn-action-icon btn-edit btn-edit-category"
-                          title="Edit Category"
+                          class="btn-action-icon btn-edit btn-edit-category {% if category.is_deleted %}disabled{% endif %}"
+                          title="{% if category.is_deleted %}Editing disabled for deleted category{% else %}Edit Category{% endif %}"
                           aria-label="Edit Category"
+                          {% if category.is_deleted %}disabled aria-disabled="true"{% endif %}
                           data-id="{{ category.id }}"
                           data-name="{{ category.name }}"
                           data-description="{{ category.description }}"
                           data-url="{% url 'admin_category_edit' category.id %}"
+                          data-image="{% if category.image %}{{ category.image.url }}{% endif %}"
                         >
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
                           </svg>
                         </button>
 
-                        <!-- Delete Category Button -->
+                        <!-- Toggle List/Unlist Category Button -->
                         <button
                           type="button"
-                          class="btn-action-icon btn-delete btn-delete-category"
-                          title="Delete Category"
-                          aria-label="Delete Category"
+                          class="btn-action-icon btn-toggle-list btn-toggle-category-status {% if category.is_deleted %}disabled{% endif %}"
+                          title="{% if category.is_deleted %}Listing disabled for deleted category{% elif category.is_active %}Unlist Category{% else %}List Category{% endif %}"
+                          aria-label="Toggle Category Status"
+                          {% if category.is_deleted %}disabled aria-disabled="true"{% endif %}
                           data-id="{{ category.id }}"
                           data-name="{{ category.name }}"
-                          data-url="{% url 'admin_category_delete' category.id %}"
+                          data-action="{% if category.is_active %}unlist{% else %}list{% endif %}"
+                          data-url="{% url 'category_unlist' category.id %}"
                         >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            <line x1="10" y1="11" x2="10" y2="17"/>
-                            <line x1="14" y1="11" x2="14" y2="17"/>
-                          </svg>
+                          {% if category.is_active %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                              <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                          {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                          {% endif %}
                         </button>
 
-                        <!-- Add Offer Button (Available if active) -->
-                        {% if category.is_active %}
-                          <button
-                            type="button"
-                            class="btn-action-icon btn-offer-add btn-add-offer"
-                            title="Add Category Offer"
-                            aria-label="Add Category Offer"
-                            data-id="{{ category.id }}"
-                            data-category-name="{{ category.name }}"
-                            data-url="{% url 'admin_category_offer' category.id %}"
-                          >
+                        <!-- Delete / Restore Category Button -->
+                        <button
+                          type="button"
+                          class="btn-action-icon {% if category.is_deleted %}btn-restore{% else %}btn-delete{% endif %} btn-delete-category"
+                          title="{% if category.is_deleted %}Restore Category{% else %}Delete Category{% endif %}"
+                          aria-label="{% if category.is_deleted %}Restore Category{% else %}Delete Category{% endif %}"
+                          data-id="{{ category.id }}"
+                          data-name="{{ category.name }}"
+                          data-action="{% if category.is_deleted %}restore{% else %}delete{% endif %}"
+                          data-delete-url="{% url 'admin_category_delete' category.id %}"
+                          data-restore-url="{% url 'category_restore' category.id %}"
+                          data-url="{% if category.is_deleted %}{% url 'category_restore' category.id %}{% else %}{% url 'admin_category_delete' category.id %}{% endif %}"
+                        >
+                          {% if category.is_deleted %}
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <line x1="19" y1="5" x2="5" y2="19"/>
-                              <circle cx="6.5" cy="6.5" r="2.5"/>
-                              <circle cx="17.5" cy="17.5" r="2.5"/>
+                              <polyline points="1 4 1 10 7 10"/>
+                              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
                             </svg>
-                          </button>
-                        {% endif %}
+                          {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="3 6 5 6 21 6"/>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              <line x1="10" y1="11" x2="10" y2="17"/>
+                              <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                          {% endif %}
+                        </button>
 
-                        <!-- Offer Specific Actions if Active Offer Exists -->
-                        {% if category.current_offer %}
-                          <!-- Edit Offer Button -->
-                          <button
-                            type="button"
-                            class="btn-action-icon btn-offer-edit btn-edit-offer"
-                            title="Edit Offer: {{ category.current_offer.offer_name }}"
-                            aria-label="Edit Offer"
-                            data-offer-id="{{ category.current_offer.id }}"
-                            data-category-name="{{ category.name }}"
-                            data-offer-name="{{ category.current_offer.offer_name }}"
-                            data-discount="{{ category.current_offer.discount_value }}"
-                            data-start="{{ category.current_offer.start_date|date:'Y-m-d\TH:i' }}"
-                            data-end="{{ category.current_offer.end_date|date:'Y-m-d\TH:i' }}"
-                            data-url="{% url 'admin_category_offer_edit' category.current_offer.id %}"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <circle cx="12" cy="12" r="3"/>
-                              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                            </svg>
-                          </button>
+                        {% if not category.is_deleted %}
+                          <!-- Add Offer Button (Available if active) -->
+                          {% if category.is_active %}
+                            <button
+                              type="button"
+                              class="btn-action-icon btn-offer-add btn-add-offer"
+                              title="Add Category Offer"
+                              aria-label="Add Category Offer"
+                              data-id="{{ category.id }}"
+                              data-category-name="{{ category.name }}"
+                              data-url="{% url 'admin_category_offer' category.id %}"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="5" x2="5" y2="19"/>
+                                <circle cx="6.5" cy="6.5" r="2.5"/>
+                                <circle cx="17.5" cy="17.5" r="2.5"/>
+                              </svg>
+                            </button>
+                          {% endif %}
 
-                          <!-- Disable / Toggle Offer Button -->
-                          <a
-                            href="{% url 'admin_category_offer_toggle' category.current_offer.id %}"
-                            class="btn-action-icon btn-offer-toggle"
-                            title="{% if category.current_offer.is_active %}Disable Offer{% else %}Activate Offer{% endif %}"
-                            aria-label="Toggle Offer"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <rect x="1" y="5" width="22" height="14" rx="7" ry="7"/>
-                              <circle cx="{% if category.current_offer.is_active %}16{% else %}8{% endif %}" cy="12" r="3"/>
-                            </svg>
-                          </a>
+                          <!-- Offer Specific Actions if Active Offer Exists -->
+                          {% if category.current_offer %}
+                            <!-- Edit Offer Button -->
+                            <button
+                              type="button"
+                              class="btn-action-icon btn-offer-edit btn-edit-offer"
+                              title="Edit Offer: {{ category.current_offer.offer_name }}"
+                              aria-label="Edit Offer"
+                              data-offer-id="{{ category.current_offer.id }}"
+                              data-category-name="{{ category.name }}"
+                              data-offer-name="{{ category.current_offer.offer_name }}"
+                              data-discount="{{ category.current_offer.discount_value }}"
+                              data-start="{{ category.current_offer.start_date|date:'Y-m-d\TH:i' }}"
+                              data-end="{{ category.current_offer.end_date|date:'Y-m-d\TH:i' }}"
+                              data-url="{% url 'admin_category_offer_edit' category.current_offer.id %}"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                              </svg>
+                            </button>
+
+                            <!-- Disable / Toggle Offer Button -->
+                            <a
+                              href="{% url 'admin_category_offer_toggle' category.current_offer.id %}"
+                              class="btn-action-icon btn-offer-toggle"
+                              title="{% if category.current_offer.is_active %}Disable Offer{% else %}Activate Offer{% endif %}"
+                              aria-label="Toggle Offer"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="5" width="22" height="14" rx="7" ry="7"/>
+                                <circle cx="{% if category.current_offer.is_active %}16{% else %}8{% endif %}" cy="12" r="3"/>
+                              </svg>
+                            </a>
+                          {% endif %}
                         {% endif %}
 
                       </div>
@@ -1796,10 +2073,13 @@
           </div>
 
           <!-- 13. Pagination Bar -->
-          {% if page_obj.paginator.num_pages > 1 %}
+          {% if page_obj and page_obj.paginator.count > 0 %}
             <div class="card-footer-pagination">
               <span class="pagination-info">
                 Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                {% if page_obj.paginator.count %}
+                  ({{ page_obj.paginator.count }} categor{{ page_obj.paginator.count|pluralize:"y,ies" }})
+                {% endif %}
               </span>
 
               <nav class="pagination-bar" aria-label="Table Pagination">
@@ -1899,7 +2179,7 @@
         <button type="button" class="modal-close-btn" onclick="closeModal('addCategoryModal');">&times;</button>
       </div>
 
-      <form method="POST" action="{% url 'admin_category_add' %}">
+      <form method="POST" action="{% url 'admin_category_add' %}" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="modal-body">
           <div class="form-group">
@@ -1925,6 +2205,38 @@
               required
             ></textarea>
           </div>
+
+          <div class="form-group">
+            <label class="form-label" for="addCategoryImage">Category Image</label>
+            <input
+              type="file"
+              id="addCategoryImage"
+              name="image"
+              class="form-file-input"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            >
+            <span class="form-hint">Accepted formats: JPG, JPEG, PNG, WEBP</span>
+
+            <!-- Staged Image Preview with Crop & Remove Buttons -->
+            <div id="addCategoryPreviewArea" class="category-image-preview-card" style="display: none;">
+              <div class="preview-thumb-box">
+                <img id="addCategoryPreviewImg" src="" alt="Category preview">
+                <span class="crop-status-badge" id="addCategoryCropBadge" style="display: none;">CROPPED</span>
+              </div>
+              <div class="preview-actions-box">
+                <button type="button" class="btn-crop-action" id="openAddCropperBtn">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                    <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                  </svg>
+                  <span>Crop Image</span>
+                </button>
+                <button type="button" class="btn-remove-preview" id="removeAddPreviewBtn">
+                  ✕ Remove
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -1932,7 +2244,7 @@
             Cancel
           </button>
           <button type="submit" class="btn-modal-submit">
-            Create Category
+            Add Category
           </button>
         </div>
       </form>
@@ -1950,7 +2262,7 @@
         <button type="button" class="modal-close-btn" onclick="closeModal('editCategoryModal');">&times;</button>
       </div>
 
-      <form method="POST" id="editCategoryForm" action="">
+      <form method="POST" id="editCategoryForm" action="" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="modal-body">
           <div class="form-group">
@@ -1974,6 +2286,38 @@
               required
             ></textarea>
           </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editCategoryImage">Category Image</label>
+            <input
+              type="file"
+              id="editCategoryImage"
+              name="image"
+              class="form-file-input"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            >
+            <span class="form-hint">Accepted formats: JPG, JPEG, PNG, WEBP</span>
+
+            <!-- Staged / Current Image Preview with Crop & Clear Buttons -->
+            <div id="editCategoryPreviewArea" class="category-image-preview-card" style="display: none;">
+              <div class="preview-thumb-box">
+                <img id="editCategoryPreviewImg" src="" alt="Category preview">
+                <span class="crop-status-badge" id="editCategoryCropBadge" style="display: none;">CROPPED</span>
+              </div>
+              <div class="preview-actions-box">
+                <button type="button" class="btn-crop-action" id="openEditCropperBtn">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                    <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                  </svg>
+                  <span>Crop Image</span>
+                </button>
+                <button type="button" class="btn-remove-preview" id="removeEditPreviewBtn">
+                  ✕ Clear
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -1988,28 +2332,99 @@
     </div>
   </div>
 
-  <!-- 10. DELETE CATEGORY CONFIRMATION MODAL -->
+  <!-- CATEGORY CROPPER MODAL -->
+  <div class="modal-backdrop" id="categoryCropperModal" style="z-index: 1050;">
+    <div class="modal-card" style="max-width: 720px; width: 92%;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">CROP CATEGORY IMAGE</h3>
+          <p class="modal-subtitle">Refine frame, aspect ratio, and composition.</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeCategoryCropperBtn">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 18px 22px;">
+        <div style="width: 100%; height: 360px; background-color: #08080b; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <img id="categoryCropperTargetImg" src="" alt="Category to crop" style="max-width: 100%; max-height: 100%; display: block;">
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button type="button" class="cropper-tool-btn active" data-cat-aspect="1">1:1 Square</button>
+            <button type="button" class="cropper-tool-btn" data-cat-aspect="1.3333">4:3 Standard</button>
+            <button type="button" class="cropper-tool-btn" data-cat-aspect="1.7777">16:9 Banner</button>
+            <button type="button" class="cropper-tool-btn" data-cat-aspect="NaN">Free</button>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button type="button" class="cropper-tool-btn" id="catRotateLeftBtn" title="Rotate -90°">↺ 90°</button>
+            <button type="button" class="cropper-tool-btn" id="catRotateRightBtn" title="Rotate +90°">↻ 90°</button>
+            <button type="button" class="cropper-tool-btn" id="catZoomInBtn" title="Zoom In">+ Zoom</button>
+            <button type="button" class="cropper-tool-btn" id="catZoomOutBtn" title="Zoom Out">- Zoom</button>
+            <button type="button" class="cropper-tool-btn" id="catResetCropBtn" title="Reset">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 16px 22px;">
+        <button type="button" class="btn-modal-cancel" id="cancelCategoryCropBtn">
+          Cancel
+        </button>
+        <button type="button" class="btn-modal-submit" id="applyCategoryCropBtn" style="background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);">
+          Apply &amp; Save Crop
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. DELETE / RESTORE CATEGORY CONFIRMATION MODAL -->
   <div class="modal-backdrop" id="deleteCategoryModal">
     <div class="modal-card" style="max-width: 440px;">
       <div class="delete-modal-content">
-        <div class="delete-icon-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="delete-icon-badge" id="deleteCategoryIconBadge">
+          <svg id="deleteCategoryIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             <line x1="10" y1="11" x2="10" y2="17"/>
             <line x1="14" y1="11" x2="14" y2="17"/>
           </svg>
         </div>
-        <h3 class="delete-modal-title">Delete Category?</h3>
-        <p class="delete-modal-desc">
+        <h3 class="delete-modal-title" id="deleteCategoryModalTitle">Delete Category?</h3>
+        <p class="delete-modal-desc" id="deleteCategoryModalDesc">
           Are you sure you want to delete <span class="delete-target-highlight" id="deleteCategoryTargetName">this category</span>? This will unlist the category from the store catalog.
         </p>
         <div class="delete-modal-actions">
           <button type="button" class="btn-modal-cancel" onclick="closeModal('deleteCategoryModal');">
             Cancel
           </button>
-          <a href="#" id="deleteCategoryConfirmBtn" class="btn-modal-submit" style="background-color: var(--accent-red);">
+          <button type="button" id="deleteCategoryConfirmBtn" class="btn-modal-submit" style="background-color: var(--accent-red);">
             Delete Category
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10b. TOGGLE LIST/UNLIST CATEGORY CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="toggleCategoryModal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="delete-modal-content">
+        <div class="toggle-icon-badge" id="toggleCategoryIconBadge">
+          <svg id="toggleCategoryIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <h3 class="delete-modal-title" id="toggleCategoryModalTitle">Unlist Category?</h3>
+        <p class="delete-modal-desc">
+          Are you sure you want to <span id="toggleCategoryActionWord" style="color: #ffffff; font-weight: 700;">unlist</span> <span class="delete-target-highlight" id="toggleCategoryTargetName">this category</span>? <span id="toggleCategoryDescSuffix">This will hide the category from customer view.</span>
+        </p>
+        <div class="delete-modal-actions">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('toggleCategoryModal');">
+            Cancel
+          </button>
+          <a href="#" id="toggleCategoryConfirmBtn" class="btn-modal-submit" style="background-color: #d97706;">
+            Confirm
           </a>
         </div>
       </div>
@@ -2171,8 +2586,12 @@
   <!-- ==================================================
        JAVASCRIPT FOR MODALS & RESPONSIVE BEHAVIOR
        ================================================== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
   <script>
     // Modal Open & Close Utilities
+    let categoryCropperInstance = null;
+    let currentCroppingContext = null; // 'add' or 'edit'
+
     function openModal(modalId) {
       const modal = document.getElementById(modalId);
       if (modal) {
@@ -2190,6 +2609,10 @@
       if (modal) {
         modal.classList.remove('open');
         document.body.style.overflow = '';
+      }
+      if (modalId === 'categoryCropperModal' && categoryCropperInstance) {
+        categoryCropperInstance.destroy();
+        categoryCropperInstance = null;
       }
     }
 
@@ -2228,38 +2651,446 @@
         });
       });
 
+      // ----------------------------------------------------------------
+      // Category Image Cropping Workflow (Add & Edit)
+      // ----------------------------------------------------------------
+      function openCategoryCropper(imageSrc, context) {
+        currentCroppingContext = context;
+        const targetImg = document.getElementById('categoryCropperTargetImg');
+        targetImg.crossOrigin = 'anonymous';
+        targetImg.src = imageSrc;
+
+        openModal('categoryCropperModal');
+
+        if (categoryCropperInstance) {
+          categoryCropperInstance.destroy();
+          categoryCropperInstance = null;
+        }
+
+        // Reset aspect ratios to 1:1 default
+        document.querySelectorAll('[data-cat-aspect]').forEach(function(b) {
+          b.classList.remove('active');
+        });
+        const defaultAspectBtn = document.querySelector('[data-cat-aspect="1"]');
+        if (defaultAspectBtn) defaultAspectBtn.classList.add('active');
+
+        categoryCropperInstance = new Cropper(targetImg, {
+          aspectRatio: 1,
+          viewMode: 2,
+          autoCropArea: 0.9,
+          responsive: true,
+          restore: false,
+          guides: true,
+          center: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          checkCrossOrigin: false,
+        });
+      }
+
+      // Cropper close buttons
+      const closeCatBtn = document.getElementById('closeCategoryCropperBtn');
+      if (closeCatBtn) {
+        closeCatBtn.addEventListener('click', function() {
+          closeModal('categoryCropperModal');
+        });
+      }
+      const cancelCatBtn = document.getElementById('cancelCategoryCropBtn');
+      if (cancelCatBtn) {
+        cancelCatBtn.addEventListener('click', function() {
+          closeModal('categoryCropperModal');
+        });
+      }
+
+      // Aspect Ratios & Tools
+      document.querySelectorAll('[data-cat-aspect]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('[data-cat-aspect]').forEach(function(b) { b.classList.remove('active'); });
+          this.classList.add('active');
+          const val = parseFloat(this.getAttribute('data-cat-aspect'));
+          if (categoryCropperInstance) {
+            categoryCropperInstance.setAspectRatio(isNaN(val) ? NaN : val);
+          }
+        });
+      });
+
+      const rotLeft = document.getElementById('catRotateLeftBtn');
+      if (rotLeft) rotLeft.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.rotate(-90));
+
+      const rotRight = document.getElementById('catRotateRightBtn');
+      if (rotRight) rotRight.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.rotate(90));
+
+      const zoomIn = document.getElementById('catZoomInBtn');
+      if (zoomIn) zoomIn.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.zoom(0.1));
+
+      const zoomOut = document.getElementById('catZoomOutBtn');
+      if (zoomOut) zoomOut.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.zoom(-0.1));
+
+      const resetCrop = document.getElementById('catResetCropBtn');
+      if (resetCrop) resetCrop.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.reset());
+
+      // Apply Crop
+      const applyCatBtn = document.getElementById('applyCategoryCropBtn');
+      if (applyCatBtn) {
+        applyCatBtn.addEventListener('click', function() {
+          if (!categoryCropperInstance || !currentCroppingContext) return;
+
+          const canvas = categoryCropperInstance.getCroppedCanvas({
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+          });
+
+          if (!canvas) {
+            alert('Could not process cropped canvas.');
+            return;
+          }
+
+          canvas.toBlob(function(blob) {
+            if (!blob) {
+              alert('Failed to generate cropped file blob.');
+              return;
+            }
+
+            const filename = 'category_' + currentCroppingContext + '_' + Date.now() + '.jpg';
+            const fileObj = new File([blob], filename, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+
+            const dt = new DataTransfer();
+            dt.items.add(fileObj);
+
+            if (currentCroppingContext === 'add') {
+              const addInput = document.getElementById('addCategoryImage');
+              if (addInput) addInput.files = dt.files;
+
+              const previewImg = document.getElementById('addCategoryPreviewImg');
+              if (previewImg) previewImg.src = URL.createObjectURL(blob);
+
+              const previewArea = document.getElementById('addCategoryPreviewArea');
+              if (previewArea) previewArea.style.display = 'flex';
+
+              const badge = document.getElementById('addCategoryCropBadge');
+              if (badge) badge.style.display = 'inline-block';
+            } else if (currentCroppingContext === 'edit') {
+              const editInput = document.getElementById('editCategoryImage');
+              if (editInput) editInput.files = dt.files;
+
+              const previewImg = document.getElementById('editCategoryPreviewImg');
+              if (previewImg) previewImg.src = URL.createObjectURL(blob);
+
+              const previewArea = document.getElementById('editCategoryPreviewArea');
+              if (previewArea) previewArea.style.display = 'flex';
+
+              const badge = document.getElementById('editCategoryCropBadge');
+              if (badge) badge.style.display = 'inline-block';
+            }
+
+            closeModal('categoryCropperModal');
+          }, 'image/jpeg', 0.92);
+        });
+      }
+
+      // Add Modal File Picker Events
+      const addCategoryInput = document.getElementById('addCategoryImage');
+      if (addCategoryInput) {
+        addCategoryInput.addEventListener('change', function() {
+          if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const objUrl = URL.createObjectURL(file);
+            document.getElementById('addCategoryPreviewImg').src = objUrl;
+            document.getElementById('addCategoryPreviewArea').style.display = 'flex';
+            document.getElementById('addCategoryCropBadge').style.display = 'none';
+            openCategoryCropper(objUrl, 'add');
+          }
+        });
+      }
+
+      const openAddCropperBtn = document.getElementById('openAddCropperBtn');
+      if (openAddCropperBtn) {
+        openAddCropperBtn.addEventListener('click', function() {
+          const previewImg = document.getElementById('addCategoryPreviewImg');
+          if (previewImg && previewImg.src) {
+            openCategoryCropper(previewImg.src, 'add');
+          }
+        });
+      }
+
+      const removeAddPreviewBtn = document.getElementById('removeAddPreviewBtn');
+      if (removeAddPreviewBtn) {
+        removeAddPreviewBtn.addEventListener('click', function() {
+          if (addCategoryInput) addCategoryInput.value = '';
+          const previewArea = document.getElementById('addCategoryPreviewArea');
+          if (previewArea) previewArea.style.display = 'none';
+        });
+      }
+
+      // Edit Modal File Picker Events
+      const editCategoryInput = document.getElementById('editCategoryImage');
+      if (editCategoryInput) {
+        editCategoryInput.addEventListener('change', function() {
+          if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const objUrl = URL.createObjectURL(file);
+            document.getElementById('editCategoryPreviewImg').src = objUrl;
+            document.getElementById('editCategoryPreviewArea').style.display = 'flex';
+            document.getElementById('editCategoryCropBadge').style.display = 'none';
+            openCategoryCropper(objUrl, 'edit');
+          }
+        });
+      }
+
+      const openEditCropperBtn = document.getElementById('openEditCropperBtn');
+      if (openEditCropperBtn) {
+        openEditCropperBtn.addEventListener('click', function() {
+          const previewImg = document.getElementById('editCategoryPreviewImg');
+          if (previewImg && previewImg.src) {
+            openCategoryCropper(previewImg.src, 'edit');
+          }
+        });
+      }
+
+      const removeEditPreviewBtn = document.getElementById('removeEditPreviewBtn');
+      if (removeEditPreviewBtn) {
+        removeEditPreviewBtn.addEventListener('click', function() {
+          if (editCategoryInput) editCategoryInput.value = '';
+          const previewArea = document.getElementById('editCategoryPreviewArea');
+          if (previewArea) previewArea.style.display = 'none';
+        });
+      }
+
       // 4. Edit Category Trigger
       document.querySelectorAll('.btn-edit-category').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+          if (this.classList.contains('disabled') || this.hasAttribute('disabled')) {
+            e.preventDefault();
+            return;
+          }
           const url = this.getAttribute('data-url');
           const name = this.getAttribute('data-name');
           const description = this.getAttribute('data-description');
+          const image = this.getAttribute('data-image');
 
           const form = document.getElementById('editCategoryForm');
           const nameInput = document.getElementById('editCategoryName');
           const descInput = document.getElementById('editCategoryDescription');
+          const editPreviewArea = document.getElementById('editCategoryPreviewArea');
+          const editPreviewImg = document.getElementById('editCategoryPreviewImg');
+          const editCropBadge = document.getElementById('editCategoryCropBadge');
 
+          if (editCategoryInput) editCategoryInput.value = '';
           if (form) form.action = url;
           if (nameInput) nameInput.value = name || '';
           if (descInput) descInput.value = description || '';
+
+          if (image) {
+            if (editPreviewImg) editPreviewImg.src = image;
+            if (editPreviewArea) editPreviewArea.style.display = 'flex';
+            if (editCropBadge) editCropBadge.style.display = 'none';
+          } else {
+            if (editPreviewArea) editPreviewArea.style.display = 'none';
+          }
 
           openModal('editCategoryModal');
         });
       });
 
-      // 5. Delete Category Trigger
+      // 5. Delete / Restore Category Trigger
+      let pendingCategoryBtn = null;
       document.querySelectorAll('.btn-delete-category').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          const url = this.getAttribute('data-url');
+        btn.addEventListener('click', function(e) {
+          if (this.classList.contains('disabled') || this.hasAttribute('disabled')) {
+            e.preventDefault();
+            return;
+          }
+          pendingCategoryBtn = this;
+          const action = this.getAttribute('data-action') || 'delete';
           const name = this.getAttribute('data-name');
+          const deleteUrl = this.getAttribute('data-delete-url') || this.getAttribute('data-url');
+          const restoreUrl = this.getAttribute('data-restore-url') || this.getAttribute('data-url');
+          const url = action === 'restore' ? restoreUrl : deleteUrl;
 
+          const modalTitle = document.getElementById('deleteCategoryModalTitle');
+          const modalDesc = document.getElementById('deleteCategoryModalDesc');
           const targetText = document.getElementById('deleteCategoryTargetName');
           const confirmBtn = document.getElementById('deleteCategoryConfirmBtn');
+          const iconBadge = document.getElementById('deleteCategoryIconBadge');
+          const iconSvg = document.getElementById('deleteCategoryIconSvg');
 
           if (targetText) targetText.textContent = '"' + (name || 'this category') + '"';
-          if (confirmBtn) confirmBtn.href = url;
+
+          if (action === 'restore') {
+            if (modalTitle) modalTitle.textContent = 'Restore Category?';
+            if (modalDesc) {
+              modalDesc.innerHTML = 'Are you sure you want to restore <span class="delete-target-highlight">"' + (name || 'this category') + '"</span>? This will make the category available again in the store catalog.';
+            }
+            if (confirmBtn) {
+              confirmBtn.setAttribute('data-target-url', url);
+              confirmBtn.textContent = 'Restore Category';
+              confirmBtn.style.backgroundColor = '#15803d';
+              confirmBtn.style.borderColor = '#22c55e';
+            }
+            if (iconBadge) {
+              iconBadge.style.color = '#34d399';
+              iconBadge.style.backgroundColor = 'rgba(52, 211, 153, 0.15)';
+              iconBadge.style.borderColor = 'rgba(52, 211, 153, 0.35)';
+            }
+            if (iconSvg) {
+              iconSvg.innerHTML = '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>';
+            }
+          } else {
+            if (modalTitle) modalTitle.textContent = 'Delete Category?';
+            if (modalDesc) {
+              modalDesc.innerHTML = 'Are you sure you want to delete <span class="delete-target-highlight">"' + (name || 'this category') + '"</span>? This will unlist the category from the store catalog.';
+            }
+            if (confirmBtn) {
+              confirmBtn.setAttribute('data-target-url', url);
+              confirmBtn.textContent = 'Delete Category';
+              confirmBtn.style.backgroundColor = 'var(--accent-red)';
+              confirmBtn.style.borderColor = '';
+            }
+            if (iconBadge) {
+              iconBadge.style.color = 'var(--accent-red)';
+              iconBadge.style.backgroundColor = 'rgba(229, 27, 36, 0.12)';
+              iconBadge.style.borderColor = 'rgba(229, 27, 36, 0.3)';
+            }
+            if (iconSvg) {
+              iconSvg.innerHTML = '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>';
+            }
+          }
 
           openModal('deleteCategoryModal');
+        });
+      });
+
+      const deleteCategoryConfirmBtn = document.getElementById('deleteCategoryConfirmBtn');
+      if (deleteCategoryConfirmBtn) {
+        deleteCategoryConfirmBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (!pendingCategoryBtn) return;
+
+          const action = pendingCategoryBtn.getAttribute('data-action') || 'delete';
+          const deleteUrl = pendingCategoryBtn.getAttribute('data-delete-url');
+          const restoreUrl = pendingCategoryBtn.getAttribute('data-restore-url');
+          const targetUrl = action === 'delete' ? deleteUrl : restoreUrl;
+          const row = pendingCategoryBtn.closest('tr');
+
+          // Immediate logo switch and state change
+          if (action === 'delete') {
+            pendingCategoryBtn.setAttribute('data-action', 'restore');
+            pendingCategoryBtn.classList.remove('btn-delete');
+            pendingCategoryBtn.classList.add('btn-restore');
+            pendingCategoryBtn.title = 'Restore Category';
+            pendingCategoryBtn.setAttribute('aria-label', 'Restore Category');
+            pendingCategoryBtn.setAttribute('data-url', restoreUrl);
+            pendingCategoryBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              </svg>
+            `;
+
+            if (row) {
+              row.classList.add('category-row-deleted');
+              const otherBtns = row.querySelectorAll('.btn-edit, .btn-offer-add, .btn-offer-edit, .btn-offer-toggle, .btn-toggle-list');
+              otherBtns.forEach(function(b) {
+                b.classList.add('disabled');
+                b.setAttribute('aria-disabled', 'true');
+                if (b.tagName === 'BUTTON') b.disabled = true;
+              });
+              const statusBadge = row.querySelector('.badge');
+              if (statusBadge) {
+                statusBadge.className = 'badge badge-deleted';
+                statusBadge.innerHTML = '<span class="badge-dot"></span><span>DELETED</span>';
+              }
+            }
+          } else {
+            pendingCategoryBtn.setAttribute('data-action', 'delete');
+            pendingCategoryBtn.classList.remove('btn-restore');
+            pendingCategoryBtn.classList.add('btn-delete');
+            pendingCategoryBtn.title = 'Delete Category';
+            pendingCategoryBtn.setAttribute('aria-label', 'Delete Category');
+            pendingCategoryBtn.setAttribute('data-url', deleteUrl);
+            pendingCategoryBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+            `;
+
+            if (row) {
+              row.classList.remove('category-row-deleted');
+              const otherBtns = row.querySelectorAll('.btn-edit, .btn-offer-add, .btn-offer-edit, .btn-offer-toggle, .btn-toggle-list');
+              otherBtns.forEach(function(b) {
+                b.classList.remove('disabled');
+                b.removeAttribute('aria-disabled');
+                if (b.tagName === 'BUTTON') b.disabled = false;
+              });
+              const statusBadge = row.querySelector('.badge');
+              if (statusBadge) {
+                statusBadge.className = 'badge badge-active';
+                statusBadge.innerHTML = '<span class="badge-dot"></span><span>LISTED</span>';
+              }
+            }
+          }
+
+          closeModal('deleteCategoryModal');
+
+          if (targetUrl) {
+            window.location.href = targetUrl;
+          }
+        });
+      }
+
+      // 5b. Toggle Category Status (List / Unlist) Trigger
+      document.querySelectorAll('.btn-toggle-category-status').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          if (this.classList.contains('disabled') || this.hasAttribute('disabled')) {
+            e.preventDefault();
+            return;
+          }
+          const url = this.getAttribute('data-url');
+          const name = this.getAttribute('data-name');
+          const action = this.getAttribute('data-action') || 'unlist';
+
+          const modalTitle = document.getElementById('toggleCategoryModalTitle');
+          const actionWord = document.getElementById('toggleCategoryActionWord');
+          const targetName = document.getElementById('toggleCategoryTargetName');
+          const descSuffix = document.getElementById('toggleCategoryDescSuffix');
+          const confirmBtn = document.getElementById('toggleCategoryConfirmBtn');
+          const iconBadge = document.getElementById('toggleCategoryIconBadge');
+          const iconSvg = document.getElementById('toggleCategoryIconSvg');
+
+          if (modalTitle) modalTitle.textContent = action === 'unlist' ? 'Unlist Category?' : 'List Category?';
+          if (actionWord) actionWord.textContent = action;
+          if (targetName) targetName.textContent = '"' + (name || 'this category') + '"';
+          if (descSuffix) descSuffix.textContent = action === 'unlist' ? 'This will hide the category from customer view.' : 'This will make the category visible to customers.';
+
+          if (confirmBtn) {
+            confirmBtn.href = url;
+            confirmBtn.textContent = action === 'unlist' ? 'Unlist Category' : 'List Category';
+            confirmBtn.style.backgroundColor = action === 'unlist' ? '#d97706' : '#15803d';
+          }
+
+          if (iconBadge && iconSvg) {
+            if (action === 'unlist') {
+              iconBadge.style.color = '#fbbf24';
+              iconBadge.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
+              iconBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+              iconSvg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+            } else {
+              iconBadge.style.color = '#34d399';
+              iconBadge.style.backgroundColor = 'rgba(52, 211, 153, 0.15)';
+              iconBadge.style.borderColor = 'rgba(52, 211, 153, 0.35)';
+              iconSvg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+            }
+          }
+
+          openModal('toggleCategoryModal');
         });
       });
 

@@ -8,16 +8,8 @@ from wishlist.models import WishlistItem
 
 def add_to_cart(request, variant_id):
 
-    if not request.user.is_authenticated:
-        return redirect("login")
 
-    variant = get_object_or_404(
-        ProductVariant.objects.select_related(
-            "product",
-            "product__category"
-        ),
-        id=variant_id
-    )
+    variant = get_object_or_404(ProductVariant.objects.select_related("product","product__category"),id=variant_id)
 
     if not variant.is_active:
         messages.error(request, "This product variant is unavailable.")
@@ -33,10 +25,7 @@ def add_to_cart(request, variant_id):
 
     if variant.stock_quantity <= 0:
         messages.error(request, "This product is out of stock.")
-        return redirect(
-            "user_product_details",
-            product_id=variant.product.id
-        )
+        return redirect("user_product_details",product_id=variant.product.id)
 
     cart, created = Cart.objects.get_or_create(
         user=request.user
@@ -50,28 +39,15 @@ def add_to_cart(request, variant_id):
     MAX_QUANTITY = 5
 
     if cart_item:
-
         new_quantity = cart_item.quantity + 1
 
         if new_quantity > MAX_QUANTITY:
-            messages.error(
-                request,
-                f"You can add a maximum of {MAX_QUANTITY} items."
-            )
-            return redirect(
-                "user_product_details",
-                product_id=variant.product.id
-            )
+            messages.error(request,f"You can add a maximum of {MAX_QUANTITY} items.")
+            return redirect("user_product_details",product_id=variant.product.id)
 
         if new_quantity > variant.stock_quantity:
-            messages.error(
-                request,
-                "You cannot add more than the available stock."
-            )
-            return redirect(
-                "user_product_details",
-                product_id=variant.product.id
-            )
+            messages.error(request,"You cannot add more than the available stock.")
+            return redirect("user_product_details",product_id=variant.product.id)
 
         cart_item.quantity = new_quantity
         cart_item.save()
@@ -92,7 +68,4 @@ def add_to_cart(request, variant_id):
 
     messages.success(request, "Product added to cart.")
 
-    return redirect(
-        "user_product_details",
-        product_id=variant.product.id
-    )
+    return redirect("user_product_details",product_id=variant.product.id)

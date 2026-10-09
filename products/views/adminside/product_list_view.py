@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from admin_panel.decorators import admin_required
 from products.models import Product
 from decimal import Decimal, ROUND_HALF_UP
@@ -32,6 +32,8 @@ def product_list(request):
 
     products = Product.objects.all()
 
+    
+
     if search_query:
         products = products.filter(
             Q(name__icontains=search_query)
@@ -49,7 +51,7 @@ def product_list(request):
     else:
         products = products.order_by("-created_at")
 
-    paginator = Paginator(products, 10)
+    paginator = Paginator(products,5)
 
     page_number = request.GET.get("page")
 
@@ -99,3 +101,14 @@ def product_list(request):
             "sort": sort,
         }
     )
+
+
+
+
+
+def product_variant(request,product_id):
+    product = get_object_or_404 (Product,id = product_id)
+
+    variants = product.variants.all()
+
+    return render(request,"adminside/product_list.html",{"variants": variants,})

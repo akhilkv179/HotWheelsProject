@@ -7,7 +7,7 @@ from admin_panel.decorators import admin_required
 from categories.models import Category, CategoryOffer
 
 
-@admin_required
+
 def category_offer(request, category_id):
     category = get_object_or_404(Category, id=category_id)
 
@@ -74,7 +74,7 @@ def category_offer(request, category_id):
     return redirect("admin_category_list")
 
 
-@admin_required
+
 def toggle_category_offer(request, offer_id):
     offer = get_object_or_404(CategoryOffer, id=offer_id)
 
@@ -82,14 +82,7 @@ def toggle_category_offer(request, offer_id):
     offer.save()
 
     if offer.is_active:
-        messages.success(
-            request,
-            "Category offer activated successfully."
-        )
+        messages.success(request,"Category offer activated successfully.")
     else:
-        messages.success(
-            request,
-            "Category offer deactivated successfully."
-        )
-
+        messages.success(request,"Category offer deactivated successfully.")
     return redirect("admin_category_list")

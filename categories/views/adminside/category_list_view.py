@@ -10,7 +10,6 @@ from categories.models import Category
 
 def category_list(request):
     search_query = request.GET.get("search", "").strip()
-
     categories = Category.objects.all()
 
     if search_query:

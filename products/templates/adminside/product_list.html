@@ -703,6 +703,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      position: relative;
     }
 
     .product-thumb-img {
@@ -710,6 +711,23 @@
       height: 100%;
       object-fit: cover;
       display: block;
+    }
+
+    .product-thumb-wrap:has(.primary-img) .fallback-thumb,
+    .primary-img ~ .fallback-thumb {
+      display: none !important;
+    }
+
+    .product-thumb-wrap .primary-img:not(:first-of-type) {
+      display: none !important;
+    }
+
+    .fallback-thumb {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .product-no-img {
@@ -871,6 +889,28 @@
       color: #f87171;
     }
 
+    .btn-action-icon.btn-restore {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+
+    .btn-action-icon.btn-restore:hover {
+      background-color: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.5);
+      color: #10b981;
+    }
+
+    .badge-deleted {
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .badge-deleted .badge-dot {
+      background-color: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
     .btn-action-icon.btn-toggle-list:hover {
       background-color: rgba(245, 158, 11, 0.15);
       border-color: rgba(245, 158, 11, 0.4);
@@ -881,6 +921,126 @@
       background-color: rgba(168, 85, 247, 0.15);
       border-color: rgba(168, 85, 247, 0.4);
       color: #c084fc;
+    }
+
+    .btn-action-icon.btn-variants:hover {
+      background-color: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+
+    .btn-action-icon.disabled,
+    .btn-action-icon:disabled {
+      opacity: 0.3 !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      filter: grayscale(1) !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    tr.product-row-deleted {
+      opacity: 0.62;
+    }
+
+    tr.product-row-deleted .product-title-bold {
+      text-decoration: line-through;
+      color: #9ca3af;
+    }
+
+    /* Variants Modal Styles */
+    .variants-modal-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: #111117;
+    }
+
+    .variants-modal-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .variants-modal-table th {
+      padding: 12px 16px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8e90a0;
+      background-color: #161622;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .variants-modal-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #e5e7eb;
+      vertical-align: middle;
+    }
+
+    .variants-modal-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .variants-modal-table tbody tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .variant-color-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .variant-size-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .variant-price-val {
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 13.5px;
+    }
+
+    .variant-stock-low {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+
+    .variant-stock-out {
+      color: #ef4444;
+      font-weight: 700;
+    }
+
+    .variants-empty-state {
+      padding: 36px 20px;
+      text-align: center;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .variants-empty-state svg {
+      width: 36px;
+      height: 36px;
+      color: var(--text-dim);
+      opacity: 0.6;
     }
 
     /* Empty Table */
@@ -972,6 +1132,13 @@
       opacity: 0.35;
       cursor: not-allowed;
       pointer-events: none;
+    }
+
+    .page-ellipsis-dots {
+      color: var(--text-dim);
+      padding: 0 4px;
+      font-weight: 700;
+      user-select: none;
     }
 
     /* Modal System */
@@ -1555,32 +1722,40 @@
               </thead>
               <tbody>
                 {% for product in page_obj %}
-                  <tr>
+                  <tr class="product-row {% if product.is_deleted %}product-row-deleted{% endif %}" id="product-row-{{ product.id }}">
                     <!-- IMAGE -->
                     <td>
                       <div class="product-thumb-wrap">
-                        {% with variant=product.variants.first %}
-                          {% if variant %}
-                            {% with image=variant.images.all|first %}
-                              {% if image %}
+                        {% for variant in product.variants.all %}
+                          {% for image in variant.images.all %}
+                            {% if image.is_primary %}
+                              <img
+                                src="{% if 'http' in image.image_url or '/media/' in image.image_url %}{{ image.image_url }}{% else %}/media/{{ image.image_url }}{% endif %}"
+                                alt="{{ product.name }}"
+                                class="product-thumb-img primary-img"
+                                loading="lazy"
+                              >
+                            {% endif %}
+                          {% endfor %}
+                        {% endfor %}
+                        <div class="fallback-thumb">
+                          {% with first_variant=product.variants.first %}
+                            {% if first_variant and first_variant.images.first %}
+                              {% with first_img=first_variant.images.first %}
                                 <img
-                                  src="/media/{{ image.image_url }}"
+                                  src="{% if 'http' in first_img.image_url or '/media/' in first_img.image_url %}{{ first_img.image_url }}{% else %}/media/{{ first_img.image_url }}{% endif %}"
                                   alt="{{ product.name }}"
                                   class="product-thumb-img"
                                   loading="lazy"
                                 >
-                              {% else %}
-                                <div class="product-no-img">
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2 11 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                                </div>
-                              {% endif %}
-                            {% endwith %}
-                          {% else %}
-                            <div class="product-no-img">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2 11 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                            </div>
-                          {% endif %}
-                        {% endwith %}
+                              {% endwith %}
+                            {% else %}
+                              <div class="product-no-img">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2 11 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                              </div>
+                            {% endif %}
+                          {% endwith %}
+                        </div>
                       </div>
                     </td>
 
@@ -1600,15 +1775,15 @@
                     <!-- REGULAR PRICE -->
                     <td>
                       {% if product.offer_percentage %}
-                        <span class="regular-price-del">&pound;{{ product.regular_price }}</span>
+                        <span class="regular-price-del">₹{{ product.regular_price }}</span>
                       {% else %}
-                        <span>&pound;{{ product.regular_price }}</span>
+                        <span>₹{{ product.regular_price }}</span>
                       {% endif %}
                     </td>
 
                     <!-- SALE PRICE -->
                     <td>
-                      <span class="sale-price-strong">&pound;{{ product.sale_price }}</span>
+                      <span class="sale-price-strong">₹{{ product.sale_price }}</span>
                     </td>
 
                     <!-- OFFER -->
@@ -1624,7 +1799,12 @@
 
                     <!-- STATUS -->
                     <td>
-                      {% if product.is_active %}
+                      {% if product.is_deleted %}
+                        <span class="badge badge-deleted">
+                          <span class="badge-dot"></span>
+                          <span>DELETED</span>
+                        </span>
+                      {% elif product.is_active %}
                         <span class="badge badge-active">
                           <span class="badge-dot"></span>
                           <span>LISTED</span>
@@ -1643,10 +1823,12 @@
 
                         <!-- Edit Product Button -->
                         <a
-                          href="{% url 'admin_product_edit' product.id %}"
-                          class="btn-action-icon btn-edit"
-                          title="Edit Product"
+                          href="{% if product.is_deleted %}javascript:void(0);{% else %}{% url 'admin_product_edit' product.id %}{% endif %}"
+                          class="btn-action-icon btn-edit {% if product.is_deleted %}disabled{% endif %}"
+                          title="{% if product.is_deleted %}Editing disabled for deleted product{% else %}Edit Product{% endif %}"
                           aria-label="Edit Product"
+                          data-orig-href="{% url 'admin_product_edit' product.id %}"
+                          {% if product.is_deleted %}tabindex="-1" aria-disabled="true"{% endif %}
                         >
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
@@ -1656,12 +1838,13 @@
                         <!-- Manage Offer Button (Opens Modal) -->
                         <button
                           type="button"
-                          class="btn-action-icon btn-offer btn-manage-offer"
-                          title="Add / Update Product Offer"
+                          class="btn-action-icon btn-offer btn-manage-offer {% if product.is_deleted %}disabled{% endif %}"
+                          title="{% if product.is_deleted %}Offers disabled for deleted product{% else %}Add / Update Product Offer{% endif %}"
                           aria-label="Add Offer"
                           data-product-id="{{ product.id }}"
                           data-product-name="{{ product.name }}"
                           data-url="{% url 'admin_product_offer' product.id %}"
+                          {% if product.is_deleted %}disabled aria-disabled="true"{% endif %}
                         >
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="19" y1="5" x2="5" y2="19"/>
@@ -1670,17 +1853,51 @@
                           </svg>
                         </button>
 
+                        <!-- Variants Button (Opens Modal) -->
+                        <button
+                          type="button"
+                          class="btn-action-icon btn-variants btn-view-variants {% if product.is_deleted %}disabled{% endif %}"
+                          title="{% if product.is_deleted %}Variants disabled for deleted product{% else %}Variants{% endif %}"
+                          aria-label="Variants"
+                          data-product-id="{{ product.id }}"
+                          data-product-name="{{ product.name }}"
+                          data-url="{% url 'product_variant' product.id %}"
+                          {% if product.is_deleted %}disabled aria-disabled="true"{% endif %}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                            <polyline points="2 17 12 22 22 17"/>
+                            <polyline points="2 12 12 17 22 12"/>
+                          </svg>
+                        </button>
+
+                        <script type="application/json" id="variants-data-{{ product.id }}">
+                          [
+                            {% for v in product.variants.all %}
+                            {
+                              "id": {{ v.id }},
+                              "color": "{{ v.color|escapejs }}",
+                              "size": "{{ v.size|escapejs }}",
+                              "price": "{{ v.price }}",
+                              "stock": {{ v.stock_quantity|default:0 }},
+                              "is_active": {% if v.is_active %}true{% else %}false{% endif %}
+                            }{% if not forloop.last %},{% endif %}
+                            {% endfor %}
+                          ]
+                        </script>
+
                         <!-- Toggle List/Unlist Form -->
                         <form method="POST" action="{% url 'admin_product_list' %}" style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="product_id" value="{{ product.id }}">
                           <button
                             type="button"
-                            class="btn-action-icon btn-toggle-list btn-confirm-toggle"
-                            title="{% if product.is_active %}Unlist Product{% else %}List Product{% endif %}"
+                            class="btn-action-icon btn-toggle-list btn-confirm-toggle {% if product.is_deleted %}disabled{% endif %}"
+                            title="{% if product.is_deleted %}Listing disabled for deleted product{% elif product.is_active %}Unlist Product{% else %}List Product{% endif %}"
                             aria-label="Toggle Status"
                             data-action="{% if product.is_active %}unlist{% else %}list{% endif %}"
                             data-name="{{ product.name }}"
+                            {% if product.is_deleted %}disabled aria-disabled="true"{% endif %}
                           >
                             {% if product.is_active %}
                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1696,29 +1913,39 @@
                           </button>
                         </form>
 
-                        <!-- Delete Product Button (Opens Confirmation Modal) -->
+                        <!-- Delete / Restore Product Button (Opens Confirmation Modal) -->
                         <form
                           method="POST"
-                          action="{% url 'admin_product_edit' product.id %}"
+                          action="{% if product.is_deleted %}{% url 'restore_product' product.id %}{% else %}{% url 'delete_product' product.id %}{% endif %}"
                           id="delete-product-form-{{ product.id }}"
+                          class="delete-restore-form"
                           style="display:inline;"
                         >
                           {% csrf_token %}
-                          <input type="hidden" name="delete_product" value="1">
                           <button
                             type="button"
-                            class="btn-action-icon btn-delete btn-confirm-delete"
-                            title="Delete Product"
-                            aria-label="Delete Product"
+                            class="btn-action-icon {% if product.is_deleted %}btn-restore{% else %}btn-delete{% endif %} btn-confirm-delete"
+                            title="{% if product.is_deleted %}Restore Product{% else %}Delete Product{% endif %}"
+                            aria-label="{% if product.is_deleted %}Restore Product{% else %}Delete Product{% endif %}"
+                            data-action="{% if product.is_deleted %}restore{% else %}delete{% endif %}"
+                            data-delete-url="{% url 'delete_product' product.id %}"
+                            data-restore-url="{% url 'restore_product' product.id %}"
                             data-form-id="delete-product-form-{{ product.id }}"
                             data-name="{{ product.name }}"
                           >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <polyline points="3 6 5 6 21 6"/>
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                              <line x1="10" y1="11" x2="10" y2="17"/>
-                              <line x1="14" y1="11" x2="14" y2="17"/>
-                            </svg>
+                            {% if product.is_deleted %}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="1 4 1 10 7 10"/>
+                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                              </svg>
+                            {% else %}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                <line x1="14" y1="11" x2="14" y2="17"/>
+                              </svg>
+                            {% endif %}
                           </button>
                         </form>
 
@@ -1752,31 +1979,79 @@
           </div>
 
           <!-- Pagination Bar -->
-          {% if page_obj.paginator.num_pages > 1 %}
+          {% if page_obj and page_obj.paginator.count > 0 %}
             <div class="card-footer-pagination">
               <span class="pagination-info">
                 Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                {% if page_obj.paginator.count %}
+                  ({{ page_obj.paginator.count }} item{{ page_obj.paginator.count|pluralize }})
+                {% endif %}
               </span>
 
               <nav class="pagination-bar" aria-label="Product Pagination">
+                <!-- Previous Arrow Button -->
                 {% if page_obj.has_previous %}
                   <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-nav-arrow" aria-label="Previous Page">&lsaquo;</a>
                 {% else %}
-                  <span class="page-nav-arrow disabled">&lsaquo;</span>
+                  <span class="page-nav-arrow disabled" aria-disabled="true">&lsaquo;</span>
                 {% endif %}
 
-                {% for p in page_obj.paginator.page_range %}
-                  {% if p == page_obj.number %}
-                    <span class="page-link-num active">{{ p }}</span>
-                  {% elif p >= page_obj.number|add:"-2" and p <= page_obj.number|add:"2" %}
-                    <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">{{ p }}</a>
+                <!-- Dynamic Page Numbers -->
+                {% if page_obj.paginator.num_pages <= 7 %}
+                  {% for p in page_obj.paginator.page_range %}
+                    {% if p == page_obj.number %}
+                      <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                    {% else %}
+                      <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">{{ p }}</a>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  {% if page_obj.number <= 4 %}
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p <= 5 %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
+                  {% elif page_obj.number >= page_obj.paginator.num_pages|add:"-3" %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">1</a>
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.paginator.num_pages|add:"-4" %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">1</a>
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.number|add:"-1" and p <= page_obj.number|add:"1" %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
                   {% endif %}
-                {% endfor %}
+                {% endif %}
 
+                <!-- Next Arrow Button -->
                 {% if page_obj.has_next %}
                   <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="page-nav-arrow" aria-label="Next Page">&rsaquo;</a>
                 {% else %}
-                  <span class="page-nav-arrow disabled">&rsaquo;</span>
+                  <span class="page-nav-arrow disabled" aria-disabled="true">&rsaquo;</span>
                 {% endif %}
               </nav>
             </div>
@@ -1866,20 +2141,62 @@
     </div>
   </div>
 
-  <!-- DELETE CONFIRMATION MODAL -->
+  <!-- PRODUCT VARIANTS MODAL -->
+  <div class="modal-backdrop" id="productVariantsModal">
+    <div class="modal-card" style="max-width: 680px; width: 100%;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">PRODUCT VARIANTS</h3>
+          <p class="modal-subtitle">Variants list for <span id="variantsModalProductName" style="color:#ffffff; font-weight:700;"></span></p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('productVariantsModal');" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 22px 26px;">
+        <div id="variantsModalContent" class="variants-modal-table-wrap">
+          <!-- Populated dynamically via JavaScript -->
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 16px 26px; display: flex; justify-content: flex-end; border-top: 1px solid var(--border-subtle); background-color: rgba(0,0,0,0.15);">
+        <button type="button" class="btn-modal-cancel" onclick="closeModal('productVariantsModal');">Close</button>
+      </div>
+    </div>
+  </div>
+
+  {% if variants %}
+  <!-- Directly passed variants if product_variant view is called -->
+  <script type="application/json" id="direct-variants-data">
+    [
+      {% for v in variants %}
+      {
+        "id": {{ v.id }},
+        "product_name": "{{ v.product.name|escapejs }}",
+        "color": "{{ v.color|escapejs }}",
+        "size": "{{ v.size|escapejs }}",
+        "price": "{{ v.price }}",
+        "stock": {{ v.stock_quantity|default:0 }},
+        "is_active": {% if v.is_active %}true{% else %}false{% endif %}
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+  </script>
+  {% endif %}
+
+  <!-- DELETE / RESTORE CONFIRMATION MODAL -->
   <div class="modal-backdrop" id="deleteConfirmModal">
     <div class="modal-card" style="max-width: 440px;">
       <div class="confirm-modal-content">
-        <div class="confirm-icon-badge danger">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="confirm-icon-badge danger" id="deleteModalIconBadge">
+          <svg id="deleteModalIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             <line x1="10" y1="11" x2="10" y2="17"/>
             <line x1="14" y1="11" x2="14" y2="17"/>
           </svg>
         </div>
-        <h3 class="confirm-modal-title">Delete Product?</h3>
-        <p class="confirm-modal-desc">
+        <h3 class="confirm-modal-title" id="deleteModalTitle">Delete Product?</h3>
+        <p class="confirm-modal-desc" id="deleteModalDesc">
           Are you sure you want to delete <span id="deleteTargetName" style="color:#ffffff; font-weight:700;"></span>? This will unlist and remove the product from customer view.
         </p>
         <div class="confirm-modal-actions">
@@ -1991,25 +2308,180 @@
         });
       });
 
-      // Delete confirmation
+      // Delete / Restore confirmation & dynamic logo toggle
       let pendingDeleteForm = null;
-      document.querySelectorAll('.btn-confirm-delete').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          const formId = this.getAttribute('data-form-id');
-          const name = this.getAttribute('data-name');
+      let pendingDeleteBtn = null;
 
-          pendingDeleteForm = document.getElementById(formId);
-          document.getElementById('deleteTargetName').textContent = '"' + (name || 'this product') + '"';
+      const trashSvg = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+      `;
 
-          openModal('deleteConfirmModal');
+      const restoreSvg = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+      `;
+
+      function attachDeleteRestoreListeners() {
+        document.querySelectorAll('.btn-confirm-delete').forEach(function(btn) {
+          btn.onclick = function() {
+            const formId = this.getAttribute('data-form-id');
+            const name = this.getAttribute('data-name');
+            const action = this.getAttribute('data-action') || 'delete';
+
+            pendingDeleteBtn = this;
+            pendingDeleteForm = document.getElementById(formId);
+
+            const iconBadge = document.getElementById('deleteModalIconBadge');
+            const iconSvg = document.getElementById('deleteModalIconSvg');
+            const modalTitle = document.getElementById('deleteModalTitle');
+            const modalDesc = document.getElementById('deleteModalDesc');
+            const submitBtn = document.getElementById('confirmDeleteSubmitBtn');
+
+            if (action === 'restore') {
+              if (iconBadge) {
+                iconBadge.className = 'confirm-icon-badge';
+                iconBadge.style.color = '#34d399';
+                iconBadge.style.backgroundColor = 'rgba(52, 211, 153, 0.15)';
+                iconBadge.style.borderColor = 'rgba(52, 211, 153, 0.35)';
+              }
+              if (iconSvg) iconSvg.innerHTML = '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>';
+              if (modalTitle) modalTitle.textContent = 'Restore Product?';
+              if (modalDesc) modalDesc.innerHTML = 'Are you sure you want to restore <span id="deleteTargetName" style="color:#ffffff; font-weight:700;">"' + (name || 'this product') + '"</span>? This will make the product active again in the catalog.';
+              if (submitBtn) {
+                submitBtn.textContent = 'Restore Product';
+                submitBtn.style.backgroundColor = '#15803d';
+                submitBtn.style.borderColor = '#22c55e';
+              }
+            } else {
+              if (iconBadge) {
+                iconBadge.className = 'confirm-icon-badge danger';
+                iconBadge.style.color = '';
+                iconBadge.style.backgroundColor = '';
+                iconBadge.style.borderColor = '';
+              }
+              if (iconSvg) iconSvg.innerHTML = '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>';
+              if (modalTitle) modalTitle.textContent = 'Delete Product?';
+              if (modalDesc) modalDesc.innerHTML = 'Are you sure you want to delete <span id="deleteTargetName" style="color:#ffffff; font-weight:700;">"' + (name || 'this product') + '"</span>? This will unlist and remove the product from customer view.';
+              if (submitBtn) {
+                submitBtn.textContent = 'Delete Product';
+                submitBtn.style.backgroundColor = '';
+                submitBtn.style.borderColor = '';
+              }
+            }
+
+            openModal('deleteConfirmModal');
+          };
         });
-      });
+      }
 
-      document.getElementById('confirmDeleteSubmitBtn').addEventListener('click', function() {
-        if (pendingDeleteForm) {
-          pendingDeleteForm.submit();
-        }
-      });
+      attachDeleteRestoreListeners();
+
+      const confirmDeleteSubmitBtn = document.getElementById('confirmDeleteSubmitBtn');
+      if (confirmDeleteSubmitBtn) {
+        confirmDeleteSubmitBtn.addEventListener('click', function() {
+          if (!pendingDeleteForm || !pendingDeleteBtn) return;
+
+          const currentAction = pendingDeleteBtn.getAttribute('data-action') || 'delete';
+          const deleteUrl = pendingDeleteBtn.getAttribute('data-delete-url');
+          const restoreUrl = pendingDeleteBtn.getAttribute('data-restore-url');
+          const targetUrl = currentAction === 'delete' ? deleteUrl : restoreUrl;
+
+          // Instant logo switch and state change
+          if (currentAction === 'delete') {
+            pendingDeleteBtn.setAttribute('data-action', 'restore');
+            pendingDeleteBtn.classList.remove('btn-delete');
+            pendingDeleteBtn.classList.add('btn-restore');
+            pendingDeleteBtn.title = 'Restore Product';
+            pendingDeleteBtn.setAttribute('aria-label', 'Restore Product');
+            pendingDeleteBtn.innerHTML = restoreSvg;
+            pendingDeleteForm.action = restoreUrl;
+
+            const row = pendingDeleteBtn.closest('tr');
+            if (row) {
+              row.classList.add('product-row-deleted');
+              const otherBtns = row.querySelectorAll('.btn-edit, .btn-offer, .btn-variants, .btn-toggle-list');
+              otherBtns.forEach(function(b) {
+                b.classList.add('disabled');
+                b.setAttribute('aria-disabled', 'true');
+                if (b.tagName === 'BUTTON') {
+                  b.disabled = true;
+                } else if (b.tagName === 'A') {
+                  if (!b.getAttribute('data-orig-href')) {
+                    b.setAttribute('data-orig-href', b.getAttribute('href') || '');
+                  }
+                  b.setAttribute('href', 'javascript:void(0);');
+                  b.setAttribute('tabindex', '-1');
+                }
+              });
+            }
+
+            const statusBadge = row ? row.querySelector('.badge') : null;
+            if (statusBadge) {
+              statusBadge.className = 'badge badge-deleted';
+              statusBadge.innerHTML = '<span class="badge-dot"></span><span>DELETED</span>';
+            }
+          } else {
+            pendingDeleteBtn.setAttribute('data-action', 'delete');
+            pendingDeleteBtn.classList.remove('btn-restore');
+            pendingDeleteBtn.classList.add('btn-delete');
+            pendingDeleteBtn.title = 'Delete Product';
+            pendingDeleteBtn.setAttribute('aria-label', 'Delete Product');
+            pendingDeleteBtn.innerHTML = trashSvg;
+            pendingDeleteForm.action = deleteUrl;
+
+            const row = pendingDeleteBtn.closest('tr');
+            if (row) {
+              row.classList.remove('product-row-deleted');
+              const otherBtns = row.querySelectorAll('.btn-edit, .btn-offer, .btn-variants, .btn-toggle-list');
+              otherBtns.forEach(function(b) {
+                b.classList.remove('disabled');
+                b.removeAttribute('aria-disabled');
+                if (b.tagName === 'BUTTON') {
+                  b.disabled = false;
+                } else if (b.tagName === 'A') {
+                  const origHref = b.getAttribute('data-orig-href');
+                  if (origHref) {
+                    b.setAttribute('href', origHref);
+                  }
+                  b.removeAttribute('tabindex');
+                }
+              });
+            }
+
+            const statusBadge = row ? row.querySelector('.badge') : null;
+            if (statusBadge) {
+              statusBadge.className = 'badge badge-active';
+              statusBadge.innerHTML = '<span class="badge-dot"></span><span>LISTED</span>';
+            }
+          }
+
+          closeModal('deleteConfirmModal');
+
+          // Send request to the backend view
+          if (targetUrl) {
+            fetch(targetUrl, {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': pendingDeleteForm.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            }).then(function(res) {
+              if (res.ok && res.redirected) {
+                window.location.href = res.url;
+              }
+            }).catch(function(err) {
+              console.log('Action request dispatched:', err);
+            });
+          }
+        });
+      }
 
       // Toggle status confirmation
       let pendingToggleForm = null;
@@ -2032,6 +2504,141 @@
           pendingToggleForm.submit();
         }
       });
+
+      // Safe HTML escaping
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // Render variants inside modal
+      function renderVariantsModal(productName, variants) {
+        const nameEl = document.getElementById('variantsModalProductName');
+        const container = document.getElementById('variantsModalContent');
+
+        if (nameEl) {
+          nameEl.textContent = productName || '';
+        }
+
+        if (!container) return;
+
+        if (!variants || variants.length === 0) {
+          container.innerHTML = `
+            <div class="variants-empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+              </svg>
+              <p style="margin: 0; font-size: 13.5px; font-weight: 600; color: #8e90a0;">No variants found for this product.</p>
+            </div>
+          `;
+          return;
+        }
+
+        let tableHtml = `
+          <table class="variants-modal-table">
+            <thead>
+              <tr>
+                <th>Variant Color</th>
+                <th>Variant Size</th>
+                <th>Variant Price</th>
+                <th>Stock Quantity</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        variants.forEach(function(v) {
+          const color = escapeHtml(v.color || 'Standard');
+          const size = escapeHtml(v.size || '-');
+          const price = escapeHtml(v.price || '0.00');
+          const stock = Number(v.stock) || 0;
+
+          let stockBadge = '';
+          if (stock <= 0) {
+            stockBadge = '<span class="variant-stock-out">0 (Out of stock)</span>';
+          } else if (stock <= 5) {
+            stockBadge = `<span class="variant-stock-low">${stock} (Low stock)</span>`;
+          } else {
+            stockBadge = `<span style="font-weight: 600; color: #ffffff;">${stock}</span>`;
+          }
+
+          const statusBadge = v.is_active
+            ? '<span class="badge badge-active"><span class="badge-dot"></span>ACTIVE</span>'
+            : '<span class="badge badge-inactive"><span class="badge-dot"></span>INACTIVE</span>';
+
+          tableHtml += `
+            <tr>
+              <td>
+                <span class="variant-color-badge">
+                  <span>${color}</span>
+                </span>
+              </td>
+              <td>
+                <span class="variant-size-pill">${size}</span>
+              </td>
+              <td>
+                <span class="variant-price-val">₹${price}</span>
+              </td>
+              <td>
+                ${stockBadge}
+              </td>
+              <td>
+                ${statusBadge}
+              </td>
+            </tr>
+          `;
+        });
+
+        tableHtml += `
+            </tbody>
+          </table>
+        `;
+
+        container.innerHTML = tableHtml;
+      }
+
+      // View variants button click listener
+      document.querySelectorAll('.btn-view-variants').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const productId = this.getAttribute('data-product-id');
+          const productName = this.getAttribute('data-product-name');
+
+          const dataEl = document.getElementById('variants-data-' + productId);
+          let variants = [];
+          if (dataEl) {
+            try {
+              variants = JSON.parse(dataEl.textContent || '[]');
+            } catch (err) {
+              console.error('Error parsing variants data for product ' + productId, err);
+            }
+          }
+
+          renderVariantsModal(productName, variants);
+          openModal('productVariantsModal');
+        });
+      });
+
+      // Handle direct variant page load if 'variants' context is passed
+      const directVariantsEl = document.getElementById('direct-variants-data');
+      if (directVariantsEl) {
+        try {
+          const directVariants = JSON.parse(directVariantsEl.textContent || '[]');
+          const prodName = directVariants.length > 0 ? directVariants[0].product_name : 'Product';
+          renderVariantsModal(prodName, directVariants);
+          openModal('productVariantsModal');
+        } catch (err) {
+          console.error('Failed to parse direct variants data:', err);
+        }
+      }
     });
   </script>
 </body>
