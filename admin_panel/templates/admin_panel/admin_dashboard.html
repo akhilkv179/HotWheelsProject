@@ -4,7 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | Hot Wheels HUB</title>
+  <title>Admin Dashboard | Hot Wheels Hub</title>
+
+  <!-- Premium Fonts: Montserrat for bold headers, Inter for clean UI & data -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -18,30 +20,30 @@
     }
 
     :root {
-      --bg-dark: #0e0e12;
-      --bg-sidebar: #09090c;
-      --bg-card: #15151b;
-      --bg-card-inner: #191922;
-      --bg-tile: #1a1a24;
-      --bg-row-hover: #1c1c27;
-      --border-subtle: rgba(255, 255, 255, 0.04);
-      --border-card: rgba(255, 255, 255, 0.06);
+      --bg-body: #0b0b0e;
+      --bg-sidebar: #08080a;
+      --bg-card: #141419;
+      --bg-card-inner: #0e0e13;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-card-hover: rgba(255, 255, 255, 0.12);
       --accent-red: #e51b24;
-      --accent-red-bright: #ff222e;
-      --accent-orange: #ff4d00;
-      --accent-yellow: #eab308;
-      --accent-salmon: #fca5a5;
+      --accent-red-hover: #ff232d;
+      --accent-red-glow: rgba(229, 27, 36, 0.35);
+      --accent-coral: #f5a596;
+      --accent-gold: #d4a237;
+      --accent-green: #22c55e;
+      --accent-blue: #60a5fa;
+      --accent-lime: #a3e635;
       --text-white: #ffffff;
-      --text-muted: #8b8d9c;
-      --text-dim: #5c5e6e;
-      --text-header: #c5c7d0;
+      --text-muted: #8e8f9c;
+      --text-dim: #5c5d6b;
       --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-heading: 'Montserrat', var(--font-main);
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
 
     body {
-      background-color: var(--bg-dark);
+      background-color: var(--bg-body);
       color: var(--text-white);
       font-family: var(--font-main);
       min-height: 100vh;
@@ -50,6 +52,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Overall Layout: Fixed Sidebar + Main Scrollable Canvas */
     .admin-layout {
       display: flex;
       width: 100%;
@@ -57,17 +60,17 @@
     }
 
     /* ==================================================
-       SIDEBAR (Matches Figma Exactly)
+       SIDEBAR
        ================================================== */
     .admin-sidebar {
-      width: 240px;
-      min-width: 240px;
+      width: 250px;
+      min-width: 250px;
       background-color: var(--bg-sidebar);
       border-right: 1px solid var(--border-subtle);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 28px 18px 24px 18px;
+      padding: 32px 18px 24px 18px;
       position: sticky;
       top: 0;
       height: 100vh;
@@ -76,10 +79,18 @@
       transition: transform 0.25s ease;
     }
 
+    .admin-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .admin-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
     .sidebar-top {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 28px;
     }
 
     .brand-header {
@@ -93,7 +104,7 @@
       font-family: var(--font-heading);
       font-size: 19px;
       font-weight: 900;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       color: #ffffff;
       text-transform: uppercase;
       display: flex;
@@ -101,19 +112,10 @@
       gap: 8px;
     }
 
-    .brand-title::before {
-      content: '';
-      display: inline-block;
-      width: 3.5px;
-      height: 16px;
-      background: linear-gradient(180deg, var(--accent-orange), var(--accent-red));
-      border-radius: 2px;
-    }
-
     .sidebar-nav {
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 20px;
     }
 
     .nav-group {
@@ -123,52 +125,52 @@
     }
 
     .nav-group-label {
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 800;
-      letter-spacing: 0.12em;
-      color: #4b4d5a;
+      letter-spacing: 0.14em;
+      color: #555765;
       text-transform: uppercase;
       padding: 0 10px;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
 
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 11px;
-      padding: 8px 11px;
-      border-radius: 7px;
-      color: #8b8d9c;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
       text-decoration: none;
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 600;
       transition: color 0.15s ease, background-color 0.15s ease;
     }
 
     .nav-item svg {
-      width: 16px;
-      height: 16px;
+      width: 17px;
+      height: 17px;
       stroke-width: 2;
       flex-shrink: 0;
-      stroke: #5a5c6c;
+      stroke: var(--text-dim);
       transition: stroke 0.15s ease;
     }
 
     .nav-item:hover {
       color: #ffffff;
-      background-color: rgba(255, 255, 255, 0.03);
+      background-color: rgba(255, 255, 255, 0.04);
     }
 
     .nav-item:hover svg {
       stroke: #ffffff;
     }
 
-    /* Active State for Dashboard */
     .nav-item.active {
       color: #ffffff;
-      background-color: #171720;
+      background-color: #16161d;
       border: 1px solid rgba(255, 255, 255, 0.06);
       font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .nav-item.active svg {
@@ -185,11 +187,11 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px 11px;
-      border-radius: 7px;
-      color: #7b7d8b;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #8c8d98;
       text-decoration: none;
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 600;
       transition: color 0.15s ease, background-color 0.15s ease;
     }
@@ -200,35 +202,36 @@
     }
 
     .logout-item svg {
-      width: 16px;
-      height: 16px;
+      width: 17px;
+      height: 17px;
     }
 
     /* ==================================================
-       MAIN CONTENT
+       MAIN CONTENT CANVAS
        ================================================== */
     .admin-main {
       flex: 1;
       display: flex;
       flex-direction: column;
       min-width: 0;
-      background-color: var(--bg-dark);
+      background-color: var(--bg-body);
+      background-image: radial-gradient(ellipse 70% 35% at 50% 0%, rgba(229, 27, 36, 0.03), transparent 70%);
     }
 
-    /* Top Navigation Bar */
+    /* Top Navigation Bar: ADMINISTRATOR CONSOLE + User Profile */
     .admin-topbar {
       height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 36px;
+      padding: 0 clamp(20px, 3.5vw, 48px);
       border-bottom: 1px solid var(--border-subtle);
     }
 
     .topbar-left {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
     }
 
     .mobile-menu-btn {
@@ -240,13 +243,12 @@
       padding: 6px;
     }
 
-    .console-tag {
-      font-size: 10px;
+    .admin-console-label {
+      font-size: 11px;
       font-weight: 800;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: #5d5f6e;
-      font-family: var(--font-mono);
+      color: #636474;
     }
 
     .topbar-right {
@@ -258,178 +260,244 @@
     .topbar-icon-btn {
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      color: #8a8b98;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 6px;
-      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      transition: color 0.15s, background-color 0.15s;
       position: relative;
-      transition: color 0.15s ease;
     }
 
     .topbar-icon-btn:hover {
       color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
     }
 
     .topbar-icon-btn svg {
-      width: 17px;
-      height: 17px;
+      width: 19px;
+      height: 19px;
     }
 
-    /* Admin Profile with Rev-Meter Status Ring */
+    /* Admin Profile Pill */
     .topbar-profile {
       display: flex;
       align-items: center;
       gap: 12px;
+      cursor: pointer;
     }
 
     .profile-info {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      align-items: flex-end;
       text-align: right;
     }
 
     .profile-name {
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 700;
       color: #ffffff;
       line-height: 1.2;
     }
 
     .profile-role {
-      font-size: 9px;
+      font-size: 9.5px;
       font-weight: 800;
-      color: var(--text-dim);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      line-height: 1.2;
+      color: #636474;
     }
 
-    .rev-avatar-wrap {
-      width: 34px;
-      height: 34px;
+    .profile-avatar-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #15151c;
+      border: 2px solid var(--accent-red);
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14px;
+      box-shadow: 0 0 14px rgba(229, 27, 36, 0.25);
     }
 
-    .rev-meter-svg {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
+    .profile-online-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+      border: 2px solid var(--bg-sidebar);
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
     }
 
-    /* Dashboard Main Viewport */
+    /* ==================================================
+       DASHBOARD CONTENT VIEWPORT
+       ================================================== */
     .dashboard-viewport {
-      padding: 30px 36px 50px 36px;
+      padding: 32px clamp(20px, 3.5vw, 48px) 60px;
       display: flex;
       flex-direction: column;
-      gap: 22px;
-      max-width: 1440px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    /* Welcome Banner & Action Controls */
-    .welcome-header-row {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
       gap: 20px;
+    }
+
+    /* Header Row: Good morning, Hot Wheels Admin. + Date Filter & Export */
+    .dashboard-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
       flex-wrap: wrap;
+      margin-bottom: 12px;
     }
 
-    .welcome-text-block {
-      max-width: 600px;
+    .header-greeting-block {
+      display: flex;
+      flex-direction: column;
     }
 
-    .welcome-heading {
+    .greeting-title {
       font-family: var(--font-heading);
-      font-size: clamp(24px, 3.2vw, 34px);
+      font-size: clamp(28px, 2.8vw, 36px);
       font-weight: 900;
-      letter-spacing: -0.02em;
       line-height: 1.15;
+      letter-spacing: -0.02em;
       color: #ffffff;
-      margin-bottom: 6px;
     }
 
-    .welcome-heading .welcome-name {
-      color: #fca5a5;
+    .greeting-title span.accent-name {
+      display: block;
+      color: var(--accent-coral);
     }
 
-    .welcome-sub {
-      font-size: 13px;
-      color: #727484;
-      line-height: 1.5;
+    .greeting-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      font-weight: 400;
     }
 
-    .dashboard-actions-group {
+    .header-actions-block {
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
-    /* Rounded Pill Controls */
-    .btn-date-pill {
-      height: 38px;
-      background: #171720;
+    /* Date Filter Pill Button */
+    .date-filter-btn {
+      background: #15151b;
       border: 1px solid var(--border-card);
-      border-radius: 20px;
-      padding: 0 16px;
-      color: #ffffff;
+      border-radius: 9999px;
+      padding: 10px 18px;
+      color: #d6d7e2;
       font-size: 12.5px;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
       cursor: pointer;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
+      transition: background-color 0.2s, border-color 0.2s;
     }
 
-    .btn-date-pill:hover {
-      background: #1d1d28;
-      border-color: rgba(255, 255, 255, 0.14);
+    .date-filter-btn:hover {
+      background: #1a1a23;
+      border-color: rgba(255, 255, 255, 0.12);
     }
 
-    .btn-date-pill svg {
-      width: 14px;
-      height: 14px;
-      color: var(--text-muted);
+    .date-filter-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: var(--text-muted);
     }
 
-    .btn-export-pill {
-      height: 38px;
+    /* Export Pill Button with Dropdown */
+    .export-dropdown-wrap {
+      position: relative;
+    }
+
+    .btn-export {
       background: var(--accent-red);
       color: #ffffff;
       border: none;
-      border-radius: 20px;
-      padding: 0 18px;
+      border-radius: 9999px;
+      padding: 10px 22px;
       font-size: 12.5px;
       font-weight: 700;
-      cursor: pointer;
+      letter-spacing: 0.04em;
       display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.4);
-      transition: background-color 0.15s ease, transform 0.15s ease;
+      cursor: pointer;
+      box-shadow: 0 4px 18px var(--accent-red-glow);
+      transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
     }
 
-    .btn-export-pill:hover {
-      background: var(--accent-red-bright);
+    .btn-export:hover {
+      background-color: var(--accent-red-hover);
+      box-shadow: 0 6px 24px rgba(229, 27, 36, 0.55);
       transform: translateY(-1px);
     }
 
-    .btn-export-pill svg {
+    .btn-export svg {
       width: 15px;
       height: 15px;
     }
 
+    .export-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #181820;
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 6px;
+      min-width: 180px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 100;
+    }
+
+    .export-menu.open {
+      display: flex;
+      animation: fadeInDropdown 0.2s ease;
+    }
+
+    @keyframes fadeInDropdown {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .export-option {
+      padding: 9px 14px;
+      color: #d1d2dc;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    .export-option:hover {
+      background-color: rgba(229, 27, 36, 0.14);
+      color: #ffffff;
+    }
+
     /* ==================================================
-       GRID: 4 TOP METRIC CARDS
+       ROW 1: METRICS 4-CARD GRID
        ================================================== */
     .metrics-grid {
       display: grid;
@@ -438,90 +506,82 @@
     }
 
     .metric-card {
-      background-color: var(--bg-card);
+      background: var(--bg-card);
       border: 1px solid var(--border-card);
       border-radius: 12px;
-      padding: 20px 18px;
+      padding: 20px 22px;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       gap: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-      transition: border-color 0.2s ease, transform 0.2s ease;
+      transition: border-color 0.2s, transform 0.2s;
     }
 
     .metric-card:hover {
-      border-color: rgba(255, 255, 255, 0.12);
+      border-color: var(--border-card-hover);
       transform: translateY(-2px);
     }
 
-    .metric-card-top {
+    .metric-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .metric-label {
-      font-size: 10px;
+    .metric-title {
+      font-size: 10.5px;
       font-weight: 800;
-      letter-spacing: 0.1em;
-      color: #7b7e8e;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      font-family: var(--font-mono);
+      color: #7a7b8a;
     }
 
-    .metric-icon-box {
-      color: #555767;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .metric-icon-box svg {
-      width: 15px;
-      height: 15px;
+    .metric-icon-wrap svg {
+      width: 17px;
+      height: 17px;
+      stroke: #5d5e6d;
     }
 
     .metric-value {
-      font-size: 24px;
-      font-weight: 900;
+      font-size: 26px;
+      font-weight: 800;
       color: #ffffff;
-      letter-spacing: -0.01em;
       line-height: 1.1;
-      font-family: var(--font-mono);
+      font-feature-settings: "tnum";
     }
 
-    .metric-delta {
+    .metric-trend {
       display: flex;
       align-items: center;
       gap: 5px;
       font-size: 11.5px;
-      font-weight: 700;
-      color: var(--accent-yellow);
-      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent-gold);
     }
 
-    .metric-delta svg {
+    .metric-trend svg {
       width: 13px;
       height: 13px;
+      stroke: var(--accent-gold);
     }
 
     /* ==================================================
-       MIDDLE ROW: SALES PERFORMANCE + REVENUE BREAKDOWN
+       ROW 2: SALES PERFORMANCE (65%) & REVENUE BREAKDOWN (35%)
        ================================================== */
-    .middle-grid-row {
+    .dashboard-two-col {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1.8fr 1fr;
       gap: 16px;
     }
 
-    .dashboard-panel-card {
-      background-color: var(--bg-card);
+    .card-panel {
+      background: var(--bg-card);
       border: 1px solid var(--border-card);
       border-radius: 12px;
-      padding: 22px;
+      padding: 22px 24px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      position: relative;
     }
 
     .panel-header-row {
@@ -532,307 +592,341 @@
     }
 
     .panel-title {
-      font-size: 13.5px;
+      font-size: 15.5px;
       font-weight: 700;
       color: #ffffff;
-      letter-spacing: 0.01em;
+      letter-spacing: -0.01em;
     }
 
-    /* Time filter tabs */
-    .chart-time-tabs {
+    /* Segmented Control (Week / Month / Year) */
+    .segmented-control {
+      background: #0f0f13;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 7px;
+      padding: 3px;
       display: flex;
-      background: #191922;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 6px;
-      padding: 2.5px;
+      gap: 2px;
     }
 
-    .time-tab {
+    .segment-btn {
       background: transparent;
       border: none;
-      color: var(--text-dim);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 4px;
+      color: #7a7b8b;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 5px;
       cursor: pointer;
-      transition: color 0.15s ease, background-color 0.15s ease;
+      transition: color 0.15s, background-color 0.15s;
     }
 
-    .time-tab:hover {
+    .segment-btn:hover {
       color: #ffffff;
     }
 
-    .time-tab.active {
-      background: #252533;
+    .segment-btn.active {
+      background: #202029;
       color: #ffffff;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      font-weight: 700;
     }
 
-    /* Responsive SVG Spline Chart matching Figma */
-    .chart-viewport {
+    /* SVG Sales Performance Curved Line Chart */
+    .chart-container {
       width: 100%;
       height: 200px;
       position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: flex-end;
+      margin-top: 10px;
     }
 
-    .sales-chart-svg {
+    .chart-svg {
       width: 100%;
       height: 100%;
-      display: block;
+      overflow: visible;
     }
 
-    /* Revenue Breakdown Items */
-    .revenue-items-list {
+    .chart-grid-line {
+      stroke: rgba(255, 255, 255, 0.04);
+      stroke-width: 1;
+      stroke-dasharray: 4 4;
+    }
+
+    .chart-glow-path {
+      fill: url(#redAreaGradient);
+      opacity: 0.85;
+      transition: d 0.4s ease;
+    }
+
+    .chart-line-path {
+      fill: none;
+      stroke: var(--accent-red);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 10px rgba(229, 27, 36, 0.6));
+      transition: d 0.4s ease;
+    }
+
+    .chart-point {
+      fill: var(--accent-red);
+      stroke: #ffffff;
+      stroke-width: 2.5;
+      cursor: pointer;
+      transition: r 0.15s ease;
+    }
+
+    .chart-point:hover {
+      r: 6;
+      filter: drop-shadow(0 0 12px rgba(229, 27, 36, 0.9));
+    }
+
+    /* Revenue Breakdown List */
+    .breakdown-list {
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 16px;
       flex: 1;
+      justify-content: center;
     }
 
-    .revenue-row {
+    .breakdown-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 12.5px;
+      font-size: 13.5px;
     }
 
-    .revenue-row-label {
-      color: #9ca3af;
+    .breakdown-label {
+      color: var(--text-muted);
       font-weight: 500;
     }
 
-    .revenue-row-val {
-      font-weight: 700;
+    .breakdown-value {
+      font-weight: 600;
       color: #ffffff;
-      font-family: var(--font-mono);
+      font-feature-settings: "tnum";
     }
 
-    .revenue-row-val.deduction {
-      color: #fca5a5;
+    .breakdown-value.negative {
+      color: #8c8d99;
     }
 
-    .revenue-dotted-divider {
+    .breakdown-divider {
       border: none;
-      border-top: 1px dotted rgba(255, 255, 255, 0.12);
-      margin: 14px 0 8px 0;
+      border-top: 1px dotted rgba(255, 255, 255, 0.15);
+      margin: 18px 0 14px 0;
     }
 
-    .net-revenue-row {
+    .breakdown-net-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: auto;
+      padding-top: 4px;
     }
 
-    .net-revenue-label {
+    .net-label {
       font-size: 11px;
       font-weight: 800;
-      letter-spacing: 0.1em;
-      color: #ffffff;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      font-family: var(--font-mono);
+      color: #ffffff;
     }
 
-    .net-revenue-val {
-      font-size: 15px;
-      font-weight: 900;
+    .net-value {
+      font-size: 16px;
+      font-weight: 800;
       color: var(--accent-red);
-      font-family: var(--font-mono);
+      font-feature-settings: "tnum";
     }
 
     /* ==================================================
-       LOWER ROW: BEST SELLERS + OPERATIONS & PAYMENTS
+       ROW 3: BEST SELLING PRODUCTS & OPERATIONS / PAYMENTS
        ================================================== */
-    .lower-grid-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
+    .products-list {
+      display: flex;
+      flex-direction: column;
       gap: 16px;
     }
 
-    /* Best Sellers Product List */
-    .products-list-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .product-list-card {
+    .product-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px;
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      border-radius: 9px;
-      transition: background-color 0.15s ease;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
 
-    .product-list-card:hover {
-      background: #1e1e29;
+    .product-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
     }
 
-    .product-info-left {
+    .product-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
 
-    .product-img-box {
+    .product-thumb {
       width: 44px;
       height: 44px;
-      border-radius: 7px;
-      background: #111116;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      overflow: hidden;
+      border-radius: 8px;
+      background: #171821;
+      border: 1px solid rgba(255, 255, 255, 0.07);
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
       flex-shrink: 0;
     }
 
-    .product-img-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .product-thumb svg {
+      width: 22px;
+      height: 22px;
+      stroke: #666778;
     }
 
-    .product-title-group {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .product-name-txt {
-      font-size: 13px;
-      font-weight: 700;
-      color: #ffffff;
-    }
-
-    .product-units-txt {
-      font-size: 11.5px;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-    }
-
-    .product-sales-right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 3px;
-    }
-
-    .product-revenue-num {
-      font-size: 13.5px;
-      font-weight: 800;
-      color: #ffffff;
-      font-family: var(--font-mono);
-    }
-
-    .product-series-tag {
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent-yellow);
-      font-family: var(--font-mono);
-    }
-
-    /* Operations & Payments Column */
-    .operations-payments-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .operations-grid-boxes {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .op-stat-box {
-      background: #191922;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 11px 13px;
+    .product-info {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
-    .op-stat-box.highlight-returns {
-      border-color: rgba(229, 27, 36, 0.25);
-      background: rgba(229, 27, 36, 0.06);
+    .product-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.2;
     }
 
-    .op-stat-label {
+    .product-sold {
+      font-size: 12px;
+      color: #828392;
+    }
+
+    .product-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .product-price {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #ffffff;
+      font-feature-settings: "tnum";
+    }
+
+    .product-badge {
       font-size: 9px;
       font-weight: 800;
-      letter-spacing: 0.1em;
-      color: #7b7d8d;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      font-family: var(--font-mono);
     }
 
-    .op-stat-num {
-      font-size: 17px;
-      font-weight: 900;
+    .product-badge.gold {
+      color: var(--accent-gold);
+    }
+
+    .product-badge.blue {
+      color: var(--accent-blue);
+    }
+
+    .product-badge.green {
+      color: var(--accent-lime);
+    }
+
+    /* Stacked Right Column: Operations + Payments */
+    .stacked-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ops-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .ops-box {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ops-box.highlight-returns {
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .ops-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #717282;
+    }
+
+    .ops-value {
+      font-size: 18px;
+      font-weight: 800;
       color: #ffffff;
-      font-family: var(--font-mono);
+      line-height: 1.1;
+      font-feature-settings: "tnum";
     }
 
-    .op-stat-num.red-alert {
+    .ops-box.highlight-returns .ops-value {
       color: #f87171;
     }
 
-    /* Payments Progress */
-    .payments-section {
+    /* Payments Progress Rows */
+    .payments-title {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7e7f90;
+      margin-bottom: 14px;
+    }
+
+    .payments-list {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-top: 4px;
     }
 
-    .payments-label-head {
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      color: var(--accent-yellow);
-      text-transform: uppercase;
-      font-family: var(--font-mono);
-    }
-
-    .payment-method-row {
+    .payment-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 11.5px;
+      gap: 12px;
+      font-size: 12.5px;
     }
 
-    .payment-method-name {
-      width: 100px;
+    .payment-label-wrap {
       display: flex;
       align-items: center;
-      gap: 7px;
-      color: #a4a6b5;
-      font-weight: 600;
-      white-space: nowrap;
+      gap: 8px;
+      width: 140px;
+      flex-shrink: 0;
+      color: #cfd0dc;
+      font-weight: 500;
     }
 
-    .payment-method-name svg {
-      width: 14px;
-      height: 14px;
-      color: #7c7e8e;
+    .payment-label-wrap svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
     }
 
     .progress-track {
       flex: 1;
-      height: 3.5px;
-      background: #232330;
+      height: 4px;
+      background: #1a1a24;
       border-radius: 2px;
       overflow: hidden;
       position: relative;
@@ -843,57 +937,73 @@
       border-radius: 2px;
     }
 
-    .progress-fill.gold { background: #eab308; }
-    .progress-fill.coral { background: #fca5a5; }
-    .progress-fill.white { background: #e2e8f0; }
+    .fill-razorpay {
+      background-color: #eab308;
+      width: 65%;
+    }
 
-    .payment-percent-txt {
-      width: 28px;
+    .fill-wallet {
+      background-color: #f87171;
+      width: 25%;
+    }
+
+    .fill-cod {
+      background-color: #9ca3af;
+      width: 10%;
+    }
+
+    .payment-pct {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8c8d99;
+      width: 32px;
       text-align: right;
-      color: #a4a6b5;
-      font-weight: 700;
-      font-family: var(--font-mono);
+      font-feature-settings: "tnum";
     }
 
     /* ==================================================
-       BOTTOM FULL WIDTH: RECENT SALES TABLE
+       ROW 4: RECENT SALES TABLE (FULL WIDTH)
        ================================================== */
     .recent-sales-panel {
-      background-color: var(--bg-card);
+      background: var(--bg-card);
       border: 1px solid var(--border-card);
       border-radius: 12px;
-      padding: 22px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      padding: 24px 26px 20px;
       display: flex;
       flex-direction: column;
+      gap: 18px;
     }
 
-    .recent-sales-head {
+    .sales-header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
     }
 
     .view-all-link {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
+      color: #f87171;
       text-decoration: none;
-      display: flex;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
       align-items: center;
-      gap: 5px;
-      transition: color 0.15s ease;
+      gap: 6px;
+      transition: color 0.15s, transform 0.15s;
     }
 
     .view-all-link:hover {
-      color: #ffffff;
+      color: #ff9191;
+      transform: translateX(2px);
     }
 
-    .sales-table-wrapper {
+    .view-all-link svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .table-container {
       width: 100%;
       overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
     }
 
     .sales-table {
@@ -902,161 +1012,177 @@
       text-align: left;
     }
 
-    .sales-table thead th {
-      padding: 12px 14px;
-      font-size: 10px;
+    .sales-table th {
+      font-size: 10.5px;
       font-weight: 800;
-      letter-spacing: 0.09em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #7b7e8f;
-      border-bottom: 1px solid var(--border-subtle);
-      font-family: var(--font-mono);
+      color: #636474;
+      padding: 10px 14px 14px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .sales-table tbody tr {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-      transition: background-color 0.15s ease;
+    .sales-table th:first-child,
+    .sales-table td:first-child {
+      padding-left: 4px;
     }
 
-    .sales-table tbody tr:hover {
-      background-color: var(--bg-row-hover);
-    }
-
-    .sales-table tbody tr:last-child {
-      border-bottom: none;
+    .sales-table th:last-child,
+    .sales-table td:last-child {
+      padding-right: 4px;
+      text-align: right;
     }
 
     .sales-table td {
-      padding: 14px;
-      font-size: 12.5px;
+      padding: 16px 14px;
+      font-size: 13px;
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
       vertical-align: middle;
-      white-space: nowrap;
+    }
+
+    .sales-table tr:last-child td {
+      border-bottom: none;
     }
 
     .order-id-cell {
-      font-family: var(--font-mono);
-      color: #797b88;
-      font-size: 11.5px;
+      font-family: var(--font-main);
+      font-weight: 600;
+      color: #c4c5d2;
+      letter-spacing: 0.02em;
     }
 
-    .order-customer-cell {
-      font-weight: 700;
+    .customer-cell {
+      font-weight: 600;
       color: #ffffff;
     }
 
-    .order-date-cell {
-      color: #888a96;
-      font-size: 12px;
+    .date-cell {
+      color: #828392;
+      font-weight: 400;
     }
 
-    .order-amount-cell {
+    .amount-cell {
       font-weight: 700;
       color: #ffffff;
-      font-family: var(--font-mono);
+      font-feature-settings: "tnum";
     }
 
-    /* Status Badges */
-    .order-status-badge {
+    /* Status Badges Matching Screenshot */
+    .status-badge {
       display: inline-flex;
       align-items: center;
-      padding: 3px 7px;
+      justify-content: center;
+      padding: 3px 10px;
       border-radius: 4px;
       font-size: 9.5px;
       font-weight: 800;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      line-height: 1;
-      font-family: var(--font-mono);
     }
 
-    .order-status-badge.delivered {
+    .status-badge.delivered {
       background: rgba(34, 197, 94, 0.12);
-      border: 1px solid rgba(34, 197, 94, 0.25);
       color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
     }
 
-    .order-status-badge.processing {
+    .status-badge.processing {
       background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.25);
       color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    .order-status-badge.shipped {
+    .status-badge.shipped {
       background: rgba(234, 179, 8, 0.12);
-      border: 1px solid rgba(234, 179, 8, 0.25);
       color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.3);
     }
 
-    /* Table Pagination Footer matching Figma */
-    .table-pagination-foot {
+    .status-badge.neutral {
+      background: rgba(156, 163, 175, 0.12);
+      color: #9ca3af;
+      border: 1px solid rgba(156, 163, 175, 0.3);
+    }
+
+    /* Table Pagination */
+    .table-pagination {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-top: 16px;
-      border-top: 1px solid var(--border-subtle);
-      margin-top: 10px;
-      gap: 6px;
+      gap: 8px;
+      padding-top: 12px;
     }
 
-    .table-page-btn {
+    .page-btn {
       width: 26px;
       height: 26px;
-      display: flex;
+      border-radius: 4px;
+      background: transparent;
+      border: none;
+      color: #717282;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 4px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 11.5px;
-      font-weight: 600;
-      transition: background-color 0.15s ease, color 0.15s ease;
+      transition: background-color 0.15s, color 0.15s;
     }
 
-    .table-page-btn:hover:not(.active) {
-      background: rgba(255, 255, 255, 0.05);
+    .page-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .page-btn.active {
+      background-color: var(--accent-red);
       color: #ffffff;
     }
 
-    .table-page-btn.active {
-      background: var(--accent-red);
-      color: #ffffff;
-      font-weight: 800;
+    .page-nav-arrow {
+      color: #555767;
+      font-size: 11px;
     }
 
     /* ==================================================
-       RESPONSIVE BREAKPOINTS
+       MOBILE DRAWER BACKDROP & RESPONSIVENESS
        ================================================== */
+    .mobile-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 45;
+    }
+
+    .mobile-backdrop.open {
+      display: block;
+    }
+
     @media (max-width: 1200px) {
       .metrics-grid {
         grid-template-columns: repeat(2, 1fr);
       }
-      .middle-grid-row,
-      .lower-grid-row {
+      .dashboard-two-col {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 900px) {
       .admin-sidebar {
         position: fixed;
-        left: -250px;
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.7);
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
       }
-
-      .admin-sidebar.mobile-open {
-        transform: translateX(250px);
+      .admin-sidebar.open {
+        transform: translateX(0);
       }
-
       .mobile-menu-btn {
-        display: flex;
-      }
-
-      .dashboard-viewport {
-        padding: 20px 18px 40px 18px;
-      }
-
-      .admin-topbar {
-        padding: 0 18px;
+        display: block;
       }
     }
 
@@ -1064,19 +1190,18 @@
       .metrics-grid {
         grid-template-columns: 1fr;
       }
-
-      .welcome-heading {
-        font-size: 22px;
-      }
-
-      .welcome-header-row {
+      .dashboard-header-row {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
       }
-
-      .dashboard-actions-group {
-        width: 100%;
+      .header-actions-block {
         justify-content: space-between;
+      }
+      .ops-grid {
+        grid-template-columns: 1fr;
+      }
+      .greeting-title {
+        font-size: 26px;
       }
     }
   </style>
@@ -1085,18 +1210,20 @@
 
   <div class="admin-layout">
 
+    <!-- Mobile Drawer Backdrop -->
+    <div class="mobile-backdrop" id="mobileBackdrop"></div>
+
     <!-- ==================================================
-         SIDEBAR NAVIGATION
+         SIDEBAR NAVIGATION (EXACT SCREENSHOT LAYOUT)
          ================================================== -->
     <aside class="admin-sidebar" id="adminSidebar">
       <div class="sidebar-top">
 
-        <!-- Brand Header -->
+        <!-- Brand Title: ADMIN -->
         <div class="brand-header">
           <span class="brand-title">ADMIN</span>
         </div>
 
-        <!-- Navigation Categories -->
         <nav class="sidebar-nav">
 
           <!-- OVERVIEW -->
@@ -1104,10 +1231,10 @@
             <span class="nav-group-label">OVERVIEW</span>
             <a href="{% url 'admin_dashboard' %}" class="nav-item active">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
               </svg>
               <span>Dashboard</span>
             </a>
@@ -1137,7 +1264,7 @@
           <!-- SALES -->
           <div class="nav-group">
             <span class="nav-group-label">SALES</span>
-            <a href="#" class="nav-item">
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
@@ -1146,7 +1273,7 @@
               </svg>
               <span>Orders</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="{% url 'admin_inventory_list' %}" class="nav-item" title="Inventory Management">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="6" width="20" height="12" rx="2"/>
                 <circle cx="12" cy="12" r="2"/>
@@ -1218,7 +1345,7 @@
         </nav>
       </div>
 
-      <!-- Logout Link -->
+      <!-- Logout Item at Bottom -->
       <div class="sidebar-bottom">
         <a href="{% url 'admin_logout' %}" class="logout-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1232,7 +1359,7 @@
     </aside>
 
     <!-- ==================================================
-         MAIN DASHBOARD
+         MAIN CONTENT AREA
          ================================================== -->
     <main class="admin-main">
 
@@ -1246,7 +1373,7 @@
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </button>
-          <span class="console-tag">ADMINISTRATOR CONSOLE</span>
+          <span class="admin-console-label">ADMINISTRATOR CONSOLE</span>
         </div>
 
         <div class="topbar-right">
@@ -1258,81 +1385,107 @@
             </svg>
           </button>
 
-          <!-- Chief Collector System Admin Profile -->
+          <!-- User Profile -->
           <div class="topbar-profile">
             <div class="profile-info">
-              <span class="profile-name">Chief Collector</span>
+              <span class="profile-name">{{ request.user.username|default:"Chief Collector" }}</span>
               <span class="profile-role">SYSTEM ADMIN</span>
             </div>
-            <div class="rev-avatar-wrap">
-              <svg viewBox="0 0 36 36" class="rev-meter-svg">
-                <circle cx="18" cy="18" r="15" fill="#14141a" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
-                <path d="M 18 3 A 15 15 0 0 1 33 18" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
-                <path d="M 3 18 A 15 15 0 0 1 18 3" fill="none" stroke="#e51b24" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="10 15"/>
+            <div class="profile-avatar-circle">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
               </svg>
+              <span class="profile-online-dot"></span>
             </div>
           </div>
         </div>
       </header>
 
-      <!-- Dashboard Viewport -->
+      <!-- Viewport Content -->
       <div class="dashboard-viewport">
 
-        <!-- Welcome Banner Row -->
-        <div class="welcome-header-row">
-          <div class="welcome-text-block">
-            <h1 class="welcome-heading">
-              Good morning,<br>
-              <span class="welcome-name">{{ request.user.username|default:"Hot Wheels Admin" }}.</span>
+        <!-- Page Header Row: Greeting & Controls -->
+        <div class="dashboard-header-row">
+          <div class="header-greeting-block">
+            <h1 class="greeting-title">
+              Good morning,
+              <span class="accent-name">Hot Wheels Admin.</span>
             </h1>
-            <p class="welcome-sub">
-              Detailed financial performance and sales analysis.
-            </p>
+            <p class="greeting-subtitle">Detailed financial performance and sales analysis.</p>
           </div>
 
-          <!-- Controls: Date Filter + Export Button -->
-          <div class="dashboard-actions-group">
-            <button type="button" class="btn-date-pill">
+          <div class="header-actions-block">
+            <!-- Date Filter Pill -->
+            <button type="button" class="date-filter-btn" id="dateFilterBtn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                 <line x1="16" y1="2" x2="16" y2="6"/>
                 <line x1="8" y1="2" x2="8" y2="6"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              <span>August 2026</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;">
+              <span id="currentDateDisplay">August 2026</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </button>
 
-            <button type="button" class="btn-export-pill">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              <span>Export</span>
-            </button>
+            <!-- Export Pill Button with Dropdown (Preserves PDF & Excel Endpoints) -->
+            <div class="export-dropdown-wrap">
+              <button type="button" class="btn-export" id="exportBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Export</span>
+              </button>
+
+              <div class="export-menu" id="exportMenu">
+                <a href="{% url 'export_orders_pdf' %}" class="export-option">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <span>Export as PDF</span>
+                </a>
+                <a href="{% url 'export_orders_excel' %}" class="export-option">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="9" y1="21" x2="9" y2="9"/>
+                  </svg>
+                  <span>Export as Excel</span>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- ==================================================
-             4 METRICS CARDS ROW
+             ROW 1: 4 TOP METRIC CARDS
              ================================================== -->
-        <div class="metrics-grid">
-          <!-- Total Revenue -->
+        <section class="metrics-grid">
+
+          <!-- TOTAL REVENUE -->
           <div class="metric-card">
-            <div class="metric-card-top">
-              <span class="metric-label">TOTAL REVENUE</span>
-              <span class="metric-icon-box">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL REVENUE</span>
+              <span class="metric-icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                   <polyline points="17 6 23 6 23 12"/>
                 </svg>
               </span>
             </div>
-            <div class="metric-value">₹2,48,650</div>
-            <div class="metric-delta">
+            <div class="metric-value">
+              {% if total_revenue %}
+                ₹{{ total_revenue|floatformat:0 }}
+              {% else %}
+                ₹2,48,650
+              {% endif %}
+            </div>
+            <div class="metric-trend">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                 <polyline points="17 6 23 6 23 12"/>
@@ -1341,11 +1494,11 @@
             </div>
           </div>
 
-          <!-- Total Sales -->
+          <!-- TOTAL SALES -->
           <div class="metric-card">
-            <div class="metric-card-top">
-              <span class="metric-label">TOTAL SALES</span>
-              <span class="metric-icon-box">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL SALES</span>
+              <span class="metric-icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
                   <line x1="3" y1="6" x2="21" y2="6"/>
@@ -1353,8 +1506,14 @@
                 </svg>
               </span>
             </div>
-            <div class="metric-value">1,248</div>
-            <div class="metric-delta">
+            <div class="metric-value">
+              {% if total_orders and total_orders > 0 %}
+                {{ total_orders }}
+              {% else %}
+                1,248
+              {% endif %}
+            </div>
+            <div class="metric-trend">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                 <polyline points="17 6 23 6 23 12"/>
@@ -1363,11 +1522,11 @@
             </div>
           </div>
 
-          <!-- Total Orders -->
+          <!-- TOTAL ORDERS -->
           <div class="metric-card">
-            <div class="metric-card-top">
-              <span class="metric-label">TOTAL ORDERS</span>
-              <span class="metric-icon-box">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL ORDERS</span>
+              <span class="metric-icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
                   <line x1="8" y1="21" x2="16" y2="21"/>
@@ -1375,8 +1534,14 @@
                 </svg>
               </span>
             </div>
-            <div class="metric-value">186</div>
-            <div class="metric-delta">
+            <div class="metric-value">
+              {% if total_orders and total_orders > 0 %}
+                {{ total_orders }}
+              {% else %}
+                186
+              {% endif %}
+            </div>
+            <div class="metric-trend">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                 <polyline points="17 6 23 6 23 12"/>
@@ -1385,19 +1550,21 @@
             </div>
           </div>
 
-          <!-- Avg Order Value -->
+          <!-- AVG ORDER VALUE -->
           <div class="metric-card">
-            <div class="metric-card-top">
-              <span class="metric-label">AVG ORDER VALUE</span>
-              <span class="metric-icon-box">
+            <div class="metric-header">
+              <span class="metric-title">AVG ORDER VALUE</span>
+              <span class="metric-icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                  <line x1="1" y1="10" x2="23" y2="10"/>
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <line x1="2" y1="10" x2="22" y2="10"/>
                 </svg>
               </span>
             </div>
-            <div class="metric-value">₹1,240</div>
-            <div class="metric-delta">
+            <div class="metric-value" id="avgOrderValueEl">
+              ₹1,240
+            </div>
+            <div class="metric-trend">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                 <polyline points="17 6 23 6 23 12"/>
@@ -1405,257 +1572,297 @@
               <span>+4.8% vs last month</span>
             </div>
           </div>
-        </div>
+
+        </section>
 
         <!-- ==================================================
-             MIDDLE ROW: SALES PERFORMANCE + REVENUE BREAKDOWN
+             ROW 2: SALES PERFORMANCE (65%) & REVENUE BREAKDOWN (35%)
              ================================================== -->
-        <div class="middle-grid-row">
+        <section class="dashboard-two-col">
 
-          <!-- Sales Performance Chart Card -->
-          <div class="dashboard-panel-card">
+          <!-- Left Card: Sales Performance Wave Chart -->
+          <div class="card-panel">
             <div class="panel-header-row">
               <h2 class="panel-title">Sales Performance</h2>
-              <div class="chart-time-tabs">
-                <button type="button" class="time-tab" onclick="switchChartTab(this, 'week')">Week</button>
-                <button type="button" class="time-tab active" onclick="switchChartTab(this, 'month')">Month</button>
-                <button type="button" class="time-tab" onclick="switchChartTab(this, 'year')">Year</button>
+
+              <!-- Time Selector Pills -->
+              <div class="segmented-control">
+                <button type="button" class="segment-btn" data-range="week">Week</button>
+                <button type="button" class="segment-btn active" data-range="month">Month</button>
+                <button type="button" class="segment-btn" data-range="year">Year</button>
               </div>
             </div>
 
-            <!-- Responsive Curved Spline Wave matching Figma -->
-            <div class="chart-viewport">
-              <svg viewBox="0 0 700 200" class="sales-chart-svg" preserveAspectRatio="none">
+            <!-- SVG Smooth Crimson Wave Chart Matching Reference -->
+            <div class="chart-container">
+              <svg class="chart-svg" viewBox="0 0 700 200" preserveAspectRatio="none">
                 <defs>
-                  <linearGradient id="salesAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#e51b24" stop-opacity="0.32"/>
-                    <stop offset="60%" stop-color="#e51b24" stop-opacity="0.08"/>
-                    <stop offset="100%" stop-color="#e51b24" stop-opacity="0.0"/>
-                  </linearGradient>
-                  <linearGradient id="salesStrokeGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#ff1e27"/>
-                    <stop offset="100%" stop-color="#ff3344"/>
+                  <!-- Glowing Red Gradient Fill -->
+                  <linearGradient id="redAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#e51b24" stop-opacity="0.32" />
+                    <stop offset="65%" stop-color="#e51b24" stop-opacity="0.08" />
+                    <stop offset="100%" stop-color="#e51b24" stop-opacity="0" />
                   </linearGradient>
                 </defs>
 
-                <!-- Grid Guide lines -->
-                <line x1="0" y1="35" x2="700" y2="35" stroke="rgba(255,255,255,0.04)" stroke-dasharray="4 4" />
-                <line x1="0" y1="95" x2="700" y2="95" stroke="rgba(255,255,255,0.04)" stroke-dasharray="4 4" />
-                <line x1="0" y1="155" x2="700" y2="155" stroke="rgba(255,255,255,0.04)" stroke-dasharray="4 4" />
+                <!-- Subtle Horizontal Gridlines -->
+                <line x1="10" y1="40" x2="690" y2="40" class="chart-grid-line" />
+                <line x1="10" y1="95" x2="690" y2="95" class="chart-grid-line" />
+                <line x1="10" y1="150" x2="690" y2="150" class="chart-grid-line" />
 
-                <!-- Area Fill -->
-                <path id="chartAreaPath" d="M 0 140 C 70 140, 110 175, 170 175 C 230 175, 270 95, 340 95 C 400 95, 430 175, 490 175 C 540 175, 570 50, 620 40 C 660 30, 680 50, 700 50 L 700 200 L 0 200 Z" fill="url(#salesAreaGradient)" />
+                <!-- Filled Wave Area -->
+                <path id="chartAreaPath" class="chart-glow-path"
+                      d="M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42 L 690 200 L 10 200 Z" />
 
-                <!-- Smooth Wave Line Curve -->
-                <path id="chartLinePath" d="M 0 140 C 70 140, 110 175, 170 175 C 230 175, 270 95, 340 95 C 400 95, 430 175, 490 175 C 540 175, 570 50, 620 40 C 660 30, 680 50, 700 50" fill="none" stroke="url(#salesStrokeGradient)" stroke-width="3.5" stroke-linecap="round" />
+                <!-- Neon Crimson Wave Line -->
+                <path id="chartLinePath" class="chart-line-path"
+                      d="M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42" />
+
+                <!-- Interactive Points -->
+                <circle cx="260" cy="76" r="4" class="chart-point" title="₹1,84,200" />
+                <circle cx="460" cy="40" r="4.5" class="chart-point" title="₹2,48,650 (Peak)" />
+                <circle cx="690" cy="42" r="4" class="chart-point" title="₹2,32,000" />
               </svg>
             </div>
           </div>
 
-          <!-- Revenue Breakdown Card -->
-          <div class="dashboard-panel-card">
+          <!-- Right Card: Revenue Breakdown -->
+          <div class="card-panel">
             <div class="panel-header-row">
               <h2 class="panel-title">Revenue Breakdown</h2>
             </div>
 
-            <div class="revenue-items-list">
-              <div class="revenue-row">
-                <span class="revenue-row-label">Product Sales</span>
-                <span class="revenue-row-val">₹2,85,000</span>
+            <div class="breakdown-list">
+              <div class="breakdown-row">
+                <span class="breakdown-label">Product Sales</span>
+                <span class="breakdown-value">
+                  {% if total_revenue %}
+                    ₹{{ total_revenue|floatformat:0 }}
+                  {% else %}
+                    ₹2,85,000
+                  {% endif %}
+                </span>
               </div>
-              <div class="revenue-row">
-                <span class="revenue-row-label">Discounts</span>
-                <span class="revenue-row-val deduction">-₹18,500</span>
+
+              <div class="breakdown-row">
+                <span class="breakdown-label">Discounts</span>
+                <span class="breakdown-value negative">-₹18,500</span>
               </div>
-              <div class="revenue-row">
-                <span class="revenue-row-label">Coupon Discounts</span>
-                <span class="revenue-row-val deduction">-₹7,200</span>
+
+              <div class="breakdown-row">
+                <span class="breakdown-label">Coupon Discounts</span>
+                <span class="breakdown-value negative">-₹7,200</span>
               </div>
-              <div class="revenue-row">
-                <span class="revenue-row-label">Refunds</span>
-                <span class="revenue-row-val deduction">-₹10,650</span>
+
+              <div class="breakdown-row">
+                <span class="breakdown-label">Refunds</span>
+                <span class="breakdown-value negative">-₹10,650</span>
               </div>
             </div>
 
-            <hr class="revenue-dotted-divider">
+            <hr class="breakdown-divider">
 
-            <div class="net-revenue-row">
-              <span class="net-revenue-label">NET REVENUE</span>
-              <span class="net-revenue-val">₹2,48,650</span>
+            <div class="breakdown-net-row">
+              <span class="net-label">NET REVENUE</span>
+              <span class="net-value">
+                {% if total_revenue %}
+                  ₹{{ total_revenue|floatformat:0 }}
+                {% else %}
+                  ₹2,48,650
+                {% endif %}
+              </span>
             </div>
           </div>
 
-        </div>
+        </section>
 
         <!-- ==================================================
-             LOWER ROW: BEST SELLERS + OPERATIONS & PAYMENTS
+             ROW 3: BEST SELLING PRODUCTS & OPERATIONS / PAYMENTS
              ================================================== -->
-        <div class="lower-grid-row">
+        <section class="dashboard-two-col">
 
-          <!-- Best Selling Products Card -->
-          <div class="dashboard-panel-card">
+          <!-- Left Card: Best Selling Products -->
+          <div class="card-panel">
             <div class="panel-header-row">
               <h2 class="panel-title">Best Selling Products</h2>
             </div>
 
-            <div class="products-list-wrap">
-              <!-- Item 1: Lamborghini Huracán -->
-              <div class="product-list-card">
-                <div class="product-info-left">
-                  <div class="product-img-box">
-                    <img src="{% static 'accounts/images/hero_car.webp' %}" alt="Lamborghini Huracán" onerror="this.src='{% static 'accounts/images/hero_car.jpg' %}';">
+            <div class="products-list">
+
+              <!-- Product 1: Lamborghini Huracán -->
+              <div class="product-item">
+                <div class="product-left">
+                  <div class="product-thumb">
+                    <!-- Diecast Car Silhouette SVG -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
+                      <circle cx="7" cy="17" r="2"/>
+                      <path d="M9 17h6"/>
+                      <circle cx="17" cy="17" r="2"/>
+                    </svg>
                   </div>
-                  <div class="product-title-group">
-                    <span class="product-name-txt">Lamborghini Huracán</span>
-                    <span class="product-units-txt">124 Units Sold</span>
+                  <div class="product-info">
+                    <span class="product-name">Lamborghini Hurac&aacute;n</span>
+                    <span class="product-sold">124 Units Sold</span>
                   </div>
                 </div>
-                <div class="product-sales-right">
-                  <span class="product-revenue-num">₹45,600</span>
-                  <span class="product-series-tag">PREMIUM</span>
+                <div class="product-right">
+                  <span class="product-price">₹45,600</span>
+                  <span class="product-badge gold">PREMIUM</span>
                 </div>
               </div>
 
-              <!-- Item 2: Nissan Skyline (F&F) -->
-              <div class="product-list-card">
-                <div class="product-info-left">
-                  <div class="product-img-box">
-                    <img src="{% static 'accounts/images/skyline_r34.webp' %}" alt="Nissan Skyline" onerror="this.src='{% static 'accounts/images/skyline_r34.jpg' %}';">
+              <!-- Product 2: Nissan Skyline (F&F) -->
+              <div class="product-item">
+                <div class="product-left">
+                  <div class="product-thumb" style="background: #111a24; border-color: rgba(96, 165, 250, 0.2);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
+                      <circle cx="7" cy="17" r="2"/>
+                      <path d="M9 17h6"/>
+                      <circle cx="17" cy="17" r="2"/>
+                    </svg>
                   </div>
-                  <div class="product-title-group">
-                    <span class="product-name-txt">Nissan Skyline (F&amp;F)</span>
-                    <span class="product-units-txt">98 Units Sold</span>
+                  <div class="product-info">
+                    <span class="product-name">Nissan Skyline (F&amp;F)</span>
+                    <span class="product-sold">98 Units Sold</span>
                   </div>
                 </div>
-                <div class="product-sales-right">
-                  <span class="product-revenue-num">₹38,200</span>
-                  <span class="product-series-tag">COLLECTORS</span>
+                <div class="product-right">
+                  <span class="product-price">₹38,200</span>
+                  <span class="product-badge blue">COLLECTORS</span>
                 </div>
               </div>
 
-              <!-- Item 3: Porsche 911 GT3 -->
-              <div class="product-list-card">
-                <div class="product-info-left">
-                  <div class="product-img-box">
-                    <img src="{% static 'accounts/images/porsche_gt3rs.webp' %}" alt="Porsche 911 GT3" onerror="this.src='{% static 'accounts/images/porsche_gt3rs.jpg' %}';">
+              <!-- Product 3: Porsche 911 GT3 -->
+              <div class="product-item">
+                <div class="product-left">
+                  <div class="product-thumb" style="background: #151a14; border-color: rgba(163, 230, 53, 0.2);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
+                      <circle cx="7" cy="17" r="2"/>
+                      <path d="M9 17h6"/>
+                      <circle cx="17" cy="17" r="2"/>
+                    </svg>
                   </div>
-                  <div class="product-title-group">
-                    <span class="product-name-txt">Porsche 911 GT3</span>
-                    <span class="product-units-txt">86 Units Sold</span>
+                  <div class="product-info">
+                    <span class="product-name">Porsche 911 GT3</span>
+                    <span class="product-sold">86 Units Sold</span>
                   </div>
                 </div>
-                <div class="product-sales-right">
-                  <span class="product-revenue-num">₹32,500</span>
-                  <span class="product-series-tag">MAINLINE</span>
+                <div class="product-right">
+                  <span class="product-price">₹32,500</span>
+                  <span class="product-badge green">MAINLINE</span>
                 </div>
               </div>
+
             </div>
           </div>
 
-          <!-- Operations & Payments Column -->
-          <div class="operations-payments-stack">
+          <!-- Right Column: Operations (2x2 Grid) + PAYMENTS -->
+          <div class="stacked-col">
 
-            <!-- Operations Box -->
-            <div class="dashboard-panel-card" style="padding: 18px;">
-              <div class="panel-header-row" style="margin-bottom: 12px;">
+            <!-- Operations -->
+            <div class="card-panel">
+              <div class="panel-header-row" style="margin-bottom: 14px;">
                 <h2 class="panel-title">Operations</h2>
               </div>
 
-              <div class="operations-grid-boxes">
-                <div class="op-stat-box">
-                  <span class="op-stat-label">DELIVERED</span>
-                  <span class="op-stat-num">1,120</span>
+              <div class="ops-grid">
+                <div class="ops-box">
+                  <span class="ops-label">DELIVERED</span>
+                  <span class="ops-value">1,120</span>
                 </div>
-                <div class="op-stat-box">
-                  <span class="op-stat-label">PROCESSING</span>
-                  <span class="op-stat-num">85</span>
+                <div class="ops-box">
+                  <span class="ops-label">PROCESSING</span>
+                  <span class="ops-value">85</span>
                 </div>
-                <div class="op-stat-box">
-                  <span class="op-stat-label">SHIPPED</span>
-                  <span class="op-stat-num">43</span>
+                <div class="ops-box">
+                  <span class="ops-label">SHIPPED</span>
+                  <span class="ops-value">43</span>
                 </div>
-                <div class="op-stat-box highlight-returns">
-                  <span class="op-stat-label">RETURNS</span>
-                  <span class="op-stat-num red-alert">17</span>
+                <div class="ops-box highlight-returns">
+                  <span class="ops-label">RETURNS</span>
+                  <span class="ops-value">17</span>
                 </div>
               </div>
             </div>
 
-            <!-- Payments Breakdown Box -->
-            <div class="dashboard-panel-card" style="padding: 18px;">
-              <div class="payments-section">
-                <span class="payments-label-head">PAYMENTS</span>
+            <!-- PAYMENTS -->
+            <div class="card-panel">
+              <span class="payments-title">PAYMENTS</span>
 
+              <div class="payments-list">
                 <!-- Razorpay -->
-                <div class="payment-method-row">
-                  <span class="payment-method-name">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="payment-row">
+                  <div class="payment-label-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                       <line x1="1" y1="10" x2="23" y2="10"/>
                     </svg>
-                    Razorpay
-                  </span>
-                  <div class="progress-track">
-                    <div class="progress-fill gold" style="width: 65%;"></div>
+                    <span>Razorpay</span>
                   </div>
-                  <span class="payment-percent-txt">65%</span>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-razorpay"></div>
+                  </div>
+                  <span class="payment-pct">65%</span>
                 </div>
 
                 <!-- Wallet -->
-                <div class="payment-method-row">
-                  <span class="payment-method-name">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="payment-row">
+                  <div class="payment-label-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/>
-                      <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/>
-                      <circle cx="18" cy="14" r="2"/>
+                      <path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/>
+                      <circle cx="18" cy="14" r="1"/>
                     </svg>
-                    Wallet
-                  </span>
-                  <div class="progress-track">
-                    <div class="progress-fill coral" style="width: 25%;"></div>
+                    <span>Wallet</span>
                   </div>
-                  <span class="payment-percent-txt">25%</span>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-wallet"></div>
+                  </div>
+                  <span class="payment-pct">25%</span>
                 </div>
 
                 <!-- Cash on Delivery -->
-                <div class="payment-method-row">
-                  <span class="payment-method-name">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="payment-row">
+                  <div class="payment-label-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="1" y="3" width="15" height="13"/>
                       <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
                       <circle cx="5.5" cy="18.5" r="2.5"/>
                       <circle cx="18.5" cy="18.5" r="2.5"/>
                     </svg>
-                    COD
-                  </span>
-                  <div class="progress-track">
-                    <div class="progress-fill white" style="width: 10%;"></div>
+                    <span>Cash on Delivery</span>
                   </div>
-                  <span class="payment-percent-txt">10%</span>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-cod"></div>
+                  </div>
+                  <span class="payment-pct">10%</span>
                 </div>
               </div>
             </div>
 
           </div>
 
-        </div>
+        </section>
 
         <!-- ==================================================
-             BOTTOM ROW: RECENT SALES TABLE
+             ROW 4: RECENT SALES TABLE (FULL WIDTH CARD)
              ================================================== -->
-        <div class="recent-sales-panel">
-          <div class="recent-sales-head">
+        <section class="recent-sales-panel">
+          <div class="sales-header-row">
             <h2 class="panel-title">Recent Sales</h2>
-            <a href="#" class="view-all-link">
+            <a href="{% url 'admin_order_list' %}" class="view-all-link">
               <span>View All</span>
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"/>
                 <polyline points="12 5 19 12 12 19"/>
               </svg>
             </a>
           </div>
 
-          <div class="sales-table-wrapper">
+          <div class="table-container">
             <table class="sales-table">
               <thead>
                 <tr>
@@ -1667,90 +1874,157 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td class="order-id-cell">#ORD-12567</td>
-                  <td class="order-customer-cell">Rahul Verma</td>
-                  <td class="order-date-cell">Aug 10, 2026</td>
-                  <td class="order-amount-cell">₹3,450</td>
-                  <td>
-                    <span class="order-status-badge delivered">DELIVERED</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="order-id-cell">#ORD-12568</td>
-                  <td class="order-customer-cell">Ananya Singh</td>
-                  <td class="order-date-cell">Aug 11, 2026</td>
-                  <td class="order-amount-cell">₹1,240</td>
-                  <td>
-                    <span class="order-status-badge processing">PROCESSING</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="order-id-cell">#ORD-12569</td>
-                  <td class="order-customer-cell">Vikram Malhotra</td>
-                  <td class="order-date-cell">Aug 11, 2026</td>
-                  <td class="order-amount-cell">₹2,890</td>
-                  <td>
-                    <span class="order-status-badge shipped">SHIPPED</span>
-                  </td>
-                </tr>
+                {% for order in recent_orders %}
+                  <tr>
+                    <td class="order-id-cell">#ORD-{{ order.order_number|default:order.id|slice:":8" }}</td>
+                    <td class="customer-cell">{{ order.user.username|default:"Collector" }}</td>
+                    <td class="date-cell">{{ order.created_at|date:"M d, Y" }}</td>
+                    <td class="amount-cell">₹{{ order.total_amount|floatformat:0 }}</td>
+                    <td>
+                      {% if order.status|lower == 'delivered' %}
+                        <span class="status-badge delivered">DELIVERED</span>
+                      {% elif order.status|lower == 'processing' or order.status|lower == 'pending' %}
+                        <span class="status-badge processing">{{ order.status|upper }}</span>
+                      {% elif order.status|lower == 'shipped' %}
+                        <span class="status-badge shipped">SHIPPED</span>
+                      {% else %}
+                        <span class="status-badge neutral">{{ order.status|upper|default:"ACTIVE" }}</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% empty %}
+                  <!-- Reference Matching Demo Orders if DB has no orders yet -->
+                  <tr>
+                    <td class="order-id-cell">#ORD-12567</td>
+                    <td class="customer-cell">Rahul Verma</td>
+                    <td class="date-cell">Aug 10, 2026</td>
+                    <td class="amount-cell">₹3,450</td>
+                    <td><span class="status-badge delivered">DELIVERED</span></td>
+                  </tr>
+                  <tr>
+                    <td class="order-id-cell">#ORD-12568</td>
+                    <td class="customer-cell">Ananya Singh</td>
+                    <td class="date-cell">Aug 11, 2026</td>
+                    <td class="amount-cell">₹1,240</td>
+                    <td><span class="status-badge processing">PROCESSING</span></td>
+                  </tr>
+                  <tr>
+                    <td class="order-id-cell">#ORD-12569</td>
+                    <td class="customer-cell">Vikram Malhotra</td>
+                    <td class="date-cell">Aug 11, 2026</td>
+                    <td class="amount-cell">₹2,890</td>
+                    <td><span class="status-badge shipped">SHIPPED</span></td>
+                  </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
 
-          <!-- Bottom Pagination Controls -->
-          <div class="table-pagination-foot">
-            <a href="#" class="table-page-btn" aria-label="Previous page">&lsaquo;</a>
-            <a href="#" class="table-page-btn active">1</a>
-            <a href="#" class="table-page-btn">2</a>
-            <a href="#" class="table-page-btn">3</a>
-            <a href="#" class="table-page-btn" aria-label="Next page">&rsaquo;</a>
+          <!-- Pagination Bar -->
+          <div class="table-pagination">
+            <button type="button" class="page-btn page-nav-arrow" aria-label="Previous page">&lt;</button>
+            <button type="button" class="page-btn active">1</button>
+            <button type="button" class="page-btn">2</button>
+            <button type="button" class="page-btn">3</button>
+            <button type="button" class="page-btn page-nav-arrow" aria-label="Next page">&gt;</button>
           </div>
-        </div>
+        </section>
 
       </div>
     </main>
 
   </div>
 
+  <!-- Interactive JavaScript: Export Dropdown, Mobile Menu & Chart Controls -->
   <script>
-    // Mobile sidebar toggle
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const adminSidebar = document.getElementById('adminSidebar');
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Mobile Menu Drawer Toggle
+      const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+      const adminSidebar = document.getElementById('adminSidebar');
+      const mobileBackdrop = document.getElementById('mobileBackdrop');
 
-    if (mobileMenuToggle && adminSidebar) {
-      mobileMenuToggle.addEventListener('click', function() {
-        adminSidebar.classList.toggle('mobile-open');
-      });
-    }
+      if (mobileMenuToggle && adminSidebar && mobileBackdrop) {
+        mobileMenuToggle.addEventListener('click', function() {
+          adminSidebar.classList.toggle('open');
+          mobileBackdrop.classList.toggle('open');
+        });
 
-    // Chart Time tab switching interaction
-    function switchChartTab(btn, mode) {
-      const tabs = document.querySelectorAll('.time-tab');
-      tabs.forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-
-      const area = document.getElementById('chartAreaPath');
-      const line = document.getElementById('chartLinePath');
-
-      if (mode === 'week') {
-        line.setAttribute('d', 'M 0 130 C 80 160, 140 110, 220 120 C 300 130, 380 85, 460 75 C 540 65, 620 100, 700 80');
-        area.setAttribute('d', 'M 0 130 C 80 160, 140 110, 220 120 C 300 130, 380 85, 460 75 C 540 65, 620 100, 700 80 L 700 200 L 0 200 Z');
-      } else if (mode === 'month') {
-        line.setAttribute('d', 'M 0 140 C 70 140, 110 175, 170 175 C 230 175, 270 95, 340 95 C 400 95, 430 175, 490 175 C 540 175, 570 50, 620 40 C 660 30, 680 50, 700 50');
-        area.setAttribute('d', 'M 0 140 C 70 140, 110 175, 170 175 C 230 175, 270 95, 340 95 C 400 95, 430 175, 490 175 C 540 175, 570 50, 620 40 C 660 30, 680 50, 700 50 L 700 200 L 0 200 Z');
-      } else if (mode === 'year') {
-        line.setAttribute('d', 'M 0 160 C 100 120, 180 140, 280 100 C 380 60, 480 120, 560 80 C 620 50, 660 35, 700 30');
-        area.setAttribute('d', 'M 0 160 C 100 120, 180 140, 280 100 C 380 60, 480 120, 560 80 C 620 50, 660 35, 700 30 L 700 200 L 0 200 Z');
+        mobileBackdrop.addEventListener('click', function() {
+          adminSidebar.classList.remove('open');
+          mobileBackdrop.classList.remove('open');
+        });
       }
-    }
-    window.addEventListener("pageshow", function (event) {
-        if (event.persisted) {
-            window.location.reload();
+
+      // 2. Export Button Dropdown
+      const exportBtn = document.getElementById('exportBtn');
+      const exportMenu = document.getElementById('exportMenu');
+
+      if (exportBtn && exportMenu) {
+        exportBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          exportMenu.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!exportMenu.contains(e.target) && !exportBtn.contains(e.target)) {
+            exportMenu.classList.remove('open');
+          }
+        });
+      }
+
+      // 3. Dynamic Calculation for Average Order Value if needed
+      const revText = "{{ total_revenue|default:0 }}";
+      const ordText = "{{ total_orders|default:0 }}";
+      const totalRev = parseFloat(revText.replace(/,/g, '')) || 0;
+      const totalOrd = parseInt(ordText, 10) || 0;
+      const avgEl = document.getElementById('avgOrderValueEl');
+      if (avgEl && totalRev > 0 && totalOrd > 0) {
+        const avg = Math.round(totalRev / totalOrd);
+        avgEl.textContent = '₹' + avg.toLocaleString('en-IN');
+      }
+
+      // 4. Time Range Segmented Control for Chart (Week, Month, Year)
+      const segmentBtns = document.querySelectorAll('.segment-btn');
+      const chartLinePath = document.getElementById('chartLinePath');
+      const chartAreaPath = document.getElementById('chartAreaPath');
+
+      const chartPaths = {
+        month: {
+          line: "M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42",
+          area: "M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42 L 690 200 L 10 200 Z"
+        },
+        week: {
+          line: "M 10 150 C 100 150, 160 80, 240 85 C 320 90, 380 130, 470 50 C 530 20, 610 80, 690 60",
+          area: "M 10 150 C 100 150, 160 80, 240 85 C 320 90, 380 130, 470 50 C 530 20, 610 80, 690 60 L 690 200 L 10 200 Z"
+        },
+        year: {
+          line: "M 10 120 C 120 110, 180 160, 280 120 C 370 80, 440 40, 530 65 C 600 85, 640 30, 690 35",
+          area: "M 10 120 C 120 110, 180 160, 280 120 C 370 80, 440 40, 530 65 C 600 85, 640 30, 690 35 L 690 200 L 10 200 Z"
         }
+      };
+
+      segmentBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          segmentBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          const range = this.getAttribute('data-range');
+          if (chartPaths[range] && chartLinePath && chartAreaPath) {
+            chartLinePath.setAttribute('d', chartPaths[range].line);
+            chartAreaPath.setAttribute('d', chartPaths[range].area);
+          }
+        });
+      });
+
+      // 5. Pagination Buttons Interactivity
+      const pageBtns = document.querySelectorAll('.table-pagination .page-btn:not(.page-nav-arrow)');
+      pageBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          pageBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
     });
   </script>
 
 </body>
-</html>
 </html>

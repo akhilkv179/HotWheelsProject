@@ -1,0 +1,2319 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order #{{ order.order_number }} | Hot Wheels HUB</title>
+
+  <!-- Google Fonts: Inter & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       RESET & BASE THEME VARIABLES
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0a0a0d;
+      --bg-canvas: #0f1014;
+      --bg-card: #15151a;
+      --bg-item-card: #17171d;
+      --bg-card-inner: #111115;
+
+      --border-card: rgba(255, 255, 255, 0.06);
+      --border-card-hover: rgba(255, 255, 255, 0.12);
+      --border-divider: rgba(255, 255, 255, 0.05);
+
+      --color-white: #ffffff;
+      --color-text-main: #f3f4f6;
+      --color-text-muted: #9ca3af;
+      --color-text-dim: #6b7280;
+
+      --accent-coral: #f5a596;
+      --accent-coral-glow: rgba(245, 165, 150, 0.4);
+      --accent-coral-soft: #fca5a5;
+      --accent-orange: #ff5500;
+      --accent-red: #e51b24;
+      --accent-green: #22c55e;
+
+      /* Status Badge Colors */
+      --badge-transit-bg: #281418;
+      --badge-transit-border: #4a1f26;
+      --badge-transit-text: #f87171;
+
+      --badge-delivered-bg: #11281d;
+      --badge-delivered-border: #1a4d33;
+      --badge-delivered-text: #34d399;
+
+      --badge-cancelled-bg: #2b1416;
+      --badge-cancelled-border: #542025;
+      --badge-cancelled-text: #f87171;
+
+      --badge-confirmed-bg: #1c1a32;
+      --badge-confirmed-border: #352f63;
+      --badge-confirmed-text: #818cf8;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-display: 'Montserrat', var(--font-main);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--color-text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    /* ==========================================================================
+       NAVBAR (Exact Hot Wheels HUB Header)
+       ========================================================================== */
+    .navbar {
+      height: 72px;
+      background: rgba(10, 10, 13, 0.96);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(24px, 5vw, 64px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(20px, 4vw, 44px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--color-white);
+    }
+
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.35);
+    }
+
+    .logo-badge svg {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: clamp(16px, 2.5vw, 32px);
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      transition: color 0.2s ease;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: var(--color-white);
+    }
+
+    .nav-link.active {
+      color: var(--accent-coral);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-action-btn {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #d1d5db;
+      border-radius: 50%;
+      transition: color 0.2s, background-color 0.2s;
+    }
+
+    .nav-action-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-action-btn svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .nav-avatar-link {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1e1e24;
+      transition: border-color 0.2s;
+    }
+
+    .nav-avatar-link:hover {
+      border-color: var(--accent-coral);
+    }
+
+    .nav-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .nav-avatar-placeholder {
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ==========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================== */
+    .order-page-viewport {
+      flex: 1;
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 44px 24px 80px 24px;
+    }
+
+    /* ==========================================================================
+       DJANGO MESSAGES BANNER
+       ========================================================================== */
+    .alert-container {
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      font-weight: 500;
+      background: #18191e;
+      border: 1px solid var(--border-card);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      animation: fadeInDown 0.3s ease-out;
+    }
+
+    .alert-box.success {
+      border-color: rgba(34, 197, 94, 0.35);
+      background: rgba(34, 197, 94, 0.08);
+      color: #86efac;
+    }
+
+    .alert-box.error {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.08);
+      color: #fca5a5;
+    }
+
+    .alert-box.info {
+      border-color: rgba(56, 189, 248, 0.35);
+      background: rgba(56, 189, 248, 0.08);
+      color: #7dd3fc;
+    }
+
+    .alert-close {
+      background: transparent;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      opacity: 0.7;
+      font-size: 16px;
+      padding: 2px 6px;
+    }
+    .alert-close:hover { opacity: 1; }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       PAGE HEADER ROW (Order #HW-9921, Status Badge & Action Button)
+       ========================================================================== */
+    .order-detail-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      gap: 16px;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .order-title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .order-main-title {
+      font-size: clamp(26px, 4vw, 34px);
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    /* Status Badge */
+    .order-status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background-color: var(--badge-transit-bg);
+      border: 1px solid var(--badge-transit-border);
+      color: var(--badge-transit-text);
+      line-height: 1;
+    }
+
+    .order-status-badge.delivered {
+      background-color: var(--badge-delivered-bg);
+      border-color: var(--badge-delivered-border);
+      color: var(--badge-delivered-text);
+    }
+
+    .order-status-badge.cancelled {
+      background-color: var(--badge-cancelled-bg);
+      border-color: var(--badge-cancelled-border);
+      color: var(--badge-cancelled-text);
+    }
+
+    .order-status-badge.confirmed {
+      background-color: var(--badge-confirmed-bg);
+      border-color: var(--badge-confirmed-border);
+      color: var(--badge-confirmed-text);
+    }
+
+    .order-placed-date {
+      font-size: 13.5px;
+      color: #8b8f9e;
+      font-weight: 400;
+    }
+
+    /* Top Right Action Button */
+    .header-action-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-top-action {
+      background-color: #27282f;
+      border: 1px solid #3d404c;
+      color: #d1d5db;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-top-action:hover {
+      background-color: #32333b;
+      color: #ffffff;
+      border-color: #555869;
+      transform: translateY(-1px);
+    }
+
+    .btn-top-action.return-btn {
+      background-color: #27282f;
+      border-color: rgba(245, 165, 150, 0.4);
+      color: var(--accent-coral);
+    }
+
+    .btn-top-action.return-btn:hover {
+      background-color: var(--accent-coral);
+      color: #121215;
+      border-color: var(--accent-coral);
+    }
+
+    .btn-invoice-action {
+      background-color: #181920;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      text-decoration: none;
+    }
+
+    .btn-invoice-action:hover {
+      background-color: #23242e;
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-invoice-action svg {
+      color: var(--accent-coral);
+    }
+
+    /* Status History Card */
+    .status-history-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 18px;
+      position: relative;
+      padding-left: 10px;
+    }
+
+    .status-history-list::before {
+      content: '';
+      position: absolute;
+      left: 17px;
+      top: 10px;
+      bottom: 10px;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .status-history-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      position: relative;
+    }
+
+    .history-dot-marker {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #181920;
+      border: 2px solid var(--accent-coral);
+      margin-top: 2px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .history-entry-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .history-status-badge {
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .history-timestamp {
+      font-size: 11.5px;
+      color: #8c8d98;
+    }
+
+    .history-empty-note {
+      font-size: 12.5px;
+      color: #6b7280;
+      font-style: italic;
+      padding: 10px 0;
+    }
+
+    .item-price-breakdown {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      color: #9ca3af;
+      margin-top: 3px;
+      flex-wrap: wrap;
+    }
+
+    .item-discount-tag {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    .spec-tag {
+      color: #d1d5db;
+      font-weight: 600;
+    }
+
+    .item-price-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    .address-type-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #9ca3af;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ==========================================================================
+       MAIN TWO-COLUMN GRID
+       ========================================================================== */
+    .order-grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .col-left {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Common Card Styling */
+    .content-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 26px 28px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    /* ==========================================================================
+       CARD: TRACKING STATUS
+       ========================================================================== */
+    .tracking-card {
+      padding: 28px 30px;
+    }
+
+    .tracking-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 30px;
+    }
+
+    /* Horizontal Progress Stepper */
+    .stepper-container {
+      position: relative;
+      margin: 10px 10px 10px 10px;
+    }
+
+    .stepper-track-line {
+      position: absolute;
+      top: 14px;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 1;
+    }
+
+    .stepper-fill-line {
+      position: absolute;
+      top: 14px;
+      left: 20px;
+      height: 2px;
+      background: var(--accent-coral);
+      box-shadow: 0 0 12px var(--accent-coral-glow);
+      z-index: 2;
+      transition: width 0.3s ease;
+    }
+
+    .stepper-nodes-row {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      z-index: 3;
+    }
+
+    .stepper-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100px;
+      text-align: center;
+    }
+
+    .stepper-step:first-child {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .stepper-step:last-child {
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .node-icon-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: #222329;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .node-icon-circle svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .stepper-step.completed .node-icon-circle,
+    .stepper-step.active .node-icon-circle {
+      background-color: var(--accent-coral);
+      border-color: var(--accent-coral);
+      color: #121215;
+      box-shadow: 0 0 14px var(--accent-coral-glow);
+    }
+
+    .step-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7280;
+      margin-bottom: 2px;
+    }
+
+    .stepper-step.completed .step-label,
+    .stepper-step.active .step-label {
+      color: var(--accent-coral);
+    }
+
+    .step-date {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .stepper-step.disabled .step-date {
+      color: #555763;
+    }
+
+    /* ==========================================================================
+       SECTION: ITEMS IN ORDER (X)
+       ========================================================================== */
+    .items-section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .items-section-icon {
+      width: 19px;
+      height: 19px;
+      color: var(--accent-coral);
+    }
+
+    .items-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .items-list-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .item-card-row {
+      background-color: var(--bg-item-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .item-card-row:hover {
+      border-color: var(--border-card-hover);
+    }
+
+    .item-left-info {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .item-thumb-box {
+      width: 68px;
+      height: 68px;
+      border-radius: var(--radius-sm);
+      background-color: #111116;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .item-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .item-thumb-svg {
+      width: 32px;
+      height: 32px;
+      color: #4b5563;
+    }
+
+    .item-meta-col {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .item-product-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-variant-spec {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #9ca3af;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .item-right-price {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .item-price-val {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .item-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .item-status-pill.cancelled {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+
+    .item-status-pill.returned {
+      background: rgba(245, 165, 150, 0.12);
+      border: 1px solid rgba(245, 165, 150, 0.35);
+      color: var(--accent-coral);
+    }
+
+    .item-status-pill .pill-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    .btn-item-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+      padding: 4px 10px;
+      color: #d1d5db;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-item-action:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+
+    .btn-item-action.cancel {
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .btn-item-action.cancel:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #ffffff;
+    }
+
+    .btn-item-action.return {
+      border-color: rgba(245, 165, 150, 0.3);
+      color: var(--accent-coral);
+    }
+
+    .btn-item-action.return:hover {
+      background: var(--accent-coral);
+      color: #121215;
+    }
+
+    .cancelled-price {
+      text-decoration: line-through;
+      color: #6b7280 !important;
+      opacity: 0.7;
+    }
+
+    .cancelled-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ef4444;
+    }
+
+    /* ==========================================================================
+       RIGHT COLUMN: DELIVERY ADDRESS CARD
+       ========================================================================== */
+    .delivery-address-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative radial curve highlight in top-right */
+    .delivery-address-card::after {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .card-header-icon-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .card-header-icon-row svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent-coral);
+      flex-shrink: 0;
+    }
+
+    .recipient-name {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .address-lines-text {
+      font-size: 13.5px;
+      color: #9ca3af;
+      line-height: 1.65;
+    }
+
+    .address-phone-number {
+      font-size: 13.5px;
+      color: #e5e7eb;
+      font-weight: 500;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ==========================================================================
+       RIGHT COLUMN: PAYMENT SUMMARY CARD
+       ========================================================================== */
+    .summary-card-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      margin-top: 18px;
+    }
+
+    .summary-line-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13.5px;
+    }
+
+    .summary-line-label {
+      color: var(--color-text-muted);
+      font-weight: 400;
+    }
+
+    .summary-line-value {
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    .summary-line-value.discount {
+      color: var(--accent-coral);
+    }
+
+    .summary-card-divider {
+      border: none;
+      border-top: 1px solid var(--border-divider);
+      margin: 18px 0 16px 0;
+    }
+
+    .summary-total-group {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .total-title-label {
+      font-size: 14.5px;
+      color: #d1d5db;
+      font-weight: 500;
+    }
+
+    .total-big-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    /* Paid via Razorpay Box */
+    .payment-method-box {
+      background-color: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .payment-method-box svg {
+      width: 18px;
+      height: 18px;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    .payment-method-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .payment-method-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f3f4f6;
+    }
+
+    .payment-method-extra {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    /* ==========================================================================
+       RIGHT COLUMN: NEED HELP WITH THIS ORDER CARD
+       ========================================================================== */
+    .support-card {
+      text-align: center;
+      padding: 26px 20px;
+    }
+
+    .support-icon {
+      width: 24px;
+      height: 24px;
+      color: #8b8f9e;
+      margin: 0 auto 10px auto;
+      display: block;
+    }
+
+    .support-card-text {
+      font-size: 13.5px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .support-card-link {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-coral);
+      border-bottom: 1px dashed var(--accent-coral);
+      padding-bottom: 2px;
+      display: inline-block;
+      transition: opacity 0.2s;
+    }
+
+    .support-card-link:hover {
+      opacity: 0.85;
+    }
+
+    /* Secondary Nav Links (Invoice & Back) */
+    .secondary-order-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 14px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .secondary-order-links a {
+      color: #8b8f9e;
+      transition: color 0.2s;
+    }
+
+    .secondary-order-links a:hover {
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       MODALS: CANCEL ORDER & RETURN ORDER
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background-color: #181920;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 480px;
+      padding: 28px 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-overlay.open .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-close:hover { color: #ffffff; }
+
+    .modal-desc {
+      font-size: 13.5px;
+      color: #d1d5db;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      background-color: #111116;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13.5px;
+      color: #ffffff;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--accent-coral);
+    }
+
+    .form-textarea {
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-secondary {
+      padding: 10px 18px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #d1d5db;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .btn-danger {
+      padding: 10px 22px;
+      background-color: #dc2626;
+      border: none;
+      color: #ffffff;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+    .btn-danger:hover {
+      background-color: #b91c1c;
+    }
+
+    .btn-return-submit {
+      padding: 10px 22px;
+      background-color: var(--accent-coral);
+      border: none;
+      color: #121215;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+    .btn-return-submit:hover {
+      background-color: #fca5a5;
+    }
+
+    /* ==========================================================================
+       SITE FOOTER (Exact Hot Wheels HUB Footer)
+       ========================================================================== */
+    .site-footer {
+      background-color: #08080a;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 60px clamp(24px, 5vw, 64px) 30px clamp(24px, 5vw, 64px);
+      margin-top: auto;
+    }
+
+    .footer-columns {
+      max-width: 1140px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand-text {
+      font-size: 13px;
+      color: #8b8f9e;
+      line-height: 1.6;
+      max-width: 320px;
+      margin-top: 14px;
+    }
+
+    .footer-column-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-coral);
+      margin-bottom: 18px;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: #9ca3af;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    .social-icons-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .social-icon-btn {
+      color: #9ca3af;
+      transition: color 0.2s;
+    }
+
+    .social-icon-btn:hover {
+      color: #ffffff;
+    }
+
+    .social-icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .social-text-links {
+      font-size: 12px;
+      color: #8b8f9e;
+    }
+
+    .footer-bottom-bar {
+      max-width: 1140px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 24px;
+    }
+
+    .footer-copyright {
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #8b8f9e;
+      text-transform: uppercase;
+    }
+
+    .footer-accent-bar {
+      width: 80px;
+      height: 2px;
+      background: var(--accent-coral);
+      border-radius: 2px;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE BREAKPOINTS
+       ========================================================================== */
+    @media (max-width: 900px) {
+      .order-grid-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .footer-columns {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .order-page-viewport {
+        padding: 24px 16px 60px 16px;
+      }
+
+      .order-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-action-container {
+        width: 100%;
+      }
+
+      .btn-top-action {
+        width: 100%;
+        text-align: center;
+      }
+
+      .item-card-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .item-right-price {
+        align-items: flex-start;
+        margin-top: 10px;
+        padding-left: 86px;
+      }
+
+      .stepper-nodes-row {
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================================================
+       TOP NAVBAR
+       ================================================== -->
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="{% url 'home' %}" class="brand-logo">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+            <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+            <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+          </svg>
+        </div>
+        <span class="brand-name">HUB</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="{% url 'home' %}" class="nav-link active">HOME</a></li>
+        <li><a href="{% url 'user_product_list' %}" class="nav-link">SHOP</a></li>
+        <li><a href="{% url 'user_category_list' %}" class="nav-link">COLLECTIONS</a></li>
+        <li><a href="#" class="nav-link">ABOUT</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-right">
+      <a href="{% url 'user_product_list' %}" class="nav-action-btn" title="Search Products" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'wishlist' %}" class="nav-action-btn" title="Wishlist" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'cart_list' %}" class="nav-action-btn" title="Cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'profile' %}" class="nav-avatar-link" title="My Profile">
+        {% if request.user.profile_image %}
+          <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" class="nav-avatar-img">
+        {% else %}
+          <div class="nav-avatar-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+        {% endif %}
+      </a>
+    </div>
+  </header>
+
+  <!-- ==================================================
+       MAIN VIEWPORT
+       ================================================== -->
+  <main class="order-page-viewport">
+
+    <!-- Django Messages Alerts -->
+    {% if messages %}
+      <div class="alert-container">
+        {% for message in messages %}
+          <div class="alert-box {% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+            <span>{{ message }}</span>
+            <button class="alert-close" onclick="this.parentElement.remove();">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Top Order Title & Header Action Row -->
+    <div class="order-detail-header">
+      <div class="header-left">
+        <div class="order-title-group">
+          <h1 class="order-main-title">Order #{{ order.order_number }}</h1>
+          {% with status_clean=order.status|lower %}
+            {% if status_clean == "shipped" or status_clean == "out_for_delivery" %}
+              <span class="order-status-badge">IN TRANSIT</span>
+            {% elif status_clean == "delivered" %}
+              <span class="order-status-badge delivered">DELIVERED</span>
+            {% elif status_clean == "cancelled" %}
+              <span class="order-status-badge cancelled">CANCELLED</span>
+            {% elif status_clean == "confirmed" %}
+              <span class="order-status-badge confirmed">CONFIRMED</span>
+            {% else %}
+              <span class="order-status-badge">{{ order.status|upper }}</span>
+            {% endif %}
+          {% endwith %}
+        </div>
+        <p class="order-placed-date">Placed on {{ order.created_at|date:"F d, Y" }}</p>
+      </div>
+
+      <!-- CRITICAL REQUIREMENT: ACTION BUTTONS REFLECTING ORDER STATUS -->
+      <div class="header-action-container">
+        <a href="{% url 'download_invoice' order.order_number %}" class="btn-invoice-action" title="Download Official Tax Invoice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          DOWNLOAD INVOICE
+        </a>
+        {% if order.status == "pending" or order.status == "confirmed" %}
+          <!-- Pending or Confirmed: Cancel Item Button -->
+          <button type="button" class="btn-top-action" onclick="openCancelHeaderModal()">
+            CANCEL ITEM
+          </button>
+        {% elif order.status == "delivered" %}
+          <!-- Delivered: Replace Cancel Order with Return Order Button -->
+          <button type="button" class="btn-top-action return-btn" onclick="openReturnModal()">
+            RETURN ORDER
+          </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 2-Column Content Layout matching Reference Screenshot -->
+    <div class="order-grid-layout">
+
+      <!-- ==================================================
+           LEFT COLUMN: Tracking Status & Items in Order
+           ================================================== -->
+      <div class="col-left">
+
+        <!-- Tracking Status Card -->
+        <section class="content-card tracking-card">
+          <h2 class="tracking-card-title">Tracking Status</h2>
+
+          <div class="stepper-container">
+            <!-- Background base line -->
+            <div class="stepper-track-line"></div>
+
+            <!-- Dynamic glowing line width based on order.status -->
+            {% with status_clean=order.status|lower %}
+              {% if status_clean == "delivered" %}
+                <div class="stepper-fill-line" style="width: calc(100% - 40px);"></div>
+              {% elif status_clean == "shipped" or status_clean == "out_for_delivery" %}
+                <div class="stepper-fill-line" style="width: calc(50% - 20px);"></div>
+              {% else %}
+                <div class="stepper-fill-line" style="width: 0;"></div>
+              {% endif %}
+            {% endwith %}
+
+            <div class="stepper-nodes-row">
+
+              <!-- Step 1: Confirmed -->
+              <div class="stepper-step {% if order.status|lower != 'cancelled' %}completed{% endif %}">
+                <div class="node-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <div class="step-label">Confirmed</div>
+                <div class="step-date">{{ order.created_at|date:"M d" }}</div>
+              </div>
+
+              <!-- Step 2: Shipped -->
+              {% with status_clean=order.status|lower %}
+                <div class="stepper-step {% if status_clean == 'shipped' or status_clean == 'out_for_delivery' or status_clean == 'delivered' %}completed{% else %}disabled{% endif %}">
+                  <div class="node-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="1" y="3" width="15" height="13"/>
+                      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                      <circle cx="5.5" cy="18.5" r="2.5"/>
+                      <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                  </div>
+                  <div class="step-label">Shipped</div>
+                  <div class="step-date">
+                    {% if status_clean == 'shipped' or status_clean == 'out_for_delivery' or status_clean == 'delivered' %}
+                      {{ order.updated_at|date:"M d" }}
+                    {% else %}
+                      Pending
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Step 3: Delivered -->
+                <div class="stepper-step {% if status_clean == 'delivered' %}completed{% else %}disabled{% endif %}">
+                  <div class="node-icon-circle">
+                    {% if status_clean == 'delivered' %}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    {% else %}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                      </svg>
+                    {% endif %}
+                  </div>
+                  <div class="step-label">Delivered</div>
+                  <div class="step-date">
+                    {% if status_clean == 'delivered' %}
+                      {{ order.updated_at|date:"M d" }}
+                    {% else %}
+                      Est. in 3-5 days
+                    {% endif %}
+                  </div>
+                </div>
+              {% endwith %}
+
+            </div>
+          </div>
+        </section>
+
+        <!-- Items in Order Section -->
+        <section>
+          <div class="items-section-header">
+            <svg class="items-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+            <h2 class="items-section-title">Items in Order ({{ order.items.count }})</h2>
+          </div>
+
+          <div class="items-list-stack">
+            {% for item in order.items.all %}
+              <div class="item-card-row">
+                <div class="item-left-info">
+                  <div class="item-thumb-box">
+                    {% with image=item.product_variant.images.all.0 %}
+                      {% if image and image.image_url %}
+                        <img
+                          src="{% if 'http' in image.image_url %}{{ image.image_url }}{% elif '/media/' in image.image_url %}{{ image.image_url }}{% else %}/media/{{ image.image_url }}{% endif %}"
+                          alt="{{ item.product_name }}"
+                          class="item-thumb-img"
+                          loading="lazy"
+                        >
+                      {% else %}
+                        <svg class="item-thumb-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.5 2 12v4c0 .6.4 1 1 1h2"/>
+                          <circle cx="7" cy="17" r="2"/>
+                          <path d="M9 17h6"/>
+                          <circle cx="17" cy="17" r="2"/>
+                        </svg>
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+
+                  <div class="item-meta-col">
+                    <div class="item-product-name" title="{{ item.product_name }}">{{ item.product_name }}</div>
+                    
+                    <div class="item-variant-spec">
+                      <span class="spec-tag">QTY: {{ item.quantity }}</span>
+                      {% if item.product_variant.color %}
+                        <span class="spec-tag">COLOR: {{ item.product_variant.color|upper }}</span>
+                      {% endif %}
+                      {% if item.product_variant.size %}
+                        <span class="spec-tag">SCALE: {{ item.product_variant.size|upper }}</span>
+                      {% endif %}
+                    </div>
+
+                    <div class="item-price-breakdown">
+                      <span>Unit: ₹<span class="format-num">{{ item.unit_price|floatformat:2 }}</span></span>
+                      {% if item.discount_amount and item.discount_amount > 0 %}
+                        <span class="item-discount-tag">-₹<span class="format-num">{{ item.discount_amount|floatformat:2 }}</span> off</span>
+                      {% endif %}
+                    </div>
+
+                    {% if item.item_status == "cancelled" %}
+                      <div>
+                        <span class="item-status-pill cancelled">
+                          <span class="pill-dot"></span> Cancelled
+                        </span>
+                      </div>
+                    {% elif item.returns.all %}
+                      {% with return_obj=item.returns.all.0 %}
+                        <div>
+                          <span class="item-status-pill returned">
+                            <span class="pill-dot"></span> Return: {{ return_obj.status|title }}
+                          </span>
+                        </div>
+                      {% endwith %}
+                    {% elif item.item_status == "returned" %}
+                      <div>
+                        <span class="item-status-pill returned">
+                          <span class="pill-dot"></span> Returned
+                        </span>
+                      </div>
+                    {% else %}
+                      {% if order.status == "delivered" %}
+                        <div>
+                          <button type="button" class="btn-item-action return" onclick="openReturnForItem('{{ item.id }}', '{{ item.product_name|escapejs }}')">
+                            Return Item
+                          </button>
+                        </div>
+                      {% elif order.status == "pending" or order.status == "confirmed" %}
+                        <div>
+                          <button type="button" class="btn-item-action cancel" onclick="openCancelForItem('{{ item.id }}', '{{ item.product_name|escapejs }}', '{% url 'cancel_order' order.order_number item.id %}')">
+                            Cancel Item
+                          </button>
+                        </div>
+                      {% else %}
+                        <div>
+                          <span class="item-status-pill active">
+                            <span class="pill-dot"></span> Active
+                          </span>
+                        </div>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="item-right-price">
+                  <div class="item-price-val {% if item.item_status == 'cancelled' %}cancelled-price{% endif %}">
+                    ₹<span class="format-num">{{ item.total_price|floatformat:2 }}</span>
+                  </div>
+                  {% if item.item_status == "cancelled" %}
+                    <span class="cancelled-tag">Cancelled</span>
+                  {% elif item.item_status == "returned" %}
+                    <span class="cancelled-tag" style="background: rgba(147, 51, 234, 0.15); color: #c084fc; border-color: rgba(147, 51, 234, 0.3);">Returned</span>
+                  {% endif %}
+                </div>
+              </div>
+            {% empty %}
+              <div class="content-card" style="text-align: center; color: #9ca3af; padding: 40px;">
+                No items recorded for this order.
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ==================================================
+           RIGHT COLUMN: Delivery Address, Payment Summary & Support
+           ================================================== -->
+      <div class="col-right">
+
+        <!-- Delivery Address Card -->
+        <section class="content-card delivery-address-card">
+          <div class="card-header-icon-row">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 8h-3V4H1v13h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+            </svg>
+            <h2 class="card-title">Delivery Address</h2>
+            {% if order.order_address.address_label %}
+              <span class="address-type-tag">{{ order.order_address.address_label|upper }}</span>
+            {% endif %}
+          </div>
+
+          <div class="recipient-name">
+            {% if order.order_address and order.order_address.full_name %}
+              {{ order.order_address.full_name }}
+            {% elif order.user.get_full_name %}
+              {{ order.user.get_full_name }}
+            {% else %}
+              {{ order.user.username }}
+            {% endif %}
+          </div>
+
+          <div class="address-lines-text">
+            {% if order.order_address %}
+              {{ order.order_address.address_line1 }}<br>
+              {% if order.order_address.address_line2 %}
+                {{ order.order_address.address_line2 }}<br>
+              {% endif %}
+              {{ order.order_address.city }}, {{ order.order_address.state }} - {{ order.order_address.pin }}<br>
+              {{ order.order_address.country }}
+            {% else %}
+              Standard Home Delivery
+            {% endif %}
+          </div>
+
+          <div class="address-phone-number">
+            {% if order.order_address and order.order_address.phone %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              {{ order.order_address.phone }}
+            {% endif %}
+          </div>
+        </section>
+
+        <!-- Payment Summary Card -->
+        <section class="content-card">
+          <div class="card-header-icon-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            <h2 class="card-title">Payment Summary</h2>
+          </div>
+
+          <div class="summary-card-rows">
+            <div class="summary-line-row">
+              <span class="summary-line-label">Subtotal ({{ order.items.count }} Item{% if order.items.count != 1 %}s{% endif %})</span>
+              <span class="summary-line-value">₹<span class="format-num">{{ order.subtotal|floatformat:2 }}</span></span>
+            </div>
+
+            <div class="summary-line-row">
+              <span class="summary-line-label">Shipping (Express)</span>
+              <span class="summary-line-value">₹<span class="format-num">{{ order.shipping_amount|floatformat:2 }}</span></span>
+            </div>
+
+            <div class="summary-line-row">
+              <span class="summary-line-label">Discount</span>
+              <span class="summary-line-value discount">- ₹<span class="format-num">{{ order.discount_amount|floatformat:2 }}</span></span>
+            </div>
+          </div>
+
+          <hr class="summary-card-divider">
+
+          <div class="summary-total-group">
+            <span class="total-title-label">Total</span>
+            <span class="total-big-val">₹<span class="format-num">{{ order.total_amount|floatformat:2 }}</span></span>
+          </div>
+
+          <!-- Paid via Razorpay Box -->
+          <div class="payment-method-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            <div class="payment-method-meta">
+              <span class="payment-method-name">Paid via {{ order.delivery_method|default:"Razorpay" }}</span>
+              <span class="payment-method-extra">Order Status: {{ order.status|title }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Order Status History Card -->
+        <section class="content-card status-history-card">
+          <div class="card-header-icon-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <h2 class="card-title">Order Status History</h2>
+          </div>
+
+          {% if order.status_history.all %}
+            <div class="status-history-list">
+              {% for history in order.status_history.all %}
+                <div class="status-history-entry">
+                  <div class="history-dot-marker"></div>
+                  <div class="history-entry-body">
+                    <span class="history-status-badge {{ history.status|lower }}">{{ history.status|title }}</span>
+                    <span class="history-timestamp">{{ history.created_at|date:"M d, Y &bull; h:i A" }}</span>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div style="font-size: 13px; color: #9ca3af; padding: 6px 0;">
+              Order placed on {{ order.created_at|date:"M d, Y &bull; h:i A" }} ({{ order.status|title }}).
+            </div>
+          {% endif %}
+        </section>
+
+        <!-- Need Help with this Order Card -->
+        <section class="content-card support-card">
+          <svg class="support-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div class="support-card-text">Need help with this order?</div>
+          <a href="mailto:support@hotwheels.com" class="support-card-link">CONTACT SUPPORT</a>
+
+          <div class="secondary-order-links">
+            <a href="{% url 'download_invoice' order.order_number %}" title="Download PDF Invoice">
+              Download Invoice
+            </a>
+            <span>&bull;</span>
+            <a href="{% url 'user_order_list' %}" title="View all your orders">
+              Back to Orders
+            </a>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==================================================
+       CANCEL ORDER MODAL (Active for Pending / Confirmed)
+       ================================================== -->
+  {% if order.status == "pending" or order.status == "confirmed" %}
+    <div id="cancelOrderModal" class="modal-overlay" onclick="closeModalOnBg(event, 'cancelOrderModal')">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title">CANCEL ITEM</h3>
+          <button type="button" class="modal-close" onclick="closeCancelModal()">&times;</button>
+        </div>
+
+        <p class="modal-desc">
+          Are you sure you want to cancel <strong id="cancelItemNameDisplay">this item</strong> from Order <strong>#{{ order.order_number }}</strong>? Once confirmed, this item will be cancelled and returned to inventory while the rest of your order remains active.
+        </p>
+
+        <form
+          method="POST"
+          action="{% for itm in order.items.all %}{% if forloop.first %}{% url 'cancel_order' order.order_number itm.id %}{% endif %}{% endfor %}"
+          id="cancelOrderForm"
+          onsubmit="return handleCancelFormSubmit(this);"
+        >
+          {% csrf_token %}
+
+          <!-- Selection dropdown shown when opened from header button -->
+          <div class="form-group" id="cancelItemSelectGroup" style="display: none;">
+            <label class="form-label" for="cancelItemSelect">Select Item to Cancel</label>
+            <select
+              id="cancelItemSelect"
+              class="form-select"
+              onchange="onCancelDropdownChange(this)"
+            >
+              {% for itm in order.items.all %}
+                {% if itm.item_status != "cancelled" and itm.item_status != "returned" %}
+                  <option
+                    value="{{ itm.id }}"
+                    data-action="{% url 'cancel_order' order.order_number itm.id %}"
+                    data-name="{{ itm.product_name }}"
+                  >
+                    {{ itm.product_name }} &bull; Qty: {{ itm.quantity }} &bull; ₹{{ itm.total_price|floatformat:2 }}
+                  </option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cancel-reason">Cancellation Reason</label>
+            <textarea
+              id="cancel-reason"
+              name="reason"
+              class="form-textarea"
+              rows="3"
+              required
+              placeholder="Please let us know why you are cancelling this item..."
+            ></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeCancelModal()">Keep Item</button>
+            <button type="submit" class="btn-danger">Confirm Cancellation</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ==================================================
+       RETURN ORDER MODAL (Active for Delivered Orders)
+       ================================================== -->
+  {% if order.status == "delivered" %}
+    <div id="returnOrderModal" class="modal-overlay" onclick="closeModalOnBg(event, 'returnOrderModal')">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title">RETURN ORDER</h3>
+          <button type="button" class="modal-close" onclick="closeReturnModal()">&times;</button>
+        </div>
+
+        <p class="modal-desc">
+          Submit a return request for Order <strong>#{{ order.order_number }}</strong>. Our team will review your request promptly.
+        </p>
+
+        <form
+          method="POST"
+          id="returnOrderForm"
+          action="{% if order.items.all.0 %}{% url 'request_return' order.order_number order.items.all.0.id %}{% endif %}"
+          onsubmit="return handleReturnFormSubmit(this);"
+        >
+          {% csrf_token %}
+
+          {% if order.items.count > 1 %}
+            <div class="form-group">
+              <label class="form-label" for="returnItemSelect">Select Item to Return</label>
+              <select id="returnItemSelect" class="form-select" onchange="updateReturnAction(this.value)">
+                {% for item in order.items.all %}
+                  {% if item.item_status != "cancelled" and not item.returns.all and item.item_status != "returned" %}
+                    <option value="{{ item.id }}">{{ item.product_name }} (Qty: {{ item.quantity }})</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          {% endif %}
+
+          <div class="form-group">
+            <label class="form-label" for="return-reason">Return Reason</label>
+            <select id="return-reason" name="reason" class="form-select" required>
+              <option value="">Select a reason</option>
+              <option value="Damaged product">Damaged product</option>
+              <option value="Wrong product received">Wrong product received</option>
+              <option value="Missing parts">Missing parts</option>
+              <option value="Product not as described">Product not as described</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="return-description">Describe the Issue</label>
+            <textarea
+              id="return-description"
+              name="description"
+              class="form-textarea"
+              rows="3"
+              required
+              placeholder="Provide specific details about why you want to return this item..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="return-note">Additional Note (Optional)</label>
+            <textarea
+              id="return-note"
+              name="user_add_note"
+              class="form-textarea"
+              rows="2"
+              placeholder="Any additional information for the inspection team..."
+            ></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeReturnModal()">Close</button>
+            <button type="submit" class="btn-return-submit">Submit Return Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ==================================================
+       SITE FOOTER
+       ================================================== -->
+  <footer class="site-footer">
+    <div class="footer-columns">
+      <div class="footer-brand">
+        <a href="{% url 'home' %}" class="brand-logo">
+          <div class="logo-badge">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+              <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+              <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+            </svg>
+          </div>
+          <span class="brand-name">HUB</span>
+        </a>
+        <p class="footer-brand-text">
+          Precision engineering meets ultimate speed. The premier destination for serious die-cast collectors.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Company</h4>
+        <ul class="footer-links-list">
+          <li><a href="{% url 'home' %}" class="footer-link">About Us</a></li>
+          <li><a href="{% url 'home' %}" class="footer-link">Contact</a></li>
+          <li><a href="{% url 'home' %}" class="footer-link">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Connect</h4>
+        <div class="social-icons-row">
+          <a href="#" class="social-icon-btn" title="Share" aria-label="Share">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-btn" title="Website" aria-label="Website">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-btn" title="YouTube" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+          </a>
+        </div>
+        <p class="social-text-links">Instagram / Facebook / YouTube</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <div class="footer-copyright">
+        &copy; 2024 HOT WHEELS HUB. ALL RIGHTS RESERVED.
+      </div>
+      <div class="footer-accent-bar"></div>
+    </div>
+  </footer>
+
+  <!-- ==================================================
+       SCRIPTS: MODALS & NUMBER FORMATTING
+       ================================================== -->
+  <script>
+    const orderNumber = "{{ order.order_number|escapejs }}";
+    let cancelSubmitted = false;
+    let returnSubmitted = false;
+
+    function handleCancelFormSubmit(form) {
+      if (cancelSubmitted) return false;
+      cancelSubmitted = true;
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) {
+        btn.textContent = 'Cancelling...';
+        btn.style.opacity = '0.7';
+        btn.style.cursor = 'not-allowed';
+      }
+      return true;
+    }
+
+    function handleReturnFormSubmit(form) {
+      if (returnSubmitted) return false;
+      returnSubmitted = true;
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) {
+        btn.textContent = 'Submitting Request...';
+        btn.style.opacity = '0.7';
+        btn.style.cursor = 'not-allowed';
+      }
+      return true;
+    }
+
+    function openCancelModal() {
+      openCancelHeaderModal();
+    }
+
+    function closeCancelModal() {
+      const modal = document.getElementById('cancelOrderModal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function openCancelHeaderModal() {
+      const modal = document.getElementById('cancelOrderModal');
+      const selectGroup = document.getElementById('cancelItemSelectGroup');
+      const select = document.getElementById('cancelItemSelect');
+      const nameDisplay = document.getElementById('cancelItemNameDisplay');
+      const form = document.getElementById('cancelOrderForm');
+
+      if (selectGroup) {
+        selectGroup.style.display = 'block';
+      }
+      if (select && select.options.length > 0) {
+        const selectedOpt = select.options[select.selectedIndex];
+        if (selectedOpt) {
+          if (nameDisplay) nameDisplay.textContent = selectedOpt.getAttribute('data-name') || 'the selected item';
+          if (form) form.action = selectedOpt.getAttribute('data-action') || `/orders/my-orders/${orderNumber}/items/${select.value}/cancel/`;
+        }
+      }
+      if (modal) modal.classList.add('open');
+    }
+
+    function openCancelForItem(itemId, productName, cancelUrl) {
+      const modal = document.getElementById('cancelOrderModal');
+      const selectGroup = document.getElementById('cancelItemSelectGroup');
+      const nameDisplay = document.getElementById('cancelItemNameDisplay');
+      const form = document.getElementById('cancelOrderForm');
+
+      if (selectGroup) {
+        selectGroup.style.display = 'none';
+      }
+      if (nameDisplay) {
+        nameDisplay.textContent = productName || 'this item';
+      }
+      if (form) {
+        form.action = cancelUrl || `/orders/my-orders/${orderNumber}/items/${itemId}/cancel/`;
+      }
+      if (modal) {
+        modal.classList.add('open');
+      }
+    }
+
+    function onCancelDropdownChange(selectEl) {
+      const form = document.getElementById('cancelOrderForm');
+      const nameDisplay = document.getElementById('cancelItemNameDisplay');
+      if (selectEl && selectEl.selectedIndex >= 0) {
+        const selectedOpt = selectEl.options[selectEl.selectedIndex];
+        if (selectedOpt) {
+          const actionUrl = selectedOpt.getAttribute('data-action');
+          const productName = selectedOpt.getAttribute('data-name');
+          if (form && actionUrl) {
+            form.action = actionUrl;
+          }
+          if (nameDisplay && productName) {
+            nameDisplay.textContent = productName;
+          }
+        }
+      }
+    }
+
+    function openReturnModal() {
+      const modal = document.getElementById('returnOrderModal');
+      const select = document.getElementById('returnItemSelect');
+      if (select && select.value) {
+        updateReturnAction(select.value);
+      }
+      if (modal) modal.classList.add('open');
+    }
+
+    function closeReturnModal() {
+      const modal = document.getElementById('returnOrderModal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function openReturnForItem(itemId, productName) {
+      const select = document.getElementById('returnItemSelect');
+      if (select) {
+        select.value = itemId;
+      }
+      updateReturnAction(itemId);
+      openReturnModal();
+    }
+
+    function updateReturnAction(itemId) {
+      const form = document.getElementById('returnOrderForm');
+      if (form && itemId) {
+        form.action = `/orders/my-orders/${orderNumber}/items/${itemId}/return/`;
+      }
+    }
+
+    function closeModalOnBg(e, modalId) {
+      if (e.target.id === modalId) {
+        document.getElementById(modalId).classList.remove('open');
+      }
+    }
+
+    // Escape closes modals
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeCancelModal();
+        closeReturnModal();
+      }
+    });
+
+    // Indian Thousands Formatting (e.g. 5,548.00)
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.format-num').forEach(function(el) {
+        const val = parseFloat(el.textContent.replace(/,/g, ''));
+        if (!isNaN(val)) {
+          if (el.textContent.includes('.')) {
+            el.textContent = val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          } else {
+            el.textContent = val.toLocaleString('en-IN');
+          }
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

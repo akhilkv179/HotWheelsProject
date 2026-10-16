@@ -7,6 +7,7 @@ from .views.admin_forgot_password_view import admin_forgot_password
 from .views.admin_verify_forgot_password_otp_view import admin_verify_forgot_password_otp
 from .views.admin_set_new_password_view import admin_set_new_password
 from .views.admin_logout import admin_logout
+from admin_panel.views.admin_report_export_view import (export_orders_excel,export_orders_pdf,)
 
 
 urlpatterns = [
@@ -18,5 +19,7 @@ urlpatterns = [
     path("forgot-password/verify-otp/",admin_verify_forgot_password_otp,name="admin_verify_forgot_password_otp",),
     path("forgot-password/set-new-password/",admin_set_new_password,name="admin_set_new_password",),
     path("admin_logout/", admin_logout, name="admin_logout"),
+    path("reports/orders/excel/", export_orders_excel, name="export_orders_excel"),
+    path("reports/orders/pdf/", export_orders_pdf, name="export_orders_pdf"),
     
 ]

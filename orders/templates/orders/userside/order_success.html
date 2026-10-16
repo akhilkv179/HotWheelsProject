@@ -1,0 +1,448 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Placed Successfully | Hot Wheels HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0a0a0c;
+      --accent-coral: #fca5a5;
+      --accent-coral-bright: #f5a596;
+      --accent-coral-hover: #ffb8b8;
+      --accent-green: #22c55e;
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-display: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient Glow Backdrop */
+    .bg-ambient-glow {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, rgba(245, 165, 150, 0.05) 45%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .order-success-modal-card {
+      width: 100%;
+      max-width: 520px;
+      background-color: #141418;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid #22c55e;
+      border-radius: 22px;
+      padding: 40px 34px 34px 34px;
+      position: relative;
+      box-shadow: 0 32px 90px rgba(0, 0, 0, 0.85), 0 0 60px rgba(34, 197, 94, 0.16);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 1;
+      animation: modalCardPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes modalCardPop {
+      from {
+        opacity: 0;
+        transform: scale(0.92) translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-close-icon-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .modal-close-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .modal-close-icon-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .modal-celebrate-badge-wrap {
+      position: relative;
+      width: 86px;
+      height: 86px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .celebrate-badge-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px dashed rgba(34, 197, 94, 0.45);
+      animation: rotateRing 14s linear infinite;
+    }
+
+    @keyframes rotateRing {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .celebrate-badge-icon {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.28) 0%, rgba(34, 197, 94, 0.1) 100%);
+      border: 2px solid #22c55e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #22c55e;
+      box-shadow: 0 0 32px rgba(34, 197, 94, 0.4);
+    }
+
+    .celebrate-badge-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .success-modal-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .success-modal-desc {
+      font-size: 13.5px;
+      color: #9ca3af;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      max-width: 440px;
+    }
+
+    .modal-order-summary-box {
+      width: 100%;
+      background: #191920;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 26px;
+      text-align: left;
+    }
+
+    .modal-summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      font-size: 13px;
+    }
+
+    .modal-row-label {
+      color: #8e8e98;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .modal-row-value {
+      color: #ffffff;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .modal-row-value.badge-success {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .modal-row-value.badge-success .dot-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #22c55e;
+    }
+
+    .total-highlight-row {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 12px;
+      margin-top: 2px;
+    }
+
+    .modal-total-price {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--accent-coral-bright);
+    }
+
+    .modal-actions-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .btn-modal-primary {
+      width: 100%;
+      background: var(--accent-coral);
+      color: #121215;
+      padding: 14px 22px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(252, 165, 165, 0.35);
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-modal-primary:hover {
+      background: var(--accent-coral-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-modal-primary svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-modal-secondary {
+      width: 100%;
+      background: #1e1e24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      padding: 12px 22px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-modal-secondary:hover {
+      background: #282832;
+      color: #ffffff;
+    }
+
+    .btn-modal-secondary svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .modal-guarantee-note {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: #71717a;
+    }
+
+    .modal-guarantee-note svg {
+      width: 14px;
+      height: 14px;
+      stroke: #71717a;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-ambient-glow"></div>
+
+  <!-- Order Success Modal Card -->
+  <div class="order-success-modal-card">
+    <!-- Close button -->
+    <a href="{% url 'user_order_list' %}" class="modal-close-icon-btn" title="Close" aria-label="Close modal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </a>
+
+    <!-- Celebrate badge -->
+    <div class="modal-celebrate-badge-wrap">
+      <div class="celebrate-badge-ring"></div>
+      <div class="celebrate-badge-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Title & Subtitle -->
+    <h1 class="success-modal-title">ORDER PLACED SUCCESSFULLY!</h1>
+    <p class="success-modal-desc">
+      Thank you for your purchase! Your Hot Wheels collector order has been confirmed and is now being processed with priority speed.
+    </p>
+
+    <!-- Order Summary Recap Card -->
+    <div class="modal-order-summary-box">
+      {% if order %}
+        <div class="modal-summary-row">
+          <span class="modal-row-label">ORDER NUMBER</span>
+          <span class="modal-row-value" style="font-family: monospace; font-size: 13.5px; color: #e2e8f0;">
+            #{{ order.order_number }}
+          </span>
+        </div>
+
+        <div class="modal-summary-row">
+          <span class="modal-row-label">STATUS</span>
+          <span class="modal-row-value badge-success">
+            <span class="dot-indicator"></span> {{ order.status|title }}
+          </span>
+        </div>
+
+        <div class="modal-summary-row">
+          <span class="modal-row-label">PAYMENT METHOD</span>
+          <span class="modal-row-value">{{ order.delivery_method|default:"Cash on Delivery" }}</span>
+        </div>
+
+        {% if order.order_address %}
+          <div class="modal-summary-row">
+            <span class="modal-row-label">DELIVERING TO</span>
+            <span class="modal-row-value">
+              {{ order.order_address.full_name }}, {{ order.order_address.city }}
+            </span>
+          </div>
+        {% endif %}
+
+        <div class="modal-summary-row total-highlight-row">
+          <span class="modal-row-label">TOTAL AMOUNT</span>
+          <span class="modal-row-value modal-total-price">
+            ₹{{ order.total_amount|floatformat:2 }}
+          </span>
+        </div>
+      {% else %}
+        <div class="modal-summary-row">
+          <span class="modal-row-label">STATUS</span>
+          <span class="modal-row-value badge-success">
+            <span class="dot-indicator"></span> Confirmed
+          </span>
+        </div>
+
+        <div class="modal-summary-row total-highlight-row">
+          <span class="modal-row-label">STATUS</span>
+          <span class="modal-row-value modal-total-price">Confirmed</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Actions Row -->
+    <div class="modal-actions-group">
+      {% if order %}
+        <a href="{% url 'user_order_detail' order.order_number %}" class="btn-modal-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>View Order Details</span>
+        </a>
+      {% endif %}
+
+      <a href="{% url 'user_order_list' %}" class="btn-modal-primary" {% if order %}style="background: #1e1e24; color: #ffffff; border: 1px solid rgba(255,255,255,0.08);"{% endif %}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+        <span>View My Orders</span>
+      </a>
+
+      <a href="{% url 'user_product_list' %}" class="btn-modal-secondary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <span>Continue Shopping</span>
+      </a>
+    </div>
+
+    <!-- Small Guarantee Note -->
+    <div class="modal-guarantee-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <span>Full buyer protection &amp; genuine die-cast guarantee</span>
+    </div>
+  </div>
+
+</body>
+</html>
+

@@ -1,21 +1,29 @@
-# Virtual environment
-venv/
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
 
+# Virtual environments
+.venv/
+venv/
+
 # Environment variables and secrets
 .env
+.env.*
+!.env.example
 
-# Local database
-db.sqlite3
+# Local databases
+*.sqlite3
 
-# VS Code
+# User-uploaded media
+media/
+
+# IDE settings
 .vscode/
 
 # macOS
 .DS_Store
 
-# User uploaded media
-media/
+# Logs and test coverage
+*.log
+.coverage
+htmlcov/
