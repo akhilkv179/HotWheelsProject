@@ -11,11 +11,11 @@ from products.views.adminside.inventory_view import (admin_inventory_list,admin_
 
 
 urlpatterns = [
-    path("admin_productslist/",product_list,name="admin_product_list"),
-    path("admin_productsadd/",product_add,name="admin_product_add"),
-    path("admin_productsedit/<int:product_id>/",product_edit,name="admin_product_edit",),
-    path("admin_productoffer/<int:product_id>/", product_offer, name="admin_product_offer"),
-    path("admin_productoffer_toggle/<int:offer_id>/",toggle_product_offer,name="admin_product_offer_toggle"),
+    path("admin-productslist/",product_list,name="admin_product_list"),
+    path("admin-productsadd/",product_add,name="admin_product_add"),
+    path("admin-productsedit/<int:product_id>/",product_edit,name="admin_product_edit",),
+    path("admin-productoffer/<int:product_id>/", product_offer, name="admin_product_offer"),
+    path("admin-productoffer_toggle/<int:offer_id>/",toggle_product_offer,name="admin_product_offer_toggle"),
     path("products/", user_product_list, name="user_product_list"),
     path("products/<int:product_id>/", product_details, name="user_product_details"),
     path("productvariant/<int:product_id>",product_variant,name="product_variant"),
@@ -24,6 +24,7 @@ urlpatterns = [
     path("admin/inventory/", admin_inventory_list, name="admin_inventory_list"),
     path("admin/inventory/<int:product_id>/",admin_inventory_detail,name="admin_inventory_detail",),
     path("admin/inventory/variant/<int:variant_id>/update/",admin_update_stock,name="admin_update_stock", ),
+
 
 
 ]

@@ -16,7 +16,7 @@ def product_list(request):
     min_price = request.GET.get("min_price", "").strip()
     max_price = request.GET.get("max_price", "").strip()
 
-    products = Product.objects.filter(is_active=True,is_deleted = False,category__is_active=True,category__is_deleted = False,variants__is_active=True).select_related(
+    products = Product.objects.filter(is_deleted = False,category__is_active=True,category__is_deleted = False,variants__is_active=True).select_related(
         "category"
     ).prefetch_related(
         "variants__images",

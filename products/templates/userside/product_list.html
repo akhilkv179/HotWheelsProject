@@ -342,81 +342,6 @@
       margin-bottom: 16px;
     }
 
-    /* Search Dropdown / Bar */
-    .search-popover-form {
-      position: absolute;
-      top: 72px;
-      left: 0;
-      right: 0;
-      background: #121217;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 14px clamp(20px, 4vw, 56px);
-      display: none;
-      align-items: center;
-      gap: 12px;
-      z-index: 95;
-    }
-
-    .search-popover-form.open {
-      display: flex;
-    }
-
-    .search-input-main {
-      flex: 1;
-      height: 42px;
-      background: #191922;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      padding: 0 16px;
-      color: #ffffff;
-      font-size: 13.5px;
-      outline: none;
-    }
-
-    .search-input-main:focus {
-      border-color: var(--accent-coral);
-    }
-
-    .search-popover-btn {
-      height: 42px;
-      padding: 0 18px;
-      background: var(--accent-coral);
-      color: #111115;
-      font-weight: 800;
-      font-size: 12.5px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .search-popover-clear-btn {
-      height: 42px;
-      padding: 0 16px;
-      background: #181822;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      color: #b0b0c0;
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .search-popover-clear-btn:hover {
-      color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.3);
-      background: #22222d;
-    }
-
     /* ==================================================
        MAIN TWO-COLUMN WORKSPACE
        ================================================== */
@@ -1531,34 +1456,6 @@
     </div>
   </header>
 
-  <!-- Expandable Search Popover Form -->
-  <form
-    method="GET"
-    action="{% url 'user_product_list' %}"
-    class="search-popover-form {% if search_query %}open{% endif %}"
-    id="searchPopover"
-  >
-    <input
-      type="text"
-      name="search"
-      class="search-input-main"
-      placeholder="Search diecast castings by name or series..."
-      value="{{ search_query }}"
-    >
-    <input type="hidden" name="category" value="{{ selected_category }}">
-    <input type="hidden" name="min_price" value="{{ min_price }}">
-    <input type="hidden" name="max_price" value="{{ max_price }}">
-    <input type="hidden" name="sort" value="{{ sort }}">
-    <button type="submit" class="search-popover-btn">Search</button>
-    {% if search_query %}
-      <a
-        href="{% url 'user_product_list' %}?category={{ selected_category|urlencode }}&min_price={{ min_price|urlencode }}&max_price={{ max_price|urlencode }}&sort={{ sort|urlencode }}"
-        class="search-popover-clear-btn"
-        title="Clear Search"
-      >Clear</a>
-    {% endif %}
-  </form>
-
   <!-- Main Catalog Two-Column Layout -->
   <main class="catalog-workspace">
 
@@ -2038,20 +1935,11 @@
       // Header search toggle button: focus on-page catalog search bar smoothly
       const searchToggleBtn = document.getElementById("searchToggleBtn");
       const catalogSearchInput = document.getElementById("catalogSearchInput");
-      const searchPopover = document.getElementById("searchPopover");
 
-      if (searchToggleBtn) {
+      if (searchToggleBtn && catalogSearchInput) {
         searchToggleBtn.addEventListener("click", function () {
-          if (catalogSearchInput) {
-            catalogSearchInput.focus();
-            catalogSearchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          } else if (searchPopover) {
-            searchPopover.classList.toggle("open");
-            if (searchPopover.classList.contains("open")) {
-              const input = searchPopover.querySelector(".search-input-main");
-              if (input) input.focus();
-            }
-          }
+          catalogSearchInput.focus();
+          catalogSearchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
       }
 

@@ -383,37 +383,37 @@
       flex-wrap: wrap;
     }
 
-    .btn-breadcrumb-cancel {
-      display: inline-flex;
+    /* Unavailable Product Notice Banner */
+    .unavailable-notice-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
       align-items: center;
-      gap: 7px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      border-radius: 8px;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      padding: 7px 14px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.15s ease;
+      gap: 14px;
+      color: #fca5a5;
+      margin-bottom: 20px;
     }
 
-    .btn-breadcrumb-cancel:hover {
-      background: rgba(229, 27, 36, 0.12);
-      border-color: rgba(229, 27, 36, 0.4);
+    .unavailable-notice-banner svg {
+      color: var(--accent-red);
+      flex-shrink: 0;
+    }
+
+    .unavailable-notice-banner strong {
+      display: block;
       color: #ffffff;
-      transform: translateX(-2px);
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
     }
 
-    .btn-breadcrumb-cancel svg {
-      transition: transform 0.15s ease;
-    }
-
-    .btn-breadcrumb-cancel:hover svg {
-      transform: translateX(-2px);
+    .unavailable-notice-banner span {
+      font-size: 12px;
+      color: var(--text-muted);
     }
 
     .breadcrumbs-bar {
@@ -665,7 +665,7 @@
       border-radius: 12px;
       padding: 20px 24px;
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
@@ -673,8 +673,9 @@
 
     .price-values-wrap {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .price-sale-huge {
@@ -682,13 +683,59 @@
       font-weight: 900;
       color: #ffffff;
       letter-spacing: -0.02em;
+      line-height: 1;
     }
 
     .price-regular-strike {
       font-size: 16px;
       color: var(--text-dim);
       text-decoration: line-through;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .price-discount-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      white-space: nowrap;
+    }
+
+    .price-discount-tag svg {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    .price-tax-note {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .tax-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .offer-savings-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--badge-stock-green);
     }
 
     .discount-ribbon-pill {
@@ -699,6 +746,21 @@
       color: #ffffff;
       font-size: 11px;
       font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .unavailable-pill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       padding: 4px 10px;
@@ -729,6 +791,12 @@
     }
 
     .stock-banner.sold-out {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--badge-stock-red);
+    }
+
+    .stock-banner.unavailable {
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.3);
       color: var(--badge-stock-red);
@@ -787,6 +855,19 @@
     .variant-card-btn.out-of-stock {
       opacity: 0.55;
       border-style: dashed;
+    }
+
+    .v-stock-tag {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 1px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
     }
 
     .v-color-name {
@@ -883,40 +964,6 @@
       color: var(--accent-red);
       border-color: rgba(229, 27, 36, 0.6);
       background-color: rgba(229, 27, 36, 0.1);
-    }
-
-    .btn-cancel-action {
-      height: 52px;
-      padding: 0 22px;
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border-card);
-      border-radius: 10px;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 12.5px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .btn-cancel-action:hover {
-      background-color: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.45);
-      color: #ef4444;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
-    }
-
-    .btn-cancel-action:active {
-      transform: translateY(0);
     }
 
     /* Trust Guarantees */
@@ -1167,6 +1214,22 @@
       height: 180px;
       background: #0d0d12;
       overflow: hidden;
+      position: relative;
+    }
+
+    .related-discount-pill {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      padding: 3px 7px;
+      border-radius: 4px;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
 
     .related-thumb-box img {
@@ -1397,8 +1460,7 @@
         flex-direction: column;
       }
       .btn-add-cart-main,
-      .btn-wishlist-action,
-      .btn-cancel-action {
+      .btn-wishlist-action {
         width: 100%;
         justify-content: center;
       }
@@ -1554,21 +1616,22 @@
           {% endif %}
         {% endfor %}
       </nav>
-
-      <button
-        type="button"
-        class="btn-breadcrumb-cancel"
-        id="breadcrumbCancelBtn"
-        onclick="goBackToRecentPage()"
-        title="Cancel and return to recent page"
-      >
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="19" y1="12" x2="5" y2="12"/>
-          <polyline points="12 19 5 12 12 5"/>
-        </svg>
-        <span>Cancel</span>
-      </button>
     </div>
+
+    <!-- Unavailable Product Alert Banner -->
+    {% if product_unavailable %}
+      <div class="unavailable-notice-banner" role="alert">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div>
+          <strong>{{ unavailable_message|default:"Product Unavailable" }}</strong>
+          <span>This collectible casting or its category is currently unlisted and not available for purchase.</span>
+        </div>
+      </div>
+    {% endif %}
 
     <!-- Two-Column Product Showcase -->
     <div class="showcase-grid">
@@ -1649,9 +1712,11 @@
             <span>{{ product.category.name }}</span>
           </a>
 
-          {% if product.offer_percentage %}
+          {% if product_unavailable %}
+            <span class="unavailable-pill-tag">Unavailable</span>
+          {% elif product.offer_percentage and product.offer_percentage > 0 %}
             <span class="discount-ribbon-pill">
-              {{ product.offer_name|default:"Limited Sale" }} (-{{ product.offer_percentage }}%)
+              {{ product.offer_name|default:"Limited Sale" }} &bull; {{ product.offer_percentage|floatformat:0 }}% OFF
             </span>
           {% endif %}
         </div>
@@ -1683,33 +1748,53 @@
             <span class="price-sale-huge" id="displayedPrice">
               ₹{{ product.sale_price }}
             </span>
-            {% if product.offer_percentage %}
-              <span class="price-regular-strike">
+            {% if product.offer_percentage and product.offer_percentage > 0 %}
+              <span class="price-regular-strike" id="displayedRegularPrice">
                 ₹{{ product.regular_price }}
+              </span>
+              <span class="price-discount-tag" id="discountBadge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="5" x2="5" y2="19"/>
+                  <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
+                  <circle cx="17.5" cy="17.5" r="2.5" fill="currentColor"/>
+                </svg>
+                <span>{{ product.offer_percentage|floatformat:0 }}% OFF</span>
               </span>
             {% endif %}
           </div>
 
-          <div style="text-align: right;">
-            <span style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">
-              Inclusive of all taxes
-            </span>
+          <div class="price-tax-note">
+            <span class="tax-text">Inclusive of all taxes</span>
+            {% if product.offer_percentage and product.offer_percentage > 0 %}
+              <span class="offer-savings-text">
+                {% if product.offer_name %}{{ product.offer_name }}{% else %}Special Offer Applied{% endif %}
+              </span>
+            {% endif %}
           </div>
         </div>
 
         <!-- Stock Availability Status -->
-        <div id="stockBanner" class="stock-banner {% if stock_status == 'sold_out' %}sold-out{% elif stock_status == 'low_stock' %}low-stock{% else %}in-stock{% endif %}">
-          <span class="pulse-dot"></span>
-          <span id="stockStatusText">
-            {% if stock_status == "sold_out" %}
-              Sold Out — Currently unavailable for purchase
-            {% elif stock_status == "low_stock" %}
-              Low Stock — Only {{ total_stock }} collector models left!
-            {% else %}
-              In Stock &amp; Ready to Ship ({{ total_stock }} units available)
-            {% endif %}
-          </span>
-        </div>
+        {% if product_unavailable %}
+          <div id="stockBanner" class="stock-banner unavailable">
+            <span class="pulse-dot"></span>
+            <span id="stockStatusText">
+              Product Unavailable — Currently not available for purchase
+            </span>
+          </div>
+        {% else %}
+          <div id="stockBanner" class="stock-banner {% if stock_status == 'sold_out' %}sold-out{% elif stock_status == 'low_stock' %}low-stock{% else %}in-stock{% endif %}">
+            <span class="pulse-dot"></span>
+            <span id="stockStatusText">
+              {% if stock_status == "sold_out" %}
+                Sold Out — Currently unavailable for purchase
+              {% elif stock_status == "low_stock" %}
+                Low Stock — Only {{ total_stock }} collector models left!
+              {% else %}
+                In Stock &amp; Ready to Ship ({{ total_stock }} units available)
+              {% endif %}
+            </span>
+          </div>
+        {% endif %}
 
         <!-- Variant Selector -->
         <div>
@@ -1718,7 +1803,7 @@
             {% for variant in variants %}
               <button
                 type="button"
-                class="variant-card-btn {% if forloop.first %}active{% endif %} {% if variant.stock_status == 'out_of_stock' %}out-of-stock{% endif %}"
+                class="variant-card-btn {% if forloop.first %}active{% endif %} {% if variant.stock_quantity <= 0 or variant.stock_status == 'out_of_stock' %}out-of-stock{% endif %}"
                 data-id="{{ variant.id }}"
                 data-color="{{ variant.color }}"
                 data-size="{{ variant.size }}"
@@ -1727,7 +1812,12 @@
                 data-status="{{ variant.stock_status }}"
                 data-wishlist="{% if variant.wishlist_item_id %}{{ variant.wishlist_item_id }}{% endif %}"
               >
-                <span class="v-color-name">{{ variant.color }}</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                  <span class="v-color-name">{{ variant.color }}</span>
+                  {% if variant.stock_quantity <= 0 or variant.stock_status == 'out_of_stock' %}
+                    <span class="v-stock-tag">Out of Stock</span>
+                  {% endif %}
+                </div>
                 <div class="v-meta-row">
                   <span>{{ variant.size }}</span>
                   <span class="v-meta-price">₹{{ variant.price }}</span>
@@ -1739,70 +1829,71 @@
 
         <!-- Action CTAs: Add to Cart & Wishlist -->
         <div class="actions-cta-row">
-          <!-- Add to Cart Link -->
-          {% with first_variant=variants.0 %}
-            <a
-              id="addToCartBtn"
-              href="{% if first_variant and first_variant.stock_quantity > 0 %}{% url 'add_to_cart' first_variant.id %}{% else %}javascript:void(0);{% endif %}"
-              class="btn-add-cart-main {% if not first_variant or first_variant.stock_quantity <= 0 %}disabled{% endif %}"
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="9" cy="21" r="1"/>
-                <circle cx="20" cy="21" r="1"/>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-              </svg>
-              <span id="addToCartText">
-                {% if first_variant and first_variant.stock_quantity > 0 %}
-                  ADD TO CART
-                {% else %}
-                  OUT OF STOCK
-                {% endif %}
-              </span>
-            </a>
-
-            <!-- Wishlist Heart Button -->
-            {% if request.user.is_authenticated %}
-              <a
-                id="wishlistBtn"
-                href="{% url 'wishlist_add' first_variant.id %}"
-                class="btn-wishlist-action {% if first_variant.wishlist_item_id %}active{% endif %}"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="{% if first_variant.wishlist_item_id %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <span id="wishlistText">
-                  {% if first_variant.wishlist_item_id %}Saved to Wishlist{% else %}Add to Wishlist{% endif %}
-                </span>
-              </a>
-            {% else %}
-              <a
-                id="wishlistBtn"
-                href="{% url 'login' %}"
-                class="btn-wishlist-action"
-                title="Sign in to save"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <span>Add to Wishlist</span>
-              </a>
-            {% endif %}
-
-            <!-- Cancel / Return to Recent Page Button -->
+          {% if product_unavailable %}
             <button
               type="button"
-              class="btn-cancel-action"
-              id="cancelBtn"
-              onclick="goBackToRecentPage()"
-              title="Cancel and return to recent page"
+              class="btn-add-cart-main disabled"
+              disabled
+              aria-disabled="true"
             >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
               </svg>
-              <span>CANCEL</span>
+              <span>PRODUCT UNAVAILABLE</span>
             </button>
-          {% endwith %}
+          {% else %}
+            <!-- Add to Cart Link -->
+            {% with first_variant=variants.0 %}
+              <a
+                id="addToCartBtn"
+                href="{% if first_variant and first_variant.stock_quantity > 0 and first_variant.stock_status != 'out_of_stock' %}{% url 'add_to_cart' first_variant.id %}{% else %}javascript:void(0);{% endif %}"
+                class="btn-add-cart-main {% if not first_variant or first_variant.stock_quantity <= 0 or first_variant.stock_status == 'out_of_stock' %}disabled{% endif %}"
+                {% if not first_variant or first_variant.stock_quantity <= 0 or first_variant.stock_status == 'out_of_stock' %}aria-disabled="true"{% endif %}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="9" cy="21" r="1"/>
+                  <circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <span id="addToCartText">
+                  {% if first_variant and first_variant.stock_quantity > 0 and first_variant.stock_status != 'out_of_stock' %}
+                    ADD TO CART
+                  {% else %}
+                    OUT OF STOCK
+                  {% endif %}
+                </span>
+              </a>
+
+              <!-- Wishlist Heart Button -->
+              {% if request.user.is_authenticated %}
+                <a
+                  id="wishlistBtn"
+                  href="{% if first_variant %}{% url 'wishlist_add' first_variant.id %}{% else %}#{% endif %}"
+                  class="btn-wishlist-action {% if first_variant.wishlist_item_id %}active{% endif %}"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="{% if first_variant.wishlist_item_id %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span id="wishlistText">
+                    {% if first_variant.wishlist_item_id %}Saved to Wishlist{% else %}Add to Wishlist{% endif %}
+                  </span>
+                </a>
+              {% else %}
+                <a
+                  id="wishlistBtn"
+                  href="{% url 'login' %}"
+                  class="btn-wishlist-action"
+                  title="Sign in to save"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span>Add to Wishlist</span>
+                </a>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
         </div>
 
         <!-- Trust Badges -->
@@ -1861,7 +1952,7 @@
           </div>
           <div class="highlight-info-wrap">
             <span class="highlight-label">Casting Category</span>
-            <span class="highlight-value">{{ product.category.name }}</span>
+            <span class="highlight-value">{{ product.category.name|default:"Official Collection" }}</span>
           </div>
         </div>
 
@@ -1869,12 +1960,12 @@
           <div class="highlight-icon-circle">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
+              <polygon points="12 6 12 12 16 14"/>
             </svg>
           </div>
           <div class="highlight-info-wrap">
-            <span class="highlight-label">Diecast Scale</span>
-            <span class="highlight-value">1:64 Scale Standard</span>
+            <span class="highlight-label">Available Editions</span>
+            <span class="highlight-value">{{ variants|length }} Colorway{{ variants|length|pluralize }}</span>
           </div>
         </div>
 
@@ -1885,22 +1976,36 @@
             </svg>
           </div>
           <div class="highlight-info-wrap">
-            <span class="highlight-label">Chassis &amp; Body</span>
-            <span class="highlight-value">ZAMAC Die-cast Metal</span>
+            <span class="highlight-label">Collector Rating</span>
+            <span class="highlight-value">
+              {% if average_rating %}
+                {{ average_rating|floatformat:1 }} / 5.0 ({{ total_reviews }} review{{ total_reviews|pluralize }})
+              {% else %}
+                Collector Unrated
+              {% endif %}
+            </span>
           </div>
         </div>
 
         <div class="highlight-card">
           <div class="highlight-icon-circle">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="8"/>
-              <line x1="12" y1="2" x2="12" y2="4"/>
-              <line x1="12" y1="20" x2="12" y2="22"/>
+              <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
           <div class="highlight-info-wrap">
-            <span class="highlight-label">Wheel Specification</span>
-            <span class="highlight-value">Precision Real Riders</span>
+            <span class="highlight-label">Inventory Status</span>
+            <span class="highlight-value">
+              {% if product_unavailable %}
+                Unavailable
+              {% elif stock_status == 'sold_out' %}
+                Sold Out
+              {% elif stock_status == 'low_stock' %}
+                Low Stock ({{ total_stock }} units left)
+              {% else %}
+                In Stock ({{ total_stock }} units)
+              {% endif %}
+            </span>
           </div>
         </div>
       </div>
@@ -1991,6 +2096,14 @@
                     </div>
                   {% endif %}
                 {% endwith %}
+
+                {% if rel.offers.all %}
+                  {% with rel_offer=rel.offers.all.0 %}
+                    {% if rel_offer.is_active and rel_offer.discount_value > 0 %}
+                      <span class="related-discount-pill">{{ rel_offer.discount_value|floatformat:0 }}% OFF</span>
+                    {% endif %}
+                  {% endwith %}
+                {% endif %}
               </div>
               <div class="related-info-box">
                 <span style="font-size: 10px; font-weight: 800; color: var(--accent-red); text-transform: uppercase;">
@@ -2226,6 +2339,7 @@
       // ----------------------------------------------------
       // 2. Interactive Variant Switching
       // ----------------------------------------------------
+      const isProductUnavailable = {{ product_unavailable|yesno:"true,false" }};
       const variantsDataEl = document.getElementById("variantsData");
       let variantsList = [];
       try {
@@ -2236,6 +2350,7 @@
 
       const variantBtns = document.querySelectorAll(".variant-card-btn");
       const displayedPrice = document.getElementById("displayedPrice");
+      const displayedRegularPrice = document.getElementById("displayedRegularPrice");
       const stockBanner = document.getElementById("stockBanner");
       const stockStatusText = document.getElementById("stockStatusText");
       const addToCartBtn = document.getElementById("addToCartBtn");
@@ -2243,6 +2358,7 @@
       const wishlistBtn = document.getElementById("wishlistBtn");
       const wishlistText = document.getElementById("wishlistText");
       const isUserAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+      const offerPercentage = {% if product.offer_percentage and product.offer_percentage > 0 %}{{ product.offer_percentage }}{% else %}null{% endif %};
 
       variantBtns.forEach((btn) => {
         btn.addEventListener("click", function () {
@@ -2253,18 +2369,51 @@
           const variant = variantsList.find((v) => v.id === variantId);
           if (!variant) return;
 
-          // Update price
+          // Update price display
           if (displayedPrice) {
-            displayedPrice.textContent = `₹${variant.price}`;
+            if (offerPercentage && offerPercentage > 0) {
+              const regPrice = parseFloat(variant.price);
+              if (!isNaN(regPrice)) {
+                const discountAmt = (regPrice * offerPercentage) / 100;
+                const salePrice = (regPrice - discountAmt).toFixed(2);
+                displayedPrice.textContent = `₹${salePrice}`;
+                if (displayedRegularPrice) {
+                  displayedRegularPrice.textContent = `₹${regPrice.toFixed(2)}`;
+                }
+              } else {
+                displayedPrice.textContent = `₹${variant.price}`;
+              }
+            } else {
+              displayedPrice.textContent = `₹${variant.price}`;
+            }
           }
 
-          // Update Stock Status
+          // If product is marked unavailable overall
+          if (isProductUnavailable) {
+            if (stockBanner && stockStatusText) {
+              stockBanner.className = "stock-banner unavailable";
+              stockStatusText.textContent = "Product Unavailable — Currently not available for purchase";
+            }
+            if (addToCartBtn && addToCartText) {
+              addToCartBtn.classList.add("disabled");
+              addToCartBtn.setAttribute("href", "javascript:void(0);");
+              addToCartBtn.setAttribute("aria-disabled", "true");
+              addToCartText.textContent = "PRODUCT UNAVAILABLE";
+            }
+            return;
+          }
+
+          // Determine stock status for selected variant
+          const isOutOfStock = (variant.stock_quantity <= 0 || variant.stock_status === "out_of_stock");
+          const isLowStock = (!isOutOfStock && variant.stock_status === "low_stock");
+
+          // Update Stock Status Banner
           if (stockBanner && stockStatusText) {
             stockBanner.className = "stock-banner";
-            if (variant.stock_quantity <= 0 || variant.stock_status === "out_of_stock") {
+            if (isOutOfStock) {
               stockBanner.classList.add("sold-out");
-              stockStatusText.textContent = `Sold Out — This variant is currently unavailable`;
-            } else if (variant.stock_status === "low_stock") {
+              stockStatusText.textContent = "Sold Out — This variant is currently unavailable";
+            } else if (isLowStock) {
               stockBanner.classList.add("low-stock");
               stockStatusText.textContent = `Low Stock — Only ${variant.stock_quantity} left for this variant!`;
             } else {
@@ -2275,13 +2424,15 @@
 
           // Update Add to Cart Button
           if (addToCartBtn && addToCartText) {
-            if (variant.stock_quantity <= 0 || variant.stock_status === "out_of_stock") {
+            if (isOutOfStock) {
               addToCartBtn.classList.add("disabled");
-              addToCartBtn.removeAttribute("href");
+              addToCartBtn.setAttribute("href", "javascript:void(0);");
+              addToCartBtn.setAttribute("aria-disabled", "true");
               addToCartText.textContent = "OUT OF STOCK";
             } else {
               addToCartBtn.classList.remove("disabled");
               addToCartBtn.setAttribute("href", variant.addToCartUrl);
+              addToCartBtn.removeAttribute("aria-disabled");
               addToCartText.textContent = "ADD TO CART";
             }
           }
@@ -2303,55 +2454,17 @@
           }
         });
       });
-    })();
 
-    // ----------------------------------------------------
-    // Return to Recent Page (Cancel Action)
-    // ----------------------------------------------------
-    function goBackToRecentPage() {
-      const fallbackUrl = "{% url 'user_product_list' %}";
-      const referrer = document.referrer;
-
-      // 1. If referrer exists and belongs to the same site
-      if (referrer && referrer.startsWith(window.location.origin)) {
-        try {
-          const referrerUrl = new URL(referrer);
-          // Only navigate if it's not the exact same product details page
-          if (referrerUrl.pathname !== window.location.pathname) {
-            window.location.href = referrer;
-            return;
+      // Prevent navigation on disabled Add to Cart button
+      if (addToCartBtn) {
+        addToCartBtn.addEventListener("click", function (e) {
+          if (this.classList.contains("disabled") || this.getAttribute("aria-disabled") === "true") {
+            e.preventDefault();
+            return false;
           }
-        } catch (e) {
-          // Fallback if URL parsing fails
-        }
+        });
       }
-
-      // 2. If browser has history entries in the current session
-      if (window.history.length > 1) {
-        window.history.back();
-        // Fallback safety timeout if history.back() does not navigate
-        setTimeout(function () {
-          window.location.href = fallbackUrl;
-        }, 350);
-        return;
-      }
-
-      // 3. Default fallback to products listing
-      window.location.href = fallbackUrl;
-    }
-
-    window.goBackToRecentPage = goBackToRecentPage;
-
-    document.addEventListener("DOMContentLoaded", function () {
-      const cancelBtn = document.getElementById("cancelBtn");
-      if (cancelBtn) {
-        cancelBtn.addEventListener("click", goBackToRecentPage);
-      }
-      const breadcrumbCancelBtn = document.getElementById("breadcrumbCancelBtn");
-      if (breadcrumbCancelBtn) {
-        breadcrumbCancelBtn.addEventListener("click", goBackToRecentPage);
-      }
-    });
+    })();
 
     // Auto-dismiss toast messages after 4 seconds
     setTimeout(function () {
