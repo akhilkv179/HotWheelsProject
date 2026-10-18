@@ -1,24 +1,25 @@
+from datetime import datetime
+
 from django.contrib import messages
-from django.contrib.auth import authenticate,login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
-from django.shortcuts import render,redirect
+from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+
+from ..forms import SetNewPasswordForm
 from ..services.otp_service import generate_otp, get_otp_expiry
 from ..services.email_service import send_otp_email
-from django.utils import timezone
-from django.contrib.auth import update_session_auth_hash
-from datetime import datetime
-from django.views.decorators.cache import never_cache
+
 
 @never_cache
 @login_required
 def change_password(request):
+    """Send an OTP to the logged-in user's registered email."""
 
     user = request.user
 
     if request.method == "POST":
-
         otp = generate_otp()
         expiry = get_otp_expiry()
 
@@ -27,10 +28,14 @@ def change_password(request):
 
         send_otp_email(user.email, otp)
 
-        messages.success(request,"OTP has been sent to your registered email.")
+        messages.success(
+            request,
+            "OTP has been sent to your registered email.",
+        )
         return redirect("verify_password_change_otp")
 
     return render(request, "accounts/change_password.html")
+
 
 @never_cache
 def verify_password_change_otp(request):
@@ -38,80 +43,93 @@ def verify_password_change_otp(request):
     stored_otp = request.session.get("password_change_otp")
     expiry_string = request.session.get("password_change_otp_expiry")
 
-
     if not stored_otp or not expiry_string:
-        messages.error(request,"OTP session has expired.")
+        messages.error(request, "OTP session has expired.")
         return redirect("change_password")
 
     expiry = datetime.fromisoformat(expiry_string)
 
     if request.method == "POST":
-        entered_otp = request.POST.get("otp","").strip()
+        entered_otp = request.POST.get("otp", "").strip()
 
         if not entered_otp:
-            messages.error(request,"OTP is required")
-            return render(request,"accounts/verify_password_change_otp.html")
+            messages.error(request, "OTP is required")
+            return render(
+                request,
+                "accounts/verify_password_change_otp.html",
+            )
 
         if timezone.now() > expiry:
-            messages.error(request,"OTP has expired")
-            return render(request,"accounts/verify_password_change_otp.html")
+            messages.error(request, "OTP has expired")
+            return render(
+                request,
+                "accounts/verify_password_change_otp.html",
+            )
 
         if entered_otp != stored_otp:
-            messages.error(request,"Invalid OTP")
-            return render(request,"accounts/verify_password_change_otp.html")
+            messages.error(request, "Invalid OTP")
+            return render(
+                request,
+                "accounts/verify_password_change_otp.html",
+            )
 
         request.session["password_change_verified"] = True
 
-        request.session.pop("password_change_otp",None)
-        request.session.pop("password_change_otp_expiry",None)
+        request.session.pop("password_change_otp", None)
+        request.session.pop("password_change_otp_expiry", None)
 
         return redirect("set_new_password")
-    
-    return render(request,"accounts/verify_password_change_otp.html")
+
+    return render(
+        request,
+        "accounts/verify_password_change_otp.html",
+    )
+
 
 @never_cache
+@login_required
 def set_new_password(request):
+    """Validate and save a new password after OTP verification."""
 
     if not request.session.get("password_change_verified"):
-        messages.error(request,"please verify the otp")
+        messages.error(request, "Please verify the OTP first.")
         return redirect("change_password")
 
     user = request.user
 
     if request.method == "POST":
+        form = SetNewPasswordForm(
+            request.POST,
+            user=user,
+        )
 
-        new_password = request.POST.get("new_password","")
-        confirm_password = request.POST.get("confirm_password","")
+        if form.is_valid():
+            new_password = form.cleaned_data["new_password"]
 
-        if not new_password:
-            messages.error(request,"New password is required")
-            return render(request,"accounts/set_new_password.html")
+            user.set_password(new_password)
+            user.save()
 
-        if new_password != confirm_password:
-            messages.error(request,"password do not match")
-            return render(request,"accounts/set_new_password.html")
+            # Keep the current user logged in after changing the password.
+            update_session_auth_hash(request, user)
 
-        try:
-            validate_password(new_password)
-        except ValidationError as error:
-            for message in error.messages:
-                messages.error(request,message)
+            request.session.pop("password_change_verified", None)
 
-            return render(request,"accounts/set_new_password.html")
+            messages.success(
+                request,
+                "Password changed successfully.",
+            )
+            return redirect("profile")
 
-        user.set_password(new_password)
-        user.save()
+        # Display validation errors using Django messages.
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                messages.error(request, error)
 
-        update_session_auth_hash(request,user)
+    else:
+        form = SetNewPasswordForm(user=user)
 
-        request.session.pop("password_change_verified",None)
-
-        messages.success(request,"Password changed successfully.")
-        return redirect("profile")
-
-    return render(request,"accounts/set_new_password.html")
-
-
-                                            
-            
-            
+    return render(
+        request,
+        "accounts/set_new_password.html",
+        {"form": form},
+    )

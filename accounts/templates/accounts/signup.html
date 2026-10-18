@@ -219,6 +219,11 @@
       gap: 8px;
     }
 
+    .alert-container:empty {
+      display: none;
+      margin-bottom: 0;
+    }
+
     .alert-box {
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.35);
@@ -230,8 +235,17 @@
       font-weight: 500;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
       line-height: 1.4;
+      animation: alertFadeIn 0.2s ease-out;
+    }
+
+    .alert-content-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
     }
 
     .alert-box.success {
@@ -246,6 +260,41 @@
       height: 16px;
       flex-shrink: 0;
       stroke: currentColor;
+    }
+
+    .alert-close-btn {
+      background: transparent;
+      border: none;
+      color: currentColor;
+      cursor: pointer;
+      padding: 0 4px;
+      font-size: 18px;
+      line-height: 1;
+      opacity: 0.65;
+      transition: opacity 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .alert-close-btn:hover {
+      opacity: 1;
+    }
+
+    .input-container.is-invalid {
+      border-color: var(--accent-red) !important;
+      box-shadow: 0 0 0 1px rgba(225, 6, 0, 0.3) !important;
+    }
+
+    @keyframes alertFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Form Styles */
@@ -621,24 +670,29 @@
         <p class="card-subtitle">CREATE YOUR COLLECTOR ACCOUNT</p>
       </div>
 
-      <!-- Messages / Errors -->
-      {% if messages %}
-        <div class="alert-container">
+      <!-- Messages / Errors (Single error displayed at a time) -->
+      <div class="alert-container" id="signupAlertContainer">
+        {% if messages %}
           {% for message in messages %}
-            <div class="alert-box {% if message.tags == 'success' %}success{% endif %}">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              <span>{{ message }}</span>
-            </div>
+            {% if forloop.first %}
+              <div class="alert-box {% if message.tags == 'success' %}success{% endif %}">
+                <div class="alert-content-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span class="alert-message-text">{{ message }}</span>
+                </div>
+                <button type="button" class="alert-close-btn" aria-label="Dismiss alert">&times;</button>
+              </div>
+            {% endif %}
           {% endfor %}
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
 
       <!-- Signup Form connected to existing Django POST action -->
-      <form method="POST" action="{% url 'signup' %}" class="signup-form">
+      <form method="POST" action="{% url 'signup' %}" class="signup-form" id="signupForm" novalidate>
         {% csrf_token %}
 
         <!-- USERNAME -->
@@ -862,7 +916,7 @@
     </div>
   </footer>
 
-  <!-- Interactive JavaScript: Password Toggles -->
+  <!-- Interactive JavaScript: Password Toggles & Form Validation -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Toggle for main password
@@ -889,6 +943,208 @@
             ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;stroke-width:1.8;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
             : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;stroke-width:1.8;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
         });
+      }
+
+      // Single-Error Sequential Validation & Display
+      const signupForm = document.getElementById('signupForm');
+      const alertContainer = document.getElementById('signupAlertContainer');
+      const usernameInput = document.getElementById('username');
+      const emailInput = document.getElementById('email');
+      const phoneInput = document.getElementById('phone');
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirm_password');
+
+      const formFields = [
+        usernameInput,
+        emailInput,
+        phoneInput,
+        passwordInput,
+        confirmPasswordInput
+      ].filter(Boolean);
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function clearErrors() {
+        if (alertContainer) {
+          alertContainer.innerHTML = '';
+        }
+        formFields.forEach(function(field) {
+          const container = field.closest('.input-container');
+          if (container) {
+            container.classList.remove('is-invalid');
+          }
+        });
+      }
+
+      function showSingleError(field, message) {
+        if (!alertContainer) return;
+
+        // Clear any previous error
+        alertContainer.innerHTML = '';
+        formFields.forEach(function(f) {
+          const container = f.closest('.input-container');
+          if (container) {
+            container.classList.remove('is-invalid');
+          }
+        });
+
+        // Mark target input as invalid & focus
+        if (field) {
+          const container = field.closest('.input-container');
+          if (container) {
+            container.classList.add('is-invalid');
+          }
+          field.focus();
+        }
+
+        // Render single alert box
+        const alertBox = document.createElement('div');
+        alertBox.className = 'alert-box';
+        alertBox.innerHTML = `
+          <div class="alert-content-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span class="alert-message-text">${escapeHtml(message)}</span>
+          </div>
+          <button type="button" class="alert-close-btn" aria-label="Dismiss alert">&times;</button>
+        `;
+
+        const closeBtn = alertBox.querySelector('.alert-close-btn');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function() {
+            clearErrors();
+          });
+        }
+
+        alertContainer.appendChild(alertBox);
+        alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Validates fields one by one in logical order: username -> email -> phone -> password -> confirm_password
+      function validateSignupForm() {
+        // 1. Username
+        if (usernameInput) {
+          const val = usernameInput.value.trim();
+          if (!val) {
+            return { field: usernameInput, message: 'Username is required.' };
+          }
+          if (val.length < 3) {
+            return { field: usernameInput, message: 'Username must contain at least 3 characters.' };
+          }
+          if (val.length > 150) {
+            return { field: usernameInput, message: 'Username cannot exceed 150 characters.' };
+          }
+          if (!/^[A-Za-z ]+$/.test(val)) {
+            return { field: usernameInput, message: 'Name can contain only letters and spaces.' };
+          }
+        }
+
+        // 2. Email Address
+        if (emailInput) {
+          const val = emailInput.value.trim();
+          if (!val) {
+            return { field: emailInput, message: 'Email is required.' };
+          }
+          if (val.length > 254) {
+            return { field: emailInput, message: 'Email cannot exceed 254 characters.' };
+          }
+          const emailPattern = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+          if (!emailPattern.test(val)) {
+            return { field: emailInput, message: 'Please enter a valid email address.' };
+          }
+        }
+
+        // 3. Phone Number
+        if (phoneInput) {
+          const val = phoneInput.value.trim();
+          if (!val) {
+            return { field: phoneInput, message: 'Phone number is required.' };
+          }
+          if (!/^[6-9][0-9]{9}$/.test(val)) {
+            return { field: phoneInput, message: 'Please enter a valid 10-digit phone number.' };
+          }
+        }
+
+        // 4. Password
+        if (passwordInput) {
+          const val = passwordInput.value;
+          if (!val) {
+            return { field: passwordInput, message: 'Password is required.' };
+          }
+          const pwdPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+          if (!pwdPattern.test(val)) {
+            return {
+              field: passwordInput,
+              message: 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).'
+            };
+          }
+        }
+
+        // 5. Confirm Password
+        if (confirmPasswordInput) {
+          const val = confirmPasswordInput.value;
+          if (!val) {
+            return { field: confirmPasswordInput, message: 'Please confirm your password.' };
+          }
+          if (val !== passwordInput.value) {
+            return { field: confirmPasswordInput, message: 'Passwords do not match.' };
+          }
+        }
+
+        return null;
+      }
+
+      // Intercept submit: if invalid, show strictly the FIRST applicable error
+      if (signupForm) {
+        signupForm.addEventListener('submit', function(e) {
+          const error = validateSignupForm();
+          if (error) {
+            e.preventDefault();
+            showSingleError(error.field, error.message);
+          }
+        });
+      }
+
+      // Auto-clear error state when user modifies the invalid input
+      formFields.forEach(function(field) {
+        field.addEventListener('input', function() {
+          const container = this.closest('.input-container');
+          if (container && container.classList.contains('is-invalid')) {
+            clearErrors();
+          }
+        });
+      });
+
+      // Bind close button on initial server message (if any)
+      if (alertContainer) {
+        const initialCloseBtn = alertContainer.querySelector('.alert-close-btn');
+        if (initialCloseBtn) {
+          initialCloseBtn.addEventListener('click', function() {
+            clearErrors();
+          });
+        }
+
+        // Highlight field matching server error (if applicable)
+        const serverAlert = alertContainer.querySelector('.alert-box:not(.success)');
+        if (serverAlert) {
+          const alertText = (serverAlert.innerText || '').toLowerCase();
+          if (alertText.includes('username') && usernameInput) {
+            usernameInput.closest('.input-container')?.classList.add('is-invalid');
+          } else if (alertText.includes('email') && emailInput) {
+            emailInput.closest('.input-container')?.classList.add('is-invalid');
+          } else if (alertText.includes('phone') && phoneInput) {
+            phoneInput.closest('.input-container')?.classList.add('is-invalid');
+          } else if (alertText.includes('password') && passwordInput) {
+            passwordInput.closest('.input-container')?.classList.add('is-invalid');
+          }
+        }
       }
     });
   </script>

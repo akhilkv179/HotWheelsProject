@@ -7,7 +7,7 @@ from django.views.decorators.cache import never_cache
 @login_required
 def change_profile_image(request):
 
-    if request.user.is_authenticated:
+    if not request.user.is_authenticated:
             return redirect("login")
     
 

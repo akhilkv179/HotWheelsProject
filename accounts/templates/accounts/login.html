@@ -227,14 +227,25 @@
       border: 1px solid rgba(239, 68, 68, 0.35);
       border-left: 3px solid var(--accent-red);
       color: #fca5a5;
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: 12.5px;
+      padding: 11px 14px;
+      border-radius: 7px;
+      font-size: 13px;
       font-weight: 500;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
       line-height: 1.4;
+      animation: alertFadeIn 0.25s ease-out;
+    }
+
+    .alert-content-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
     }
 
     .alert-box.success {
@@ -244,15 +255,62 @@
       color: #86efac !important;
     }
 
+    .alert-box.warning {
+      background: rgba(245, 158, 11, 0.14) !important;
+      border: 1px solid rgba(245, 158, 11, 0.35) !important;
+      border-left: 3px solid #f59e0b !important;
+      color: #fcd34d !important;
+    }
+
+    .alert-box.info {
+      background: rgba(56, 189, 248, 0.14) !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+      border-left: 3px solid #0284c7 !important;
+      color: #7dd3fc !important;
+    }
+
     .alert-box svg {
-      width: 16px;
-      height: 16px;
+      width: 17px;
+      height: 17px;
       flex-shrink: 0;
       stroke: var(--accent-red);
     }
 
     .alert-box.success svg {
       stroke: #22c55e !important;
+    }
+
+    .alert-box.warning svg {
+      stroke: #f59e0b !important;
+    }
+
+    .alert-box.info svg {
+      stroke: #0284c7 !important;
+    }
+
+    .alert-close {
+      background: transparent;
+      border: none;
+      color: currentColor;
+      opacity: 0.65;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 0 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .alert-close:hover {
+      opacity: 1;
+    }
+
+    @keyframes alertFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Form Styles */
@@ -702,27 +760,42 @@
       </div>
 
       <!-- Messages / Errors -->
-      {% if messages %}
-        <div class="alert-container">
+      <div class="alert-container" id="loginAlertContainer">
+        {% if messages %}
           {% for message in messages %}
-            <div class="alert-box {% if 'success' in message.tags %}success{% endif %}" {% if 'success' in message.tags %}style="background: rgba(34, 197, 94, 0.16) !important; border: 1px solid rgba(34, 197, 94, 0.4) !important; border-left: 3px solid #22c55e !important; color: #86efac !important;"{% endif %}>
-              {% if 'success' in message.tags %}
-                <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-              {% else %}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-              {% endif %}
-              <span>{{ message }}</span>
+            <div class="alert-box {% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% elif 'info' in message.tags %}info{% else %}error{% endif %}" role="alert">
+              <div class="alert-content-wrap">
+                {% if 'success' in message.tags %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                {% elif 'warning' in message.tags %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                {% elif 'info' in message.tags %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                {% else %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                {% endif %}
+                <span class="alert-message-text">{{ message }}</span>
+              </div>
+              <button type="button" class="alert-close" onclick="dismissAlert(this)" aria-label="Dismiss alert">&times;</button>
             </div>
           {% endfor %}
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
 
       <!-- Login Form connected to existing Django POST action -->
       <form method="POST" action="{% url 'login' %}" class="login-form">
@@ -921,33 +994,127 @@
 
   <!-- Interactive JavaScript: Show/Hide Password & OAuth History Protection -->
   <script>
+    function dismissAlert(btn) {
+      const box = btn ? btn.closest('.alert-box') : null;
+      if (box) {
+        box.remove();
+      }
+      sessionStorage.removeItem('persisted_auth_alert');
+    }
+
     // Safe history handling: prevent returning to Google Account Chooser after logout
     (function handleOAuthHistoryProtection() {
-      // Check if Google OAuth was used in this tab's session
       const googleOAuthUsed = sessionStorage.getItem('google_oauth_in_progress') === 'true';
 
       if (googleOAuthUsed && window.history && window.history.pushState) {
-        // Push a guard history state so the Back button pops this entry first
         window.history.pushState({ page: 'login_auth_guard' }, '', window.location.href);
 
-        // Intercept browser Back button (popstate event)
         window.addEventListener('popstate', function(event) {
-          // Re-push current state to trap back navigation on the login page
-          // preventing the browser from navigating back to accounts.google.com
           window.history.pushState({ page: 'login_auth_guard' }, '', window.location.href);
         });
       }
 
-      // Handle pages restored from Back-Forward Cache (bfcache)
+      // Only reload from bfcache if no messages exist and OAuth was in progress
       window.addEventListener('pageshow', function(event) {
-        if (event.persisted && sessionStorage.getItem('google_oauth_in_progress') === 'true') {
+        const hasAlert = document.querySelector('#loginAlertContainer .alert-box');
+        if (event.persisted && sessionStorage.getItem('google_oauth_in_progress') === 'true' && !hasAlert) {
           window.location.reload();
         }
       });
     })();
 
     document.addEventListener('DOMContentLoaded', function() {
-      // Show/Hide Password functionality (preserved intact)
+      // 1. Alert persistence across reloads / redirects
+      const alertContainer = document.getElementById('loginAlertContainer');
+      const renderedAlert = alertContainer ? alertContainer.querySelector('.alert-box') : null;
+
+      if (renderedAlert) {
+        // If an alert was rendered by the backend, save it for reload protection
+        const textEl = renderedAlert.querySelector('.alert-message-text');
+        const text = textEl ? textEl.textContent.trim() : '';
+        const isSuccess = renderedAlert.classList.contains('success');
+        const isWarning = renderedAlert.classList.contains('warning');
+        const isInfo = renderedAlert.classList.contains('info');
+        const tag = isSuccess ? 'success' : (isWarning ? 'warning' : (isInfo ? 'info' : 'error'));
+
+        if (text) {
+          sessionStorage.setItem('persisted_auth_alert', JSON.stringify({
+            text: text,
+            tag: tag,
+            timestamp: Date.now()
+          }));
+        }
+      } else {
+        // If Django messages was empty (e.g. after a page reload / redirect), check sessionStorage
+        try {
+          const saved = sessionStorage.getItem('persisted_auth_alert');
+          if (saved && alertContainer) {
+            const data = JSON.parse(saved);
+            // Valid for 60 seconds from original delivery
+            if (Date.now() - data.timestamp < 60000 && data.text) {
+              const box = document.createElement('div');
+              box.className = 'alert-box ' + (data.tag || 'error');
+              box.setAttribute('role', 'alert');
+
+              let iconSvg = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              `;
+              if (data.tag === 'success') {
+                iconSvg = `
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                `;
+              } else if (data.tag === 'warning') {
+                iconSvg = `
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                `;
+              }
+
+              box.innerHTML = `
+                <div class="alert-content-wrap">
+                  ${iconSvg}
+                  <span class="alert-message-text">${data.text}</span>
+                </div>
+                <button type="button" class="alert-close" onclick="dismissAlert(this)" aria-label="Dismiss alert">&times;</button>
+              `;
+              alertContainer.appendChild(box);
+            } else {
+              sessionStorage.removeItem('persisted_auth_alert');
+            }
+          }
+        } catch (e) {
+          sessionStorage.removeItem('persisted_auth_alert');
+        }
+      }
+
+      // Clear OAuth in-progress flag now that we've arrived and rendered
+      sessionStorage.removeItem('google_oauth_in_progress');
+
+      // 2. Clear persisted alert when user types in any input or submits
+      const loginForm = document.querySelector('.login-form');
+      if (loginForm) {
+        loginForm.querySelectorAll('input').forEach(function(input) {
+          input.addEventListener('input', function() {
+            sessionStorage.removeItem('persisted_auth_alert');
+          });
+        });
+        loginForm.addEventListener('submit', function() {
+          sessionStorage.removeItem('persisted_auth_alert');
+          sessionStorage.removeItem('google_oauth_in_progress');
+        });
+      }
+
+      // 3. Show/Hide Password functionality (preserved intact)
       const toggleBtn = document.getElementById('togglePassword');
       const passwordInput = document.getElementById('password');
       const eyeIcon = document.getElementById('eyeIcon');
@@ -972,14 +1139,6 @@
               <circle cx="12" cy="12" r="3"/>
             `;
           }
-        });
-      }
-
-      // Reset the OAuth flag if user logs in via standard email/password form
-      const loginForm = document.querySelector('.login-form');
-      if (loginForm) {
-        loginForm.addEventListener('submit', function() {
-          sessionStorage.removeItem('google_oauth_in_progress');
         });
       }
     });

@@ -284,6 +284,11 @@
       gap: 10px;
     }
 
+    .alert-container:empty {
+      display: none;
+      margin-bottom: 0;
+    }
+
     .alert-box {
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.35);
@@ -295,7 +300,16 @@
       font-weight: 500;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
+      animation: alertFadeIn 0.2s ease-out;
+    }
+
+    .alert-content-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
     }
 
     .alert-box.success {
@@ -314,6 +328,36 @@
 
     .alert-box.success svg {
       stroke: #22c55e !important;
+    }
+
+    .alert-close-btn {
+      background: transparent;
+      border: none;
+      color: currentColor;
+      cursor: pointer;
+      padding: 0 4px;
+      font-size: 18px;
+      line-height: 1;
+      opacity: 0.65;
+      transition: opacity 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .alert-close-btn:hover {
+      opacity: 1;
+    }
+
+    @keyframes alertFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Content Card */
@@ -905,26 +949,31 @@
       </a>
     </div>
 
-    <!-- Django Flash Messages -->
-    {% if messages %}
-      <div class="alert-container">
+    <!-- Django Flash Messages (Single error displayed at a time) -->
+    <div class="alert-container" id="profileImageAlertContainer">
+      {% if messages %}
         {% for message in messages %}
-          <div class="alert-box {% if 'success' in message.tags %}success{% endif %}" role="alert">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              {% if 'success' in message.tags %}
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              {% else %}
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              {% endif %}
-            </svg>
-            <span>{{ message }}</span>
-          </div>
+          {% if forloop.first %}
+            <div class="alert-box {% if 'success' in message.tags %}success{% endif %}" role="alert">
+              <div class="alert-content-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  {% if 'success' in message.tags %}
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  {% else %}
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  {% endif %}
+                </svg>
+                <span>{{ message }}</span>
+              </div>
+              <button type="button" class="alert-close-btn" aria-label="Dismiss alert">&times;</button>
+            </div>
+          {% endif %}
         {% endfor %}
-      </div>
-    {% endif %}
+      {% endif %}
+    </div>
 
     <!-- Card Wrapper -->
     <div class="content-card">
@@ -1137,14 +1186,60 @@
       return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
 
+    const alertContainer = document.getElementById('profileImageAlertContainer');
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function clearErrors() {
+      if (alertContainer) {
+        alertContainer.innerHTML = '';
+      }
+    }
+
+    function showSingleError(message) {
+      if (!alertContainer) return;
+      alertContainer.innerHTML = '';
+
+      const alertBox = document.createElement('div');
+      alertBox.className = 'alert-box';
+      alertBox.setAttribute('role', 'alert');
+      alertBox.innerHTML = `
+        <div class="alert-content-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>${escapeHtml(message)}</span>
+        </div>
+        <button type="button" class="alert-close-btn" aria-label="Dismiss alert">&times;</button>
+      `;
+
+      const closeBtn = alertBox.querySelector('.alert-close-btn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          clearErrors();
+        });
+      }
+
+      alertContainer.appendChild(alertBox);
+      alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     function handleFile(file) {
       if (!file) return;
 
       if (!file.type.startsWith('image/')) {
-        alert('Please select a valid image file (PNG, JPG, WEBP, or GIF).');
+        showSingleError('Please select a valid image file (PNG, JPG, WEBP, or GIF).');
         resetSelection();
         return;
       }
+
+      clearErrors();
 
       // Read file and update preview
       const reader = new FileReader();
@@ -1225,8 +1320,14 @@
       }
     });
 
-    // Form submission UI feedback
-    form.addEventListener('submit', function() {
+    // Form submission UI feedback & validation
+    form.addEventListener('submit', function(e) {
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        e.preventDefault();
+        showSingleError('Please select a profile picture');
+        return;
+      }
+
       btnSubmit.disabled = true;
       btnSubmit.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;animation:spin 0.8s linear infinite;">
@@ -1236,6 +1337,16 @@
         <span>Saving...</span>
       `;
     });
+
+    // Close button on initial server message (if any)
+    if (alertContainer) {
+      const initialCloseBtn = alertContainer.querySelector('.alert-close-btn');
+      if (initialCloseBtn) {
+        initialCloseBtn.addEventListener('click', function() {
+          clearErrors();
+        });
+      }
+    }
   </script>
 
   <style>

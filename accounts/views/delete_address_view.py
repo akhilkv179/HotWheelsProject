@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
+from django.http import HttpResponseNotAllowed
 from ..models import Address
 
 
@@ -10,7 +11,7 @@ from ..models import Address
 def delete_address(request, address_id):
 
     if request.method != "POST":
-        return redirect("address_list")
+        return HttpResponseNotAllowed(["POST"])
 
 
     address = Address.objects.filter(id = address_id,user = request.user).first()

@@ -196,6 +196,11 @@
       gap: 10px;
     }
 
+    .alert-container:empty {
+      display: none;
+      margin-bottom: 0;
+    }
+
     .alert-box {
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.35);
@@ -207,7 +212,16 @@
       font-weight: 500;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
+      animation: alertFadeIn 0.2s ease-out;
+    }
+
+    .alert-content-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
     }
 
     .alert-box.success {
@@ -226,6 +240,36 @@
 
     .alert-box.success svg {
       stroke: #22c55e !important;
+    }
+
+    .alert-close-btn {
+      background: transparent;
+      border: none;
+      color: currentColor;
+      cursor: pointer;
+      padding: 0 4px;
+      font-size: 18px;
+      line-height: 1;
+      opacity: 0.65;
+      transition: opacity 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .alert-close-btn:hover {
+      opacity: 1;
+    }
+
+    @keyframes alertFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* 2-Column Profile Layout */
@@ -1083,29 +1127,34 @@
   <!-- Profile Content Viewport -->
   <main class="profile-viewport">
 
-    <!-- Django Messages Banner -->
-    {% if messages %}
-      <div class="alert-container">
+    <!-- Django Messages Banner (Single error displayed at a time) -->
+    <div class="alert-container" id="profileMessagesAlertContainer">
+      {% if messages %}
         {% for message in messages %}
-          <div class="alert-box {% if 'success' in message.tags %}success{% endif %}"
-               {% if 'success' in message.tags %}style="background: rgba(34, 197, 94, 0.16) !important; border: 1px solid rgba(34, 197, 94, 0.4) !important; border-left: 3px solid #22c55e !important; color: #86efac !important;"{% endif %}>
-            {% if 'success' in message.tags %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-            {% else %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-            {% endif %}
-            <span>{{ message }}</span>
-          </div>
+          {% if forloop.first %}
+            <div class="alert-box {% if 'success' in message.tags %}success{% endif %}"
+                 {% if 'success' in message.tags %}style="background: rgba(34, 197, 94, 0.16) !important; border: 1px solid rgba(34, 197, 94, 0.4) !important; border-left: 3px solid #22c55e !important; color: #86efac !important;"{% endif %}>
+              <div class="alert-content-wrap">
+                {% if 'success' in message.tags %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                {% else %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                {% endif %}
+                <span>{{ message }}</span>
+              </div>
+              <button type="button" class="alert-close-btn" aria-label="Dismiss alert">&times;</button>
+            </div>
+          {% endif %}
         {% endfor %}
-      </div>
-    {% endif %}
+      {% endif %}
+    </div>
 
     <!-- 2-Column Grid Layout matching Figma Design -->
     <div class="profile-layout">
@@ -1495,6 +1544,17 @@
           closeModal();
         }
       });
+
+      // Dismiss profile messages alert
+      const alertContainer = document.getElementById('profileMessagesAlertContainer');
+      if (alertContainer) {
+        const closeBtn = alertContainer.querySelector('.alert-close-btn');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function() {
+            alertContainer.innerHTML = '';
+          });
+        }
+      }
     });
   </script>
 

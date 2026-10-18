@@ -1,11 +1,14 @@
-from django.contrib import messages
-from django.shortcuts import render, redirect
 from datetime import datetime
+
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
-from ..models import User
 from django.views.decorators.cache import never_cache
+
+from ..forms import ResetPasswordForm
+from ..models import User
+
 
 @never_cache
 def verify_reset_otp(request):
@@ -15,7 +18,10 @@ def verify_reset_otp(request):
         stored_otp = request.session.get("reset_otp")
 
         if not stored_otp:
-            messages.error(request, "OTP session has expired. Please request a new OTP.")
+            messages.error(
+                request,
+                "OTP session has expired. Please request a new OTP.",
+            )
             return redirect("forgot_password")
 
         stored_expiry = request.session.get("reset_otp_expiry")
@@ -23,56 +29,79 @@ def verify_reset_otp(request):
         expiry_time = datetime.fromisoformat(stored_expiry)
 
         if timezone.now() > expiry_time:
-            messages.error(request,"OTP has expired. Please request a new OTP.")
+            messages.error(
+                request,
+                "OTP has expired. Please request a new OTP.",
+            )
             return redirect("forgot_password")
 
         if entered_otp != stored_otp:
-            messages.error(request,"Invalid OTP.")
-            return render(request,"accounts/verify_reset_otp.html")
+            messages.error(request, "Invalid OTP.")
+            return render(
+                request,
+                "accounts/verify_reset_otp.html",
+            )
 
         request.session["reset_otp_verified"] = True
         return redirect("reset_password")
 
-    return render( request,"accounts/verify_reset_otp.html")
+    return render(request, "accounts/verify_reset_otp.html")
+
 
 @never_cache
 def reset_password(request):
+    # The user must verify the OTP before resetting the password.
     if not request.session.get("reset_otp_verified"):
-        messages.error(request,"Please verify the OTP first.")
+        messages.error(request, "Please verify the OTP first.")
         return redirect("forgot_password")
 
     if request.method == "POST":
-        new_password = request.POST.get("new_password", "")
-        confirm_password = request.POST.get("confirm_password", "")
+        form = ResetPasswordForm(request.POST)
 
-        if not new_password or not confirm_password:
-            messages.error(request,"Both password fields are required.")
-            return render(request,"accounts/reset_password.html")
+        if form.is_valid():
+            new_password = form.cleaned_data["new_password"]
+            reset_email = request.session.get("reset_email")
 
-        if new_password != confirm_password:
-            messages.error(request,"Passwords do not match." )
-            return render(request,"accounts/reset_password.html")
+            user = User.objects.filter(
+                email=reset_email,
+            ).first()
 
+            if user is None:
+                messages.error(
+                    request,
+                    "Account not found. Please request a new password reset.",
+                )
+                return redirect("forgot_password")
 
-        try:
-            validate_password(new_password)
-        except ValidationError as error:
-            messages.error(request, error.messages[0])
-            return render(request,"accounts/reset_password.html")
+            # Save the new password securely using Django's password hashing.
+            user.set_password(new_password)
+            user.save()
 
-        reset_email = request.session.get("reset_email")
-        user = User.objects.filter(email=reset_email).first()
+            # Clear the password-reset session data after success.
+            request.session.pop("reset_email", None)
+            request.session.pop("reset_otp", None)
+            request.session.pop("reset_otp_expiry", None)
+            request.session.pop("reset_otp_verified", None)
 
-        user.set_password(new_password)
-        user.save()
+            messages.success(
+                request,
+                "Password reset successfully. Please login.",
+            )
+            return redirect("login")
 
-        request.session.pop("reset_email", None)
-        request.session.pop("reset_otp", None)
-        request.session.pop("reset_otp_expiry", None)
-        request.session.pop("reset_otp_verified", None)
+        # Display form validation errors through Django messages.
+        errors = []
+        for field_errors in form.errors.values():
+            errors.extend(field_errors)
 
-        messages.success(request,"Password reset successfully. Please login.")
-        return redirect("login")
+        for error in dict.fromkeys(errors):
+            messages.error(request, error)
 
-    return render(request,"accounts/reset_password.html")
+    else:
+        form = ResetPasswordForm()
 
+    return render(
+        request,
+        "accounts/reset_password.html",
+        {"form": form},
+    )
