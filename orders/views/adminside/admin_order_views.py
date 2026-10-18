@@ -110,7 +110,7 @@ def admin_update_order_status(request, order_number):
 
     with transaction.atomic():
         order = get_object_or_404(
-            Order.objects.select_for_update(),
+            Order.objects.select_for_update(),#This retrieves orders in a way that locks the selected database rows until the transaction ends, where supported by the database.#
             order_number=order_number,
         )
 
@@ -125,15 +125,8 @@ def admin_update_order_status(request, order_number):
             )
 
         if new_status not in allowed_transitions.get(order.status, []):
-            messages.error(
-                request,
-                f"Cannot change order status from "
-                f"{order.status} to {new_status}.",
-            )
-            return redirect(
-                "admin_order_detail",
-                order_number=order_number,
-            )
+            messages.error(request,f"Cannot change order status from "f"{order.status} to {new_status}.",)
+            return redirect("admin_order_detail",order_number=order_number,)
 
         # Restore stock when the admin cancels the entire order.
         if new_status == "cancelled":

@@ -15,13 +15,13 @@ def user_order_list(request):
         user=request.user
     ).order_by("-created_at")
 
-    # Search by order number.
+
     if search_query:
         orders = orders.filter(
             Q(order_number__icontains=search_query)
         )
 
-    # Display 10 orders per page.
+
     paginator = Paginator(orders, 10)
     page_obj = paginator.get_page(request.GET.get("page"))
 
