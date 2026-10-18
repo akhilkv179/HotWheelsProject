@@ -631,6 +631,74 @@
       color: #ff4d4d;
     }
 
+    /* Sorting Component */
+    .sort-select-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background-color: #171720;
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 0 34px 0 34px;
+      height: 40px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .sort-select-box:focus-within {
+      border-color: rgba(229, 27, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .sort-icon {
+      position: absolute;
+      left: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .sort-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .sort-select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding: 0;
+      width: 100%;
+    }
+
+    .sort-select option {
+      background-color: #15151c;
+      color: #ffffff;
+      padding: 8px;
+    }
+
+    .select-chevron {
+      position: absolute;
+      right: 10px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .select-chevron svg {
+      width: 14px;
+      height: 14px;
+    }
+
     /* ==================================================
        RESPONSIVE TABLE
        ================================================== */
@@ -1536,6 +1604,10 @@
         width: 100%;
       }
 
+      .sort-select-box {
+        width: 100%;
+      }
+
       .card-footer-pagination {
         flex-direction: column;
         align-items: center;
@@ -1604,7 +1676,7 @@
           <!-- SALES -->
           <div class="nav-group">
             <span class="nav-group-label">SALES</span>
-            <a href="#" class="nav-item">
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
@@ -1798,7 +1870,7 @@
               {% endif %}
             </div>
 
-            <!-- Search Form -->
+            <!-- Search & Sort Form -->
             <form method="GET" action="{% url 'admin_category_list' %}" class="search-form-wrap">
               <div class="search-input-box">
                 <span class="search-icon">
@@ -1818,11 +1890,34 @@
                 >
               </div>
 
+              <!-- Sorting Dropdown -->
+              <div class="sort-select-box">
+                <span class="sort-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 16 4 4 4-4"/>
+                    <path d="M7 20V4"/>
+                    <path d="m21 8-4-4-4 4"/>
+                    <path d="M17 4v16"/>
+                  </svg>
+                </span>
+                <select name="sort" id="categorySortSelect" class="sort-select" onchange="this.form.submit()" aria-label="Sort categories">
+                  <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                  <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                  <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Name A–Z</option>
+                  <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name Z–A</option>
+                </select>
+                <span class="select-chevron" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+              </div>
+
               <button type="submit" class="btn-search-submit">
                 SEARCH
               </button>
 
-              {% if search_query %}
+              {% if search_query or sort_by and sort_by != 'newest' %}
                 <a href="{% url 'admin_category_list' %}" class="btn-clear-search">
                   CLEAR
                 </a>
@@ -2086,7 +2181,7 @@
 
                 <!-- Previous Arrow Button -->
                 {% if page_obj.has_previous %}
-                  <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-nav-arrow" aria-label="Previous Page">
+                  <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-nav-arrow" aria-label="Previous Page">
                     &lsaquo;
                   </a>
                 {% else %}
@@ -2099,7 +2194,7 @@
                     {% if p == page_obj.number %}
                       <span class="page-link-num active" aria-current="page">{{ p }}</span>
                     {% else %}
-                      <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ p }}</a>
+                      <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ p }}</a>
                     {% endif %}
                   {% endfor %}
                 {% else %}
@@ -2109,44 +2204,44 @@
                         {% if p == page_obj.number %}
                           <span class="page-link-num active" aria-current="page">{{ p }}</span>
                         {% else %}
-                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ p }}</a>
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ p }}</a>
                         {% endif %}
                       {% endif %}
                     {% endfor %}
                     <span class="page-ellipsis-dots">&hellip;</span>
-                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
                   {% elif page_obj.number >= page_obj.paginator.num_pages|add:"-3" %}
-                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">1</a>
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">1</a>
                     <span class="page-ellipsis-dots">&hellip;</span>
                     {% for p in page_obj.paginator.page_range %}
                       {% if p >= page_obj.paginator.num_pages|add:"-4" %}
                         {% if p == page_obj.number %}
                           <span class="page-link-num active" aria-current="page">{{ p }}</span>
                         {% else %}
-                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ p }}</a>
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ p }}</a>
                         {% endif %}
                       {% endif %}
                     {% endfor %}
                   {% else %}
-                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">1</a>
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">1</a>
                     <span class="page-ellipsis-dots">&hellip;</span>
                     {% for p in page_obj.paginator.page_range %}
                       {% if p >= page_obj.number|add:"-1" and p <= page_obj.number|add:"1" %}
                         {% if p == page_obj.number %}
                           <span class="page-link-num active" aria-current="page">{{ p }}</span>
                         {% else %}
-                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ p }}</a>
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ p }}</a>
                         {% endif %}
                       {% endif %}
                     {% endfor %}
                     <span class="page-ellipsis-dots">&hellip;</span>
-                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
                   {% endif %}
                 {% endif %}
 
                 <!-- Next Arrow Button -->
                 {% if page_obj.has_next %}
-                  <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-nav-arrow" aria-label="Next Page">
+                  <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-nav-arrow" aria-label="Next Page">
                     &rsaquo;
                   </a>
                 {% else %}

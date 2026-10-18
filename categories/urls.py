@@ -12,15 +12,15 @@ from .views.userside.category_list_view import user_category_list
 
 
 urlpatterns = [
-    path("admin_categories/",category_list,name="admin_category_list"),
-    path("admin_categories/add/",category_add,name="admin_category_add"),
-    path("admin_categories/edit/<int:category_id>/",category_edit,name="admin_category_edit"),
-    path("admin_categories/delete/<int:category_id>/",category_delete,name="admin_category_delete"),
-    path("admin_categoryoffer/<int:category_id>/",category_offer,name="admin_category_offer"),
-    path("admin_categoryoffer_toggle/<int:offer_id>/",toggle_category_offer,name="admin_category_offer_toggle"),
-    path("admin_categoryoffer/edit/<int:offer_id>/",category_offer_edit,name="admin_category_offer_edit"),
+    path("admin-categories/",category_list,name="admin_category_list"),
+    path("admin-categories/add/",category_add,name="admin_category_add"),
+    path("admin-categories/edit/<int:category_id>/",category_edit,name="admin_category_edit"),
+    path("admin-categories/delete/<int:category_id>/",category_delete,name="admin_category_delete"),
+    path("admin-categoryoffer/<int:category_id>/",category_offer,name="admin_category_offer"),
+    path("admin-categoryoffer_toggle/<int:offer_id>/",toggle_category_offer,name="admin_category_offer_toggle"),
+    path("admin-categoryoffer/edit/<int:offer_id>/",category_offer_edit,name="admin_category_offer_edit"),
     path("categories/", user_category_list, name="user_category_list"),
-    path("category_list/<int:category_id>/",category_unlisting,name="category_unlist"),
-    path("category_restore/<int:category_id>/",category_restore,name="category_restore")
+    path("category-list/<int:category_id>/",category_unlisting,name="category_unlist"),
+    path("category-restore/<int:category_id>/",category_restore,name="category_restore")
    
 ]

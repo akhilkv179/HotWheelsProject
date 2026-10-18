@@ -1,3 +1,4 @@
+
 from django.shortcuts import render
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -7,9 +8,10 @@ from admin_panel.decorators import admin_required
 from categories.models import Category
 
 
-
 def category_list(request):
     search_query = request.GET.get("search", "").strip()
+    sort_by = request.GET.get("sort", "newest")
+
     categories = Category.objects.all()
 
     if search_query:
@@ -18,9 +20,18 @@ def category_list(request):
             | Q(description__icontains=search_query)
         )
 
-    categories = categories.order_by("-created_at")
+    # Sorting
+    if sort_by == "name_asc":
+        categories = categories.order_by("name")
+    elif sort_by == "name_desc":
+        categories = categories.order_by("-name")
+    elif sort_by == "oldest":
+        categories = categories.order_by("created_at")
+    else:
+        sort_by = "newest"
+        categories = categories.order_by("-created_at")
 
-    paginator = Paginator(categories,3)
+    paginator = Paginator(categories, 3)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -41,5 +52,6 @@ def category_list(request):
         {
             "page_obj": page_obj,
             "search_query": search_query,
+            "sort_by": sort_by,
         }
     )
