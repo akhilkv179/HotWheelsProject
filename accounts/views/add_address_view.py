@@ -1,14 +1,17 @@
-from django.contrib import messages
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
 
 from ..forms import AddressForm
 from ..models import Address
 
 
+# Handle adding and saving a new delivery address for the logged-in user.
 @never_cache
 @login_required
+@require_http_methods(["GET", "POST"])
 def add_address(request):
     """Validate and save a new address for the logged-in user."""
 
@@ -42,20 +45,26 @@ def add_address(request):
                 is_default=is_default,
             )
 
-            messages.success(
-                request,
-                "Address added successfully.",
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Address added successfully.",
+                },
+                status=201,
             )
 
-            return redirect("address_list")
+        # Return field-specific validation errors as JSON.
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Please correct the errors below.",
+                "errors": form.errors.get_json_data(),
+            },
+            status=400,
+        )
 
-        # Preserve the existing Django messages-based error feedback.
-        for field_errors in form.errors.values():
-            for error in field_errors:
-                messages.error(request, error)
-
-    else:
-        form = AddressForm()
+    # Display the existing address form page.
+    form = AddressForm()
 
     return render(
         request,

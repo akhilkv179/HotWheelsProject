@@ -3,7 +3,7 @@ from io import BytesIO
 from xml.sax.saxutils import escape
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -22,8 +22,24 @@ from reportlab.platypus import (
 from orders.models import Order
 
 
+# Check whether the client expects a JSON response.
+def wants_json(request):
+    return "application/json" in request.headers.get("Accept", "")
+
+
+# Generate and download a PDF invoice for an order owned by the logged-in user.
 @login_required
 def download_invoice(request, order_number):
+    # Only allow GET requests for downloading invoices.
+    if request.method != "GET":
+        if wants_json(request):
+            return JsonResponse(
+                {"error": "Only GET requests are allowed."},
+                status=405,
+            )
+        return HttpResponseNotAllowed(["GET"])
+
+    # Find the order belonging to the logged-in user.
     order = get_object_or_404(
         Order.objects.select_related(
             "user",
@@ -33,6 +49,7 @@ def download_invoice(request, order_number):
         user=request.user,
     )
 
+    # Create an in-memory buffer to hold the generated PDF.
     buffer = BytesIO()
 
     document = SimpleDocTemplate(
@@ -44,6 +61,7 @@ def download_invoice(request, order_number):
         bottomMargin=35,
     )
 
+    # Prepare the styles used throughout the invoice.
     styles = getSampleStyleSheet()
 
     title_style = ParagraphStyle(
@@ -60,6 +78,7 @@ def download_invoice(request, order_number):
         leading=10,
     )
 
+    # Add the invoice title and basic order information.
     content = [
         Paragraph("HOT WHEELS - INVOICE", title_style),
         Spacer(1, 18),
@@ -89,6 +108,7 @@ def download_invoice(request, order_number):
         Spacer(1, 12),
     ]
 
+    # Add the saved delivery address when one is available.
     try:
         address = order.order_address
     except Order.order_address.RelatedObjectDoesNotExist:
@@ -109,6 +129,7 @@ def download_invoice(request, order_number):
             Spacer(1, 15),
         ])
 
+    # Prepare the invoice table with its column headings.
     rows = [[
         "Product",
         "Qty",
@@ -118,6 +139,7 @@ def download_invoice(request, order_number):
         "Item Status",
     ]]
 
+    # Add each ordered product to the invoice table.
     for item in order.items.all():
         item_status = item.get_item_status_display()
 
@@ -130,6 +152,7 @@ def download_invoice(request, order_number):
             Paragraph(escape(item_status), cell_style),
         ])
 
+    # Format the invoice table for the PDF.
     table = Table(
         rows,
         colWidths=[135, 30, 75, 65, 75, 80],
@@ -148,6 +171,7 @@ def download_invoice(request, order_number):
         ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
     ]))
 
+    # Add the table, order totals, and thank-you message.
     content.extend([
         table,
         Spacer(1, 18),
@@ -175,14 +199,17 @@ def download_invoice(request, order_number):
         ),
     ])
 
+    # Build the PDF and prepare it for downloading.
     document.build(content)
     buffer.seek(0)
 
     response = HttpResponse(
         buffer.getvalue(),
         content_type="application/pdf",
+        status=200,
     )
 
+    # Set the filename shown when the invoice is downloaded.
     response["Content-Disposition"] = (
         f'attachment; filename="invoice-{order.order_number}.pdf"'
     )

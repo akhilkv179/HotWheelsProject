@@ -1,14 +1,18 @@
-from django.contrib import messages
+
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
 
 from ..forms import AddressForm
 from ..models import Address
 
 
+# Validate and update an existing delivery address for the logged-in user.
 @never_cache
 @login_required
+@require_http_methods(["GET", "POST"])
 def edit_address(request, address_id):
     """Validate and update an address belonging to the logged-in user."""
 
@@ -19,8 +23,13 @@ def edit_address(request, address_id):
     ).first()
 
     if not address:
-        messages.error(request, "Address not found.")
-        return redirect("address_list")
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Address not found.",
+            },
+            status=404,
+        )
 
     if request.method == "POST":
         form = AddressForm(request.POST)
@@ -53,35 +62,41 @@ def edit_address(request, address_id):
 
             address.save()
 
-            messages.success(
-                request,
-                "Address updated successfully.",
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Address updated successfully.",
+                },
+                status=200,
             )
 
-            return redirect("address_list")
-
-        # Display validation errors using Django messages.
-        for field_errors in form.errors.values():
-            for error in field_errors:
-                messages.error(request, error)
-
-    else:
-        # Initialise the form with the address's existing values.
-        form = AddressForm(
-            initial={
-                "full_name": address.full_name,
-                "phone": address.phone,
-                "address_line1": address.address_line1,
-                "address_line2": address.address_line2,
-                "landmark": address.landmark,
-                "city": address.city,
-                "state": address.state,
-                "postal_code": address.postal_code,
-                "address_type": address.address_type,
-                "is_default": address.is_default,
-            }
+        # Return field-specific validation errors as JSON.
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Please correct the errors below.",
+                "errors": form.errors.get_json_data(),
+            },
+            status=400,
         )
 
+    # Initialise the form with the address's existing values.
+    form = AddressForm(
+        initial={
+            "full_name": address.full_name,
+            "phone": address.phone,
+            "address_line1": address.address_line1,
+            "address_line2": address.address_line2,
+            "landmark": address.landmark,
+            "city": address.city,
+            "state": address.state,
+            "postal_code": address.postal_code,
+            "address_type": address.address_type,
+            "is_default": address.is_default,
+        }
+    )
+
+    # Render the existing edit address page for normal browser requests.
     return render(
         request,
         "accounts/edit_address.html",

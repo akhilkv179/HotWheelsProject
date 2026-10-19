@@ -68,7 +68,7 @@
       background: rgba(23, 24, 30, 0.96);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border-left: 3px solid var(--accent-red);
+      border-left: 3px solid #60a5fa;
       border-top: 1px solid var(--border-subtle);
       border-right: 1px solid var(--border-subtle);
       border-bottom: 1px solid var(--border-subtle);
@@ -96,6 +96,10 @@
 
     .toast-message.warning {
       border-left-color: #f59e0b;
+    }
+
+    .toast-message.info {
+      border-left-color: #60a5fa;
     }
 
     .toast-close-btn {
@@ -375,6 +379,7 @@
       display: flex;
       flex-direction: column;
       position: relative;
+      cursor: pointer;
       transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
@@ -392,6 +397,14 @@
       height: 210px;
       background-color: var(--bg-card-inner);
       overflow: hidden;
+    }
+
+    .wishlist-img-link {
+      display: block;
+      width: 100%;
+      height: 100%;
+      text-decoration: none;
+      color: inherit;
     }
 
     .wishlist-card-img {
@@ -611,6 +624,15 @@
       width: 13px;
       height: 13px;
       stroke-width: 2.2;
+    }
+
+    .btn-card-add-cart.disabled {
+      background-color: #23242f;
+      color: #646675;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+      pointer-events: none;
     }
 
     /* ==================================================
@@ -978,6 +1000,7 @@
 
   <!-- Main Content Layout -->
   <main class="wishlist-main-wrapper">
+    <div style="display: none;">{% csrf_token %}</div>
 
     <!-- Header Section: YOUR WISHLIST + Saved Pill + Horizontal Line -->
     <section class="wishlist-header-section">
@@ -998,7 +1021,7 @@
       <!-- 4-Column Product Grid (Matching Figma Design) -->
       <div class="wishlist-grid">
         {% for item in items %}
-          <div class="wishlist-card {% if not item.is_available %}out-of-stock{% endif %}">
+          <div class="wishlist-card {% if not item.is_available %}out-of-stock{% endif %}" data-product-url="{% url 'user_product_details' item.product_variant.product.id %}">
 
             <!-- Card Image Area -->
             <div class="wishlist-card-media">
@@ -1016,21 +1039,23 @@
                 </svg>
               </a>
 
-              <!-- Thumbnail Image -->
-              {% with image=item.product_variant.images.all.0 %}
-                {% if image %}
-                  <img
-                    src="{% if 'http' in image.image_url %}{{ image.image_url }}{% elif '/media/' in image.image_url %}{{ image.image_url }}{% else %}/media/{{ image.image_url }}{% endif %}"
-                    alt="{{ item.product_variant.product.name }}"
-                    class="wishlist-card-img"
-                    loading="lazy"
-                  >
-                {% else %}
-                  <div class="wishlist-no-img-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                  </div>
-                {% endif %}
-              {% endwith %}
+              <!-- Thumbnail Image Link -->
+              <a href="{% url 'user_product_details' item.product_variant.product.id %}" class="wishlist-img-link" title="{{ item.product_variant.product.name }}">
+                {% with image=item.product_variant.images.all.0 %}
+                  {% if image %}
+                    <img
+                      src="{% if 'http' in image.image_url %}{{ image.image_url }}{% elif '/media/' in image.image_url %}{{ image.image_url }}{% else %}/media/{{ image.image_url }}{% endif %}"
+                      alt="{{ item.product_variant.product.name }}"
+                      class="wishlist-card-img"
+                      loading="lazy"
+                    >
+                  {% else %}
+                    <div class="wishlist-no-img-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              </a>
 
               <!-- Out of Stock Badge Overlay if unavailable -->
               {% if not item.is_available %}
@@ -1089,6 +1114,14 @@
                     </svg>
                     <span>ADD TO CART</span>
                   </a>
+                {% else %}
+                  <span
+                    class="btn-card-add-cart disabled"
+                    title="Out of Stock"
+                    aria-disabled="true"
+                  >
+                    <span>OUT OF STOCK</span>
+                  </span>
                 {% endif %}
               </div>
 
@@ -1245,57 +1278,60 @@
         scheduleToastDismissal(toast);
       }
 
+      function getCsrfToken() {
+        const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (tokenInput && tokenInput.value) return tokenInput.value;
+        const cookie = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='));
+        return cookie ? cookie.split('=')[1] : '';
+      }
+
       // Add to Cart from Wishlist AJAX handler
       document.querySelectorAll(".btn-card-add-cart").forEach(function (btn) {
         btn.addEventListener("click", async function (e) {
           e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (this.classList.contains("disabled") || this.getAttribute("aria-disabled") === "true") {
+            return false;
+          }
           const href = this.getAttribute("href");
-          if (!href || this.dataset.loading === "true") return;
+          if (!href || this.dataset.loading === "true") return false;
 
           this.dataset.loading = "true";
           const originalHTML = this.innerHTML;
-          this.style.pointerEvents = "none";
           this.style.opacity = "0.75";
           this.innerHTML = `<span>ADDING...</span>`;
 
           const card = this.closest(".wishlist-card");
 
           try {
+            const csrfToken = getCsrfToken();
             const response = await fetch(href, {
+              method: "POST",
               headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
                 "X-Requested-With": "XMLHttpRequest",
               },
             });
 
-            if (!response.ok) {
-              throw new Error("HTTP error " + response.status);
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
             }
 
-            // Parse response HTML to extract message if available
-            const htmlText = await response.text();
-            let toastMessage = "Product added to cart.";
-            let toastType = "success";
-
-            try {
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(htmlText, "text/html");
-              const serverToast = doc.querySelector(".toast-message");
-              if (serverToast) {
-                const textSpan = serverToast.querySelector("span");
-                const text = textSpan ? textSpan.textContent.trim() : serverToast.textContent.replace("✕", "").replace("×", "").trim();
-                if (text) toastMessage = text;
-                if (serverToast.classList.contains("error")) toastType = "error";
-                else if (serverToast.classList.contains("warning")) toastType = "warning";
-                else if (serverToast.classList.contains("info")) toastType = "info";
-              }
-            } catch (err) {
-              console.warn("Could not parse toast from response:", err);
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (err) {}
             }
 
-            // Display toast notification in wishlist page
-            showToast(toastMessage, toastType);
-
-            if (toastType === "success") {
+            if (response.ok && response.status === 200 && (!data || data.success !== false)) {
+              const msg = data && data.message ? data.message : "Product added to cart.";
+              showToast(msg, "success");
               // Smoothly animate and remove card from wishlist
               if (card) {
                 card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
@@ -1342,16 +1378,142 @@
                 }, 350);
               }
             } else {
-              // Reset button on error
+              // Reset button on error / 409 / 400
+              const errMsg = data && (data.message || data.error)
+                ? (data.message || data.error)
+                : "Could not add product to cart.";
+              showToast(errMsg, "error");
               btn.innerHTML = originalHTML;
-              btn.style.pointerEvents = "";
               btn.style.opacity = "";
-              btn.dataset.loading = "false";
+              delete btn.dataset.loading;
             }
           } catch (error) {
             console.error("Add to cart error:", error);
-            // Fallback to normal navigation if fetch fails
-            window.location.href = href;
+            showToast("Network error. Please try again.", "error");
+            btn.innerHTML = originalHTML;
+            btn.style.opacity = "";
+            delete btn.dataset.loading;
+          }
+        });
+      });
+
+      // Remove from Wishlist Heart Button handler
+      document.querySelectorAll(".btn-card-heart").forEach(function (btn) {
+        btn.addEventListener("click", async function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const href = this.getAttribute("href");
+          if (!href || this.dataset.loading === "true") return;
+
+          this.dataset.loading = "true";
+          const card = this.closest(".wishlist-card");
+          if (card) {
+            card.style.transition = "opacity 0.25s ease";
+            card.style.opacity = "0.5";
+          }
+
+          try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(href, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (err) {}
+            }
+
+            if (response.status === 200 || (response.ok && data && data.action === "removed")) {
+              showToast("Product removed from wishlist.", "success");
+
+              if (card) {
+                card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+                card.style.opacity = "0";
+                card.style.transform = "scale(0.92)";
+
+                setTimeout(function () {
+                  card.remove();
+
+                  const remainingCards = document.querySelectorAll(".wishlist-grid .wishlist-card");
+                  const countPill = document.querySelector(".items-saved-pill");
+                  if (countPill) {
+                    const count = remainingCards.length;
+                    countPill.textContent = count === 1 ? "1 ITEM SAVED" : `${count} ITEMS SAVED`;
+                  }
+
+                  if (remainingCards.length === 0) {
+                    const pagination = document.querySelector(".wishlist-pagination-bar");
+                    if (pagination) pagination.remove();
+
+                    const grid = document.querySelector(".wishlist-grid");
+                    if (grid) {
+                      const emptyBox = document.createElement("div");
+                      emptyBox.className = "empty-wishlist-box";
+                      emptyBox.innerHTML = `
+                        <div class="empty-wishlist-icon">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                          </svg>
+                        </div>
+                        <h2 class="empty-wishlist-title">Your Wishlist is Empty</h2>
+                        <p class="empty-wishlist-desc">
+                          Explore our die-cast vehicle lineup and save your favorite legendary models for later.
+                        </p>
+                        <a href="{% url 'user_product_list' %}" class="btn-explore-lineup">
+                          EXPLORE VEHICLES
+                        </a>
+                      `;
+                      grid.replaceWith(emptyBox);
+                    }
+                  }
+                }, 350);
+              }
+            } else {
+              if (card) card.style.opacity = "1";
+              delete this.dataset.loading;
+              const errMsg = data && (data.message || data.error)
+                ? (data.message || data.error)
+                : "Could not remove product from wishlist.";
+              showToast(errMsg, "error");
+            }
+          } catch (err) {
+            console.error("Wishlist heart remove error:", err);
+            if (card) card.style.opacity = "1";
+            delete this.dataset.loading;
+            showToast("Network error. Please try again.", "error");
+          }
+        });
+      });
+
+      // Navigate to product details when clicking on the wishlist card
+      document.querySelectorAll(".wishlist-card").forEach(function (card) {
+        card.addEventListener("click", function (e) {
+          // If click was on or inside heart button, add to cart button, or an interactive link/button, do not trigger card navigation
+          if (
+            e.target.closest(".btn-card-heart") ||
+            e.target.closest(".btn-card-add-cart") ||
+            e.target.closest("a") ||
+            e.target.closest("button")
+          ) {
+            return;
+          }
+          const url = this.getAttribute("data-product-url");
+          if (url) {
+            window.location.href = url;
           }
         });
       });

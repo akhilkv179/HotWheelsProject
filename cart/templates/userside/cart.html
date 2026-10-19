@@ -68,7 +68,7 @@
       background: rgba(23, 24, 30, 0.96);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border-left: 3px solid var(--accent-red);
+      border-left: 3px solid #60a5fa;
       border-top: 1px solid var(--border-subtle);
       border-right: 1px solid var(--border-subtle);
       border-bottom: 1px solid var(--border-subtle);
@@ -87,6 +87,10 @@
 
     .toast-message.success {
       border-left-color: #22c55e;
+    }
+
+    .toast-message.info {
+      border-left-color: #60a5fa;
     }
 
     .toast-message.error {
@@ -856,12 +860,45 @@
       transform: translateY(0);
     }
 
-    .btn-proceed-checkout.disabled {
-      background-color: #2a2a35;
-      color: #666675;
-      box-shadow: none;
-      pointer-events: none;
-      cursor: not-allowed;
+    .btn-proceed-checkout.disabled,
+    .btn-proceed-checkout:disabled {
+      background-color: #2a2a35 !important;
+      color: #666675 !important;
+      box-shadow: none !important;
+      pointer-events: none !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+    }
+
+    .btn-proceed-checkout.disabled svg,
+    .btn-proceed-checkout:disabled svg {
+      fill: #666675 !important;
+    }
+
+    /* Out of Stock / Empty Cart Checkout Warning */
+    .checkout-stock-warning {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 500;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 14px;
+      margin-bottom: 8px;
+    }
+
+    .checkout-stock-warning svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      stroke: var(--accent-red);
+      margin-top: 1px;
     }
 
     .checkout-flag-icon {
@@ -1144,17 +1181,17 @@
 </head>
 <body>
 
-  <!-- Flash Toast Messages -->
-  {% if messages %}
-    <div class="toast-messages">
+  <!-- Flash Toast Messages Container -->
+  <div class="toast-messages" id="toastContainer">
+    {% if messages %}
       {% for message in messages %}
         <div class="toast-message {{ message.tags }}">
           <span>{{ message }}</span>
           <button type="button" class="toast-close-btn" onclick="this.parentElement.remove();">&times;</button>
         </div>
       {% endfor %}
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
 
   <!-- Top Navbar (Matching Figma) -->
   <header class="site-header">
@@ -1209,6 +1246,7 @@
 
   <!-- Main Content Layout -->
   <main class="cart-main-wrapper">
+    <div style="display: none;">{% csrf_token %}</div>
     <div class="cart-grid-layout">
 
       <!-- ==============================================
@@ -1235,7 +1273,14 @@
           <!-- Cart Items List -->
           <div class="cart-items-container">
             {% for item in cart_items %}
-              <div class="cart-product-card {% if not item.is_available %}unavailable{% endif %}">
+              <div
+                class="cart-product-card {% if not item.is_available or item.product_variant.stock_quantity <= 0 or item.quantity > item.product_variant.stock_quantity %}unavailable{% endif %}"
+                data-item-id="{{ item.id }}"
+                data-quantity="{{ item.quantity }}"
+                data-stock="{{ item.product_variant.stock_quantity }}"
+                data-unit-price="{{ item.unit_price }}"
+                data-available="{% if item.is_available and item.product_variant.stock_quantity > 0 and item.quantity <= item.product_variant.stock_quantity and item.product_variant.is_active and item.product_variant.product.is_active and not item.product_variant.product.is_deleted and item.product_variant.product.category.is_active %}true{% else %}false{% endif %}"
+              >
 
                 <!-- 1. Thumbnail Image -->
                 <div class="cart-thumb-wrap">
@@ -1275,9 +1320,13 @@
                       {{ item.product_variant.color }}{% if item.product_variant.size %} / {{ item.product_variant.size }}{% endif %}
                     </p>
 
-                    {% if not item.is_available %}
+                    {% if not item.is_available or item.product_variant.stock_quantity <= 0 %}
                       <span class="badge-unavailable-pill">
-                        &bull; Currently Unavailable
+                        &bull; Out of Stock
+                      </span>
+                    {% elif item.quantity > item.product_variant.stock_quantity %}
+                      <span class="badge-unavailable-pill">
+                        &bull; Insufficient Stock (Only {{ item.product_variant.stock_quantity }} available)
                       </span>
                     {% endif %}
                   </div>
@@ -1418,22 +1467,152 @@
             <span class="telemetry-total-amount">&#8377;<span class="format-number">{{ total_price|floatformat:0 }}</span></span>
           </div>
 
+          <!-- Out of Stock / Empty Cart Warning Banner -->
+          <div
+            class="checkout-stock-warning"
+            id="cartCheckoutWarning"
+            style="{% if cart_items %}display: none;{% endif %}"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span id="cartCheckoutWarningText">
+              {% if not cart_items %}
+                Your cart is empty.
+              {% else %}
+                Some items are out of stock or have insufficient stock.
+              {% endif %}
+            </span>
+          </div>
+
           <!-- Proceed to Checkout Button -->
           {% if cart_items %}
-            <a href="{% url 'checkout' %}" class="btn-proceed-checkout">
+            <a
+              href="{% url 'checkout' %}"
+              class="btn-proceed-checkout"
+              id="btnProceedCheckout"
+            >
               <span>PROCEED TO CHECKOUT</span>
               <svg viewBox="0 0 24 24" class="checkout-flag-icon">
                 <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/>
               </svg>
             </a>
           {% else %}
-            <span class="btn-proceed-checkout disabled">
+            <span
+              class="btn-proceed-checkout disabled"
+              id="btnProceedCheckout"
+              aria-disabled="true"
+            >
               <span>PROCEED TO CHECKOUT</span>
               <svg viewBox="0 0 24 24" class="checkout-flag-icon">
                 <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/>
               </svg>
             </span>
           {% endif %}
+
+          <script>
+            (function() {
+              const isCartEmpty = {% if not cart_items %}true{% else %}false{% endif %};
+              const hasServerEligible = {% for item in cart_items %}{% if item.is_available and item.product_variant.stock_quantity > 0 and item.quantity <= item.product_variant.stock_quantity and item.product_variant.is_active and item.product_variant.product.is_active and not item.product_variant.product.is_deleted and item.product_variant.product.category.is_active %}true || {% endif %}{% endfor %}false;
+              const hasServerIneligible = {% for item in cart_items %}{% if not item.is_available or item.product_variant.stock_quantity <= 0 or item.quantity > item.product_variant.stock_quantity or not item.product_variant.is_active or not item.product_variant.product.is_active or item.product_variant.product.is_deleted or not item.product_variant.product.category.is_active %}true || {% endif %}{% endfor %}false;
+
+              function evaluateCartStock() {
+                const checkoutBtn = document.getElementById('btnProceedCheckout');
+                const warningEl = document.getElementById('cartCheckoutWarning');
+                const warningTextEl = document.getElementById('cartCheckoutWarningText');
+                if (!checkoutBtn) return;
+
+                const cards = document.querySelectorAll('.cart-product-card');
+                let totalCards = cards.length;
+                let domEligibleCount = 0;
+                let domIneligibleCount = 0;
+
+                cards.forEach(function(card) {
+                  const qty = parseInt(card.getAttribute('data-quantity') || '0', 10);
+                  const stock = parseInt(card.getAttribute('data-stock') || '0', 10);
+                  const isAvailable = card.getAttribute('data-available') === 'true';
+
+                  if (isAvailable && stock > 0 && qty > 0 && qty <= stock) {
+                    domEligibleCount++;
+                  } else {
+                    domIneligibleCount++;
+                  }
+                });
+
+                const empty = isCartEmpty || (totalCards === 0 && isCartEmpty);
+                const hasEligible = !empty && (totalCards > 0 ? domEligibleCount > 0 : hasServerEligible);
+                const hasIneligible = !empty && (totalCards > 0 ? domIneligibleCount > 0 : hasServerIneligible);
+
+                if (empty) {
+                  // Cart is empty -> Disable checkout button
+                  checkoutBtn.classList.add('disabled');
+                  checkoutBtn.setAttribute('aria-disabled', 'true');
+                  checkoutBtn.removeAttribute('href');
+                  checkoutBtn.style.pointerEvents = 'none';
+                  checkoutBtn.style.cursor = 'not-allowed';
+
+                  if (warningEl && warningTextEl) {
+                    warningTextEl.textContent = 'Your cart is empty.';
+                    warningEl.style.display = 'flex';
+                  }
+                } else if (!hasEligible) {
+                  // All items out of stock / unavailable -> Disable checkout button
+                  checkoutBtn.classList.add('disabled');
+                  checkoutBtn.setAttribute('aria-disabled', 'true');
+                  checkoutBtn.removeAttribute('href');
+                  checkoutBtn.style.pointerEvents = 'none';
+                  checkoutBtn.style.cursor = 'not-allowed';
+
+                  if (warningEl && warningTextEl) {
+                    warningTextEl.textContent = 'Some items are out of stock or have insufficient stock.';
+                    warningEl.style.display = 'flex';
+                  }
+                } else {
+                  // At least one item is eligible -> Enable checkout button!
+                  checkoutBtn.classList.remove('disabled');
+                  checkoutBtn.removeAttribute('aria-disabled');
+                  checkoutBtn.setAttribute('href', "{% url 'checkout' %}");
+                  checkoutBtn.style.pointerEvents = 'auto';
+                  checkoutBtn.style.cursor = 'pointer';
+
+                  if (hasIneligible) {
+                    // Show warning notice that some items are out of stock while allowing checkout of eligible items
+                    if (warningEl && warningTextEl) {
+                      warningTextEl.textContent = 'Some items are out of stock or have insufficient stock.';
+                      warningEl.style.display = 'flex';
+                    }
+                  } else {
+                    // All items in stock
+                    if (warningEl) {
+                      warningEl.style.display = 'none';
+                    }
+                  }
+                }
+              }
+
+              window.evaluateCartStock = evaluateCartStock;
+
+              // Run immediately to ensure proper button state without delay
+              evaluateCartStock();
+
+              const btn = document.getElementById('btnProceedCheckout');
+              if (btn) {
+                btn.addEventListener('click', function(e) {
+                  if (btn.classList.contains('disabled') || btn.getAttribute('aria-disabled') === 'true') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    evaluateCartStock();
+                    return false;
+                  }
+                });
+              }
+
+              document.addEventListener('DOMContentLoaded', evaluateCartStock);
+              window.addEventListener('pageshow', evaluateCartStock);
+            })();
+          </script>
 
           <!-- Security Footnote -->
           <div class="telemetry-security-row">
@@ -1526,6 +1705,222 @@
           }
         });
       }
+
+      // Helper functions for CSRF and Toast notifications
+      function getCsrfToken() {
+        const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (tokenInput && tokenInput.value) return tokenInput.value;
+        const cookie = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='));
+        return cookie ? cookie.split('=')[1] : '';
+      }
+
+      function showToast(message, type = 'success') {
+        let container = document.getElementById('toastContainer');
+        if (!container) {
+          container = document.querySelector('.toast-messages');
+        }
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'toastContainer';
+          container.className = 'toast-messages';
+          document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast-message ${type}`;
+        toast.innerHTML = `<span>${message}</span><button type="button" class="toast-close-btn" onclick="this.parentElement.remove();">&times;</button>`;
+        container.appendChild(toast);
+        setTimeout(function () {
+          toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(20px)';
+          setTimeout(function () {
+            toast.remove();
+          }, 400);
+        }, 4000);
+      }
+
+      function updateCartTotals() {
+        let newTotal = 0;
+        let count = 0;
+        document.querySelectorAll('.cart-product-card').forEach(function(card) {
+          count++;
+          const isAvail = card.getAttribute('data-available') === 'true';
+          const qty = parseInt(card.getAttribute('data-quantity') || '0', 10);
+          const unitPrice = parseFloat(card.getAttribute('data-unit-price') || '0');
+          if (isAvail) {
+            newTotal += qty * unitPrice;
+          }
+        });
+
+        const totalEl = document.querySelector('.telemetry-total-amount .format-number');
+        if (totalEl) {
+          totalEl.textContent = new Intl.NumberFormat('en-IN').format(Math.round(newTotal));
+        }
+
+        const subtitleEl = document.querySelector('.garage-subtitle-row span:last-child');
+        if (subtitleEl) {
+          subtitleEl.textContent = `${count} item${count === 1 ? '' : 's'} ready for checkout`;
+        }
+
+        if (typeof window.evaluateCartStock === 'function') {
+          window.evaluateCartStock();
+        }
+      }
+
+      // Quantity update via fetch POST
+      document.querySelectorAll(".qty-btn").forEach(function (btn) {
+        if (btn.classList.contains("disabled")) return;
+        btn.addEventListener("click", async function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const href = this.getAttribute("href");
+          if (!href || href === "#" || this.dataset.loading === "true") return;
+
+          this.dataset.loading = "true";
+          const card = this.closest(".cart-product-card");
+          const qtyNumberEl = card ? card.querySelector(".qty-number") : null;
+          const priceValEl = card ? card.querySelector(".cart-item-price-val .format-number") : null;
+          const unitPrice = card ? parseFloat(card.getAttribute("data-unit-price") || "0") : 0;
+
+          try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(href, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (parseErr) {
+                console.error("Cart quantity update parse error:", parseErr);
+              }
+            } else if (!response.ok) {
+              showToast("An unexpected error occurred. Please try again.", "error");
+              return;
+            }
+
+            if (response.ok && response.status === 200) {
+              if (data && data.removed) {
+                showToast(data.message || "Product removed from cart.", "success");
+                if (card) {
+                  card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                  card.style.opacity = "0";
+                  card.style.transform = "scale(0.95)";
+                  setTimeout(function() {
+                    card.remove();
+                    updateCartTotals();
+                    if (document.querySelectorAll(".cart-product-card").length === 0) {
+                      window.location.reload();
+                    }
+                  }, 300);
+                }
+              } else if (data && typeof data.quantity === "number") {
+                showToast(data.message || "Cart updated.", "success");
+                if (qtyNumberEl) qtyNumberEl.textContent = data.quantity;
+                if (card) card.setAttribute("data-quantity", data.quantity);
+                if (priceValEl && unitPrice > 0) {
+                  priceValEl.textContent = new Intl.NumberFormat('en-IN').format(Math.round(data.quantity * unitPrice));
+                }
+                updateCartTotals();
+              }
+            } else {
+              // 409 / 400 error
+              const errMsg = data && (data.message || data.error)
+                ? (data.message || data.error)
+                : "Unable to update quantity.";
+              showToast(errMsg, "error");
+            }
+          } catch (err) {
+            console.error("Cart quantity update error:", err);
+            showToast("Network error. Please try again.", "error");
+          } finally {
+            delete this.dataset.loading;
+          }
+        });
+      });
+
+      // Remove item via fetch POST
+      document.querySelectorAll(".btn-cart-remove").forEach(function (btn) {
+        btn.addEventListener("click", async function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const href = this.getAttribute("href");
+          if (!href || href === "#" || this.dataset.loading === "true") return;
+
+          this.dataset.loading = "true";
+          const card = this.closest(".cart-product-card");
+
+          try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(href, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (parseErr) {
+                console.error("Cart remove parse error:", parseErr);
+              }
+            } else if (!response.ok) {
+              showToast("An unexpected error occurred. Please try again.", "error");
+              return;
+            }
+
+            if (response.ok && response.status === 200) {
+              showToast(data && data.message ? data.message : "Product removed from cart.", "success");
+              if (card) {
+                card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                card.style.opacity = "0";
+                card.style.transform = "scale(0.95)";
+                setTimeout(function() {
+                  card.remove();
+                  updateCartTotals();
+                  if (document.querySelectorAll(".cart-product-card").length === 0) {
+                    window.location.reload();
+                  }
+                }, 300);
+              }
+            } else {
+              const errMsg = data && (data.message || data.error)
+                ? (data.message || data.error)
+                : "Unable to remove product from cart.";
+              showToast(errMsg, "error");
+            }
+          } catch (err) {
+            console.error("Cart remove error:", err);
+            showToast("Network error. Please try again.", "error");
+          } finally {
+            delete this.dataset.loading;
+          }
+        });
+      });
 
       // Auto-dismiss toast messages after 4 seconds
       setTimeout(function () {

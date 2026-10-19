@@ -132,6 +132,7 @@ class AddressForm(forms.Form):
 
     is_default = forms.BooleanField(required=False)
 
+    # Clean the address type, defaulting to 'home' if none was selected.
     def clean_address_type(self):
         """Use home when no address type is submitted."""
         return self.cleaned_data.get("address_type") or "home"
@@ -175,10 +176,12 @@ class ProfileForm(forms.Form):
         },
     )
 
+    # Initialize the profile form and store the current user reference.
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
 
+    # Ensure the updated username is unique and not taken by another user.
     def clean_username(self):
         """Prevent duplicate usernames, ignoring letter case."""
         username = self.cleaned_data["username"].strip()
@@ -199,6 +202,7 @@ class ProfileForm(forms.Form):
 
         return username
 
+    # Ensure the updated email address is unique across other user accounts.
     def clean_email(self):
         """Prevent duplicate email addresses, ignoring letter case."""
         email = self.cleaned_data["email"].strip()
@@ -287,6 +291,7 @@ class SignupForm(forms.Form):
         },
     )
 
+    # Check that the username chosen during signup does not already exist.
     def clean_username(self):
         username = self.cleaned_data["username"].strip()
 
@@ -295,6 +300,7 @@ class SignupForm(forms.Form):
 
         return username
 
+    # Check that the email address entered during signup is not already registered.
     def clean_email(self):
         email = self.cleaned_data["email"].strip()
 
@@ -303,6 +309,7 @@ class SignupForm(forms.Form):
 
         return email
 
+    # Validate the signup password against Django password security validators.
     def clean_password(self):
         password = self.cleaned_data["password"]
 
@@ -313,6 +320,7 @@ class SignupForm(forms.Form):
 
         return password
 
+    # Ensure that the password and confirmation password match.
     def clean(self):
         cleaned_data = super().clean()
 
@@ -363,6 +371,7 @@ class ResetPasswordForm(forms.Form):
         },
     )
 
+    # Validate the new password against Django security validators.
     def clean_new_password(self):
         from django.contrib.auth.password_validation import validate_password
 
@@ -370,6 +379,7 @@ class ResetPasswordForm(forms.Form):
         validate_password(password)
         return password
 
+    # Verify that the new password and confirmation password match.
     def clean(self):
         cleaned_data = super().clean()
 
@@ -410,10 +420,12 @@ class SetNewPasswordForm(forms.Form):
         },
     )
 
+    # Initialize the set-new-password form with the target user.
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
 
+    # Validate the new password against password validators for this user.
     def clean_new_password(self):
         password = self.cleaned_data["new_password"]
 
@@ -422,6 +434,7 @@ class SetNewPasswordForm(forms.Form):
 
         return password
 
+    # Ensure the new password and confirmation password match.
     def clean(self):
         cleaned_data = super().clean()
 

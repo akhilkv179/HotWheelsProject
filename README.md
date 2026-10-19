@@ -124,3 +124,17 @@ Review changes before committing and never push secrets or local environment fil
 Authentication, authorization, input validation, error handling, and stock consistency should be verified before deployment.
 
 This project is intended for development and learning. Before production deployment, configure production-grade security, environment variables, static and media file handling, logging, database backups, and appropriate deployment infrastructure.
+
+### 3. Install Dependencies
+
+Install the Python packages listed in `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure PostgreSQL
+
+Create a PostgreSQL database named `hotwheels`, or use the database name configured for your environment.
+
+Configure the database connection and Django secret key using your local settings or environment variables. Never commit passwords, API keys, OAuth client secrets, or production credentials.

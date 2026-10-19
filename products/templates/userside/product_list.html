@@ -67,7 +67,7 @@
       background: rgba(22, 22, 29, 0.95);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-left: 3px solid var(--accent-red);
+      border-left: 3px solid #60a5fa;
       border-top: 1px solid var(--border-subtle);
       border-right: 1px solid var(--border-subtle);
       border-bottom: 1px solid var(--border-subtle);
@@ -102,6 +102,10 @@
 
     .toast-message.error {
       border-left-color: var(--accent-red);
+    }
+
+    .toast-message.info {
+      border-left-color: #60a5fa;
     }
 
     @keyframes fadeInRight {
@@ -1354,6 +1358,7 @@
 </head>
 
 <body>
+  <div style="display: none;">{% csrf_token %}</div>
 
   <!-- Flash Messages & Toast Container -->
   <div class="toast-messages" id="toastContainer">
@@ -1980,6 +1985,25 @@
       // ==================================================
       const toastContainer = document.getElementById("toastContainer");
 
+      function scheduleToastDismissal(toast, delay = 3500) {
+        setTimeout(function () {
+          if (toast && toast.isConnected) {
+            toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+            toast.style.opacity = "0";
+            toast.style.transform = "translateX(20px)";
+            setTimeout(function () {
+              if (toast && toast.isConnected) toast.remove();
+            }, 300);
+          }
+        }, delay);
+      }
+
+      if (toastContainer) {
+        toastContainer.querySelectorAll(".toast-message").forEach(function (t) {
+          scheduleToastDismissal(t, 3500);
+        });
+      }
+
       function showToast(message, type = "success", duration = 3500) {
         if (!toastContainer) return;
         const toast = document.createElement("div");
@@ -1992,17 +2016,10 @@
           });
         }
         toastContainer.appendChild(toast);
-        setTimeout(function () {
-          if (toast.isConnected) {
-            toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
-            toast.style.opacity = "0";
-            toast.style.transform = "translateX(20px)";
-            setTimeout(function () {
-              toast.remove();
-            }, 300);
-          }
-        }, duration);
+        scheduleToastDismissal(toast, duration);
       }
+
+      const isUserAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
 
       // 1. Whole card click navigates to product details
       document.querySelectorAll(".diecast-card").forEach(function (card) {
@@ -2022,10 +2039,89 @@
         });
       });
 
-      // 2. Prevent card navigation when clicking wishlist button
+      function getCsrfToken() {
+        const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (tokenInput && tokenInput.value) return tokenInput.value;
+        const cookie = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='));
+        return cookie ? cookie.split('=')[1] : '';
+      }
+
+      // 2. Wishlist Heart Button AJAX toggle (POST with Accept: application/json)
       document.querySelectorAll(".diecast-heart-btn").forEach(function (btn) {
-        btn.addEventListener("click", function (e) {
+        btn.addEventListener("click", async function (e) {
+          e.preventDefault();
           e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (!isUserAuthenticated) {
+            window.location.href = "{% url 'login' %}?next=" + encodeURIComponent(window.location.pathname);
+            return;
+          }
+
+          const href = this.getAttribute("href");
+          if (!href || href === "#" || this.dataset.loading === "true") return;
+
+          this.dataset.loading = "true";
+
+          try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(href, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (parseErr) {
+                console.error("Wishlist response parse error:", parseErr);
+              }
+            } else if (!response.ok) {
+              showToast("An unexpected error occurred. Please try again.", "error");
+              return;
+            }
+
+            if (response.status === 201 || (response.ok && data && data.action === "added")) {
+              this.classList.add("active");
+              this.setAttribute("title", "Remove from wishlist");
+              this.setAttribute("aria-label", "Remove from wishlist");
+              this.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              `;
+              showToast(data && data.message ? data.message : "Product added to wishlist.", "success");
+            } else if (response.status === 200 || (response.ok && data && data.action === "removed")) {
+              this.classList.remove("active");
+              this.setAttribute("title", "Add to wishlist");
+              this.setAttribute("aria-label", "Add to wishlist");
+              this.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              `;
+              showToast("Product removed from wishlist.", "success");
+            } else {
+              const errMsg = data && (data.message || data.error) ? (data.message || data.error) : "Could not update wishlist.";
+              showToast(errMsg, "error");
+            }
+          } catch (err) {
+            console.error("Wishlist toggle error:", err);
+            showToast("Network error. Please try again.", "error");
+          } finally {
+            delete this.dataset.loading;
+          }
         });
       });
     })();

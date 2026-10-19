@@ -2,6 +2,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 
+# Send an email containing an OTP verification code to the user.
 def send_otp_email(email, otp):
 
     subject = "Hot Wheels - Email Verification"

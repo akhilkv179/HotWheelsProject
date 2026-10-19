@@ -1,17 +1,21 @@
-from django.contrib import messages
+
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
 
 from ..forms import ProfileForm
 from ..services.otp_service import generate_otp, get_otp_expiry
 from ..services.email_service import send_otp_email
 
 
+# Update user profile information and send OTP if email is modified.
 @never_cache
 @login_required
+@require_http_methods(["GET", "POST"])
 def edit_profile(request):
-    """Validate profile fields and handle email-change verification."""
+    
 
     user = request.user
 
@@ -42,46 +46,59 @@ def edit_profile(request):
                 send_otp_email(email, otp)
 
                 # Preserve the existing behaviour: update these fields
-                # before redirecting to email verification.
+                # before email verification.
                 user.username = username
                 user.phone = phone
                 user.save()
 
-                messages.success(
-                    request,
-                    "OTP has been sent to your new email address.",
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "message": (
+                            "OTP has been sent to your new email address."
+                        ),
+                        "redirect_url": "/verify-email-change-otp/",
+                        "requires_otp": True,
+                    },
+                    status=200,
                 )
-
-                return redirect("verify_email_change_otp")
 
             # Update the profile directly if the email is unchanged.
             user.username = username
             user.phone = phone
             user.save()
 
-            messages.success(
-                request,
-                "Profile updated successfully.",
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Profile updated successfully.",
+                    "redirect_url": "/profile/",
+                    "requires_otp": False,
+                },
+                status=200,
             )
 
-            return redirect("profile")
-
-        # Preserve the existing messages-based error handling.
-        for field_errors in form.errors.values():
-            for error in field_errors:
-                messages.error(request, error)
-
-    else:
-        # Pre-fill the form with the user's current details.
-        form = ProfileForm(
-            initial={
-                "username": user.username,
-                "phone": user.phone,
-                "email": user.email,
+        # Return field-specific validation errors as JSON.
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Please correct the errors below.",
+                "errors": form.errors.get_json_data(),
             },
-            user=user,
+            status=400,
         )
 
+    # Pre-fill the form with the user's current details.
+    form = ProfileForm(
+        initial={
+            "username": user.username,
+            "phone": user.phone,
+            "email": user.email,
+        },
+        user=user,
+    )
+
+    # Render the existing edit profile page for normal browser requests.
     return render(
         request,
         "accounts/edit_profile.html",

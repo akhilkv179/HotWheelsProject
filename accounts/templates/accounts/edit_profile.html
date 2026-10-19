@@ -496,6 +496,19 @@
       transform: translateY(0);
     }
 
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      pointer-events: none;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     /* Footer */
     .site-footer {
       background-color: #060608;
@@ -794,7 +807,7 @@
         <!-- Form Action Buttons -->
         <div class="card-actions-row">
           <a href="{% url 'profile' %}" class="btn-secondary">CANCEL</a>
-          <button type="submit" class="btn-primary">
+          <button type="submit" class="btn-primary" id="submitProfileBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
               <polyline points="17 21 17 13 7 13 7 21"/>
@@ -864,7 +877,7 @@
     </div>
   </footer>
 
-  <!-- Interactive JavaScript: Profile Form Single-Error Validation -->
+  <!-- Interactive JavaScript: Profile Form Validation & Submission -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const form = document.getElementById('editProfileForm');
@@ -872,8 +885,10 @@
       const usernameInput = document.getElementById('username');
       const phoneInput = document.getElementById('phone');
       const emailInput = document.getElementById('email');
+      const submitBtn = document.getElementById('submitProfileBtn') || (form ? form.querySelector('button[type="submit"]') : null);
 
       const formFields = [usernameInput, phoneInput, emailInput].filter(Boolean);
+      let isSubmitting = false;
 
       function escapeHtml(text) {
         const div = document.createElement('div');
@@ -931,6 +946,61 @@
         alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
+      function showSingleSuccess(message) {
+        if (!alertContainer) return;
+
+        // Clear any previous error states
+        alertContainer.innerHTML = '';
+        formFields.forEach(function(f) {
+          f.classList.remove('is-invalid');
+        });
+
+        // Render strictly ONE success alert box
+        const alertBox = document.createElement('div');
+        alertBox.className = 'alert-box success';
+        alertBox.innerHTML = `
+          <div class="alert-content-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span class="alert-message-text">${escapeHtml(message)}</span>
+          </div>
+          <button type="button" class="alert-close-btn" aria-label="Dismiss alert">&times;</button>
+        `;
+
+        const closeBtn = alertBox.querySelector('.alert-close-btn');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function() {
+            clearErrors();
+          });
+        }
+
+        alertContainer.appendChild(alertBox);
+        alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function setSubmitting(submitting) {
+        isSubmitting = submitting;
+        if (!submitBtn) return;
+        submitBtn.disabled = submitting;
+        if (submitting) {
+          if (!submitBtn.dataset.originalHtml) {
+            submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+          }
+          submitBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;animation: spin 1s linear infinite;">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            SAVING...
+          `;
+        } else {
+          if (submitBtn.dataset.originalHtml) {
+            submitBtn.innerHTML = submitBtn.dataset.originalHtml;
+          }
+        }
+      }
+
       // Validates fields strictly in logical order: username -> phone -> email
       function validateProfileForm() {
         // 1. Username
@@ -976,13 +1046,102 @@
         return null;
       }
 
-      // Form submission validation
+      // Form submission validation & AJAX handler
       if (form) {
-        form.addEventListener('submit', function(e) {
-          const error = validateProfileForm();
-          if (error) {
-            e.preventDefault();
-            showSingleError(error.field, error.message);
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          if (isSubmitting) {
+            return;
+          }
+
+          const clientError = validateProfileForm();
+          if (clientError) {
+            showSingleError(clientError.field, clientError.message);
+            return;
+          }
+
+          setSubmitting(true);
+
+          try {
+            const formData = new FormData(form);
+            const actionUrl = form.getAttribute('action') || window.location.href;
+
+            const response = await fetch(actionUrl, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+              }
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            let data = null;
+            try {
+              data = await response.json();
+            } catch (jsonErr) {
+              // Non-JSON response
+            }
+
+            if (data && data.success) {
+              // Display success notification using project UI
+              showSingleSuccess(data.message || 'Profile updated successfully.');
+
+              // Redirect appropriately:
+              // If requires_otp is true -> /verify-email-change-otp/
+              // If requires_otp is false -> /profile/
+              const targetUrl = data.redirect_url || (data.requires_otp ? '/verify-email-change-otp/' : '/profile/');
+              
+              setTimeout(function() {
+                window.location.href = targetUrl;
+              }, 800);
+              return;
+            }
+
+            // Handle errors returned by server
+            let errorField = null;
+            let errorMessage = '';
+
+            if (data && data.errors && typeof data.errors === 'object') {
+              const fieldMap = {
+                username: usernameInput,
+                phone: phoneInput,
+                email: emailInput
+              };
+
+              const priorityKeys = ['username', 'phone', 'email', '__all__'];
+              const allKeys = [...priorityKeys, ...Object.keys(data.errors).filter(k => !priorityKeys.includes(k))];
+
+              for (const key of allKeys) {
+                if (data.errors[key] && Array.isArray(data.errors[key]) && data.errors[key].length > 0) {
+                  const errObj = data.errors[key][0];
+                  errorMessage = (errObj && errObj.message) ? errObj.message : String(errObj);
+                  errorField = fieldMap[key] || null;
+                  break;
+                }
+              }
+            }
+
+            if (!errorMessage && data && data.message) {
+              errorMessage = data.message;
+            }
+
+            if (!errorMessage) {
+              errorMessage = 'Failed to update profile. Please check the details and try again.';
+            }
+
+            showSingleError(errorField, errorMessage);
+            setSubmitting(false);
+
+          } catch (err) {
+            console.error('Profile update error:', err);
+            showSingleError(null, 'Network error. Please check your connection and try again.');
+            setSubmitting(false);
           }
         });
       }

@@ -220,11 +220,14 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      width: 100%;
+      position: relative;
+      z-index: 25;
     }
 
     .alert-box {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.4);
       border-left: 3px solid var(--accent-red);
       color: #fca5a5;
       padding: 11px 14px;
@@ -246,6 +249,13 @@
       flex: 1;
       min-width: 0;
       word-break: break-word;
+    }
+
+    .alert-box.error {
+      background: rgba(239, 68, 68, 0.14) !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      border-left: 3px solid var(--accent-red) !important;
+      color: #fca5a5 !important;
     }
 
     .alert-box.success {
@@ -274,6 +284,10 @@
       height: 17px;
       flex-shrink: 0;
       stroke: var(--accent-red);
+    }
+
+    .alert-box.error svg {
+      stroke: var(--accent-red) !important;
     }
 
     .alert-box.success svg {
@@ -760,7 +774,7 @@
       </div>
 
       <!-- Messages / Errors -->
-      <div class="alert-container" id="loginAlertContainer">
+      <div class="alert-container" id="loginAlertContainer" aria-live="assertive">
         {% if messages %}
           {% for message in messages %}
             <div class="alert-box {% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% elif 'info' in message.tags %}info{% else %}error{% endif %}" role="alert">
@@ -882,9 +896,9 @@
       </div>
 
       <!-- Google Sign In -->
-      <a href="#"
+      <a href="{% url 'google_login' %}?action=login"
        class="btn-google"
-       onclick="sessionStorage.setItem('google_oauth_in_progress', 'true'); window.location.replace('{% url 'google_login' %}?action=login'); return false;">
+       id="googleLoginBtn">
         <svg viewBox="0 0 24 24">
           <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
           <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
@@ -992,129 +1006,36 @@
     </div>
   </footer>
 
-  <!-- Interactive JavaScript: Show/Hide Password & OAuth History Protection -->
+  <!-- Interactive JavaScript: Show/Hide Password & Google SSO -->
   <script>
     function dismissAlert(btn) {
       const box = btn ? btn.closest('.alert-box') : null;
       if (box) {
         box.remove();
       }
-      sessionStorage.removeItem('persisted_auth_alert');
+      try {
+        sessionStorage.removeItem('persisted_auth_alert');
+        sessionStorage.removeItem('google_oauth_in_progress');
+      } catch (e) {}
     }
 
-    // Safe history handling: prevent returning to Google Account Chooser after logout
-    (function handleOAuthHistoryProtection() {
-      const googleOAuthUsed = sessionStorage.getItem('google_oauth_in_progress') === 'true';
-
-      if (googleOAuthUsed && window.history && window.history.pushState) {
-        window.history.pushState({ page: 'login_auth_guard' }, '', window.location.href);
-
-        window.addEventListener('popstate', function(event) {
-          window.history.pushState({ page: 'login_auth_guard' }, '', window.location.href);
-        });
-      }
-
-      // Only reload from bfcache if no messages exist and OAuth was in progress
-      window.addEventListener('pageshow', function(event) {
-        const hasAlert = document.querySelector('#loginAlertContainer .alert-box');
-        if (event.persisted && sessionStorage.getItem('google_oauth_in_progress') === 'true' && !hasAlert) {
-          window.location.reload();
-        }
-      });
-    })();
+    // Clean up any stale sessionStorage entries from previous sessions
+    try {
+      sessionStorage.removeItem('persisted_auth_alert');
+      sessionStorage.removeItem('google_oauth_in_progress');
+    } catch (e) {}
 
     document.addEventListener('DOMContentLoaded', function() {
-      // 1. Alert persistence across reloads / redirects
-      const alertContainer = document.getElementById('loginAlertContainer');
-      const renderedAlert = alertContainer ? alertContainer.querySelector('.alert-box') : null;
-
-      if (renderedAlert) {
-        // If an alert was rendered by the backend, save it for reload protection
-        const textEl = renderedAlert.querySelector('.alert-message-text');
-        const text = textEl ? textEl.textContent.trim() : '';
-        const isSuccess = renderedAlert.classList.contains('success');
-        const isWarning = renderedAlert.classList.contains('warning');
-        const isInfo = renderedAlert.classList.contains('info');
-        const tag = isSuccess ? 'success' : (isWarning ? 'warning' : (isInfo ? 'info' : 'error'));
-
-        if (text) {
-          sessionStorage.setItem('persisted_auth_alert', JSON.stringify({
-            text: text,
-            tag: tag,
-            timestamp: Date.now()
-          }));
-        }
-      } else {
-        // If Django messages was empty (e.g. after a page reload / redirect), check sessionStorage
-        try {
-          const saved = sessionStorage.getItem('persisted_auth_alert');
-          if (saved && alertContainer) {
-            const data = JSON.parse(saved);
-            // Valid for 60 seconds from original delivery
-            if (Date.now() - data.timestamp < 60000 && data.text) {
-              const box = document.createElement('div');
-              box.className = 'alert-box ' + (data.tag || 'error');
-              box.setAttribute('role', 'alert');
-
-              let iconSvg = `
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-              `;
-              if (data.tag === 'success') {
-                iconSvg = `
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                  </svg>
-                `;
-              } else if (data.tag === 'warning') {
-                iconSvg = `
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                `;
-              }
-
-              box.innerHTML = `
-                <div class="alert-content-wrap">
-                  ${iconSvg}
-                  <span class="alert-message-text">${data.text}</span>
-                </div>
-                <button type="button" class="alert-close" onclick="dismissAlert(this)" aria-label="Dismiss alert">&times;</button>
-              `;
-              alertContainer.appendChild(box);
-            } else {
-              sessionStorage.removeItem('persisted_auth_alert');
-            }
-          }
-        } catch (e) {
-          sessionStorage.removeItem('persisted_auth_alert');
+      // 1. Google SSO Host Normalization (matches backend GOOGLE_REDIRECT_URI on 127.0.0.1)
+      const googleBtn = document.getElementById('googleLoginBtn');
+      if (googleBtn) {
+        if (window.location.hostname === 'localhost') {
+          const port = window.location.port ? ':' + window.location.port : '';
+          googleBtn.href = window.location.protocol + '//127.0.0.1' + port + '{% url "google_login" %}?action=login';
         }
       }
 
-      // Clear OAuth in-progress flag now that we've arrived and rendered
-      sessionStorage.removeItem('google_oauth_in_progress');
-
-      // 2. Clear persisted alert when user types in any input or submits
-      const loginForm = document.querySelector('.login-form');
-      if (loginForm) {
-        loginForm.querySelectorAll('input').forEach(function(input) {
-          input.addEventListener('input', function() {
-            sessionStorage.removeItem('persisted_auth_alert');
-          });
-        });
-        loginForm.addEventListener('submit', function() {
-          sessionStorage.removeItem('persisted_auth_alert');
-          sessionStorage.removeItem('google_oauth_in_progress');
-        });
-      }
-
-      // 3. Show/Hide Password functionality (preserved intact)
+      // 2. Show/Hide Password functionality (preserved intact)
       const toggleBtn = document.getElementById('togglePassword');
       const passwordInput = document.getElementById('password');
       const eyeIcon = document.getElementById('eyeIcon');

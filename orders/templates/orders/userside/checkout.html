@@ -396,6 +396,44 @@
       color: var(--accent-coral-bright);
     }
 
+    .address-card-top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .address-card-edit-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #9ca3af;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+
+    .address-card-edit-btn svg {
+      width: 11px;
+      height: 11px;
+      stroke-width: 2;
+    }
+
+    .address-card-edit-btn:hover {
+      color: #ffffff;
+      background: rgba(229, 27, 36, 0.2);
+      border-color: rgba(229, 27, 36, 0.45);
+    }
+
     /* Address Cards Grid */
     .address-cards-grid {
       display: grid;
@@ -525,6 +563,41 @@
       border: 1px solid rgba(252, 165, 165, 0.45);
       background: #15151c;
       box-shadow: 0 0 16px rgba(245, 165, 150, 0.06);
+    }
+
+    .payment-option-card.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: #101014;
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .payment-option-card.disabled:hover {
+      border-color: rgba(255, 255, 255, 0.05);
+      background: #101014;
+    }
+
+    .payment-option-card.disabled .payment-radio-circle {
+      border-color: #33333d;
+    }
+
+    .payment-option-card.disabled .payment-right-icon {
+      color: #555560;
+    }
+
+    .payment-disabled-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #71717a;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: 8px;
     }
 
     .payment-option-left {
@@ -1387,8 +1460,12 @@
               </div>
 
               <div class="panel-actions-wrap">
-                <a href="{% url 'add_address' %}" class="btn-add-address">+ ADD</a>
-                <a href="{% url 'address_list' %}" class="link-edit-address">Edit</a>
+                <a href="{% url 'add_address' %}" class="btn-add-address" title="Add Address">+ ADD ADDRESS</a>
+                {% if addresses and selected_address %}
+                  <a href="{% url 'edit_address' selected_address.id %}" class="link-edit-address" id="headerEditAddressBtn" title="Edit Selected Address">Edit</a>
+                {% elif addresses %}
+                  <a href="{% url 'address_list' %}" class="link-edit-address" id="headerEditAddressBtn" title="Edit Address">Edit</a>
+                {% endif %}
               </div>
             </div>
 
@@ -1411,8 +1488,22 @@
                         {{ address.get_address_type_display|default:"Studio / Office" }}
                       {% endif %}
                     </span>
-                    <div class="address-check-badge" style="{% if selected_address.id != address.id %}display: none;{% endif %}">
-                      &#10003;
+                    <div class="address-card-top-actions">
+                      <a
+                        href="{% url 'edit_address' address.id %}"
+                        class="address-card-edit-btn"
+                        title="Edit Address"
+                        aria-label="Edit address for {{ address.full_name }}"
+                        onclick="event.stopPropagation();"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                        </svg>
+                        <span>Edit</span>
+                      </a>
+                      <div class="address-check-badge" style="{% if selected_address.id != address.id %}display: none;{% endif %}">
+                        &#10003;
+                      </div>
                     </div>
                   </div>
 
@@ -1449,15 +1540,40 @@
             <!-- Payment Options List -->
             <div class="payment-methods-list">
 
-              <!-- Option 1: Razorpay (Selected by Default to match screenshot) -->
-              <label class="payment-option-card selected" data-method="razorpay">
+              <!-- Option 1: Cash on Delivery (Only Enabled Option) -->
+              <label class="payment-option-card selected" data-method="cod">
                 <div class="payment-option-left">
                   <div class="payment-radio-circle">
                     <div class="payment-radio-inner-dot"></div>
                   </div>
-                  <input type="radio" name="payment_method" value="razorpay" checked>
+                  <input type="radio" name="payment_method" value="cod" checked>
                   <div class="payment-text-group">
-                    <span class="payment-title">Razorpay</span>
+                    <span class="payment-title">Cash on Delivery</span>
+                    <span class="payment-desc">Pay at your doorstep</span>
+                  </div>
+                </div>
+                <div class="payment-right-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13"/>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 8"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/>
+                    <circle cx="18.5" cy="18.5" r="2.5"/>
+                  </svg>
+                </div>
+              </label>
+
+              <!-- Option 2: Razorpay (Disabled) -->
+              <label class="payment-option-card disabled" data-method="razorpay" aria-disabled="true">
+                <div class="payment-option-left">
+                  <div class="payment-radio-circle">
+                    <div class="payment-radio-inner-dot"></div>
+                  </div>
+                  <input type="radio" name="payment_method" value="razorpay" disabled>
+                  <div class="payment-text-group">
+                    <div style="display: flex; align-items: center;">
+                      <span class="payment-title">Razorpay</span>
+                      <span class="payment-disabled-badge">Disabled</span>
+                    </div>
                     <span class="payment-desc">UPI, Credit/Debit Card, NetBanking, Wallet</span>
                   </div>
                 </div>
@@ -1468,37 +1584,18 @@
                 </div>
               </label>
 
-              <!-- Option 2: Cash on Delivery -->
-              <label class="payment-option-card" data-method="cod">
+              <!-- Option 3: Wallet (Disabled) -->
+              <label class="payment-option-card disabled" data-method="wallet" aria-disabled="true">
                 <div class="payment-option-left">
                   <div class="payment-radio-circle">
                     <div class="payment-radio-inner-dot"></div>
                   </div>
-                  <input type="radio" name="payment_method" value="cod">
+                  <input type="radio" name="payment_method" value="wallet" disabled>
                   <div class="payment-text-group">
-                    <span class="payment-title">Cash on Delivery</span>
-                    <span class="payment-desc">Pay at your doorstep</span>
-                  </div>
-                </div>
-                <div class="payment-right-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="1" y="3" width="15" height="13"/>
-                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                    <circle cx="5.5" cy="18.5" r="2.5"/>
-                    <circle cx="18.5" cy="18.5" r="2.5"/>
-                  </svg>
-                </div>
-              </label>
-
-              <!-- Option 3: Wallet -->
-              <label class="payment-option-card" data-method="wallet">
-                <div class="payment-option-left">
-                  <div class="payment-radio-circle">
-                    <div class="payment-radio-inner-dot"></div>
-                  </div>
-                  <input type="radio" name="payment_method" value="wallet">
-                  <div class="payment-text-group">
-                    <span class="payment-title">Wallet</span>
+                    <div style="display: flex; align-items: center;">
+                      <span class="payment-title">Wallet</span>
+                      <span class="payment-disabled-badge">Disabled</span>
+                    </div>
                     <span class="payment-desc">Pay with your Hot Wheels collector wallet</span>
                   </div>
                 </div>
@@ -1629,21 +1726,27 @@
               </div>
 
               <!-- Out of Stock / Unavailable Items Warning Banner -->
-              <div class="checkout-stock-warning" id="checkoutStockWarning"{% if can_checkout != False %} style="display: none;"{% endif %}>
+              <div class="checkout-stock-warning" id="checkoutStockWarning"{% if can_checkout != False and cart_items %} style="display: none;"{% endif %}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="8" x2="12" y2="12"></line>
                   <line x1="12" y1="16" x2="12.01" y2="16"></line>
                 </svg>
-                <span>One or more items in your cart are unavailable or have insufficient stock. Please update your cart before proceeding.</span>
+                <span id="checkoutWarningText">
+                  {% if not cart_items %}
+                    Your cart is empty.
+                  {% else %}
+                    Some items are out of stock or have insufficient stock.
+                  {% endif %}
+                </span>
               </div>
 
               <!-- Submit / Place Order Button -->
-              <button type="submit" class="place-order-btn{% if can_checkout == False %} disabled{% endif %}" id="placeOrderSubmitBtn"{% if can_checkout == False %} disabled aria-disabled="true"{% endif %}>
+              <button type="submit" class="place-order-btn{% if can_checkout == False or not cart_items %} disabled{% endif %}" id="placeOrderSubmitBtn"{% if can_checkout == False or not cart_items %} disabled aria-disabled="true"{% endif %}>
                 <svg viewBox="0 0 24 24">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                 </svg>
-                <span id="placeOrderBtnText">PAY WITH RAZORPAY</span>
+                <span id="placeOrderBtnText">PLACE ORDER (CASH ON DELIVERY)</span>
               </button>
 
               <!-- Trust Guarantee text -->
@@ -1701,7 +1804,7 @@
 
         <div class="modal-summary-row">
           <span class="modal-row-label">PAYMENT METHOD</span>
-          <span class="modal-row-value" id="modalPaymentMethod">Razorpay</span>
+          <span class="modal-row-value" id="modalPaymentMethod">Cash on Delivery</span>
         </div>
 
         <div class="modal-summary-row">
@@ -1753,10 +1856,18 @@
   <!-- Interactive JavaScript for Address Selection, Payment Mode, & Number Formatting -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // 1. Address Cards Click Selection
+      // 1. Address Cards Click Selection & Header Edit Button Sync
       const addressCards = document.querySelectorAll('.address-card-choice');
+      const headerEditBtn = document.getElementById('headerEditAddressBtn');
+      const editAddressBaseUrl = "{% url 'edit_address' 0 %}";
+
       addressCards.forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function(e) {
+          // If the user clicked directly on or inside an address edit button, let it navigate cleanly
+          if (e.target.closest('.address-card-edit-btn')) {
+            return;
+          }
+
           addressCards.forEach(c => {
             c.classList.remove('selected');
             const badge = c.querySelector('.address-check-badge');
@@ -1769,6 +1880,12 @@
 
           const check = this.querySelector('.address-check-badge');
           if (check) check.style.display = 'flex';
+
+          // Update header Edit button to target the newly selected address
+          const addrId = this.getAttribute('data-address-id');
+          if (headerEditBtn && addrId) {
+            headerEditBtn.href = editAddressBaseUrl.replace('/0/', '/' + addrId + '/');
+          }
         });
       });
 
@@ -1777,7 +1894,12 @@
       const submitBtnText = document.getElementById('placeOrderBtnText');
 
       paymentCards.forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function(e) {
+          if (this.classList.contains('disabled') || this.getAttribute('aria-disabled') === 'true') {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
           paymentCards.forEach(c => c.classList.remove('selected'));
           this.classList.add('selected');
 
@@ -1840,17 +1962,20 @@
         {% endfor %}
       {% endif %}
 
-      // Check if checkout is blocked due to stock or unavailability
-      const isStockBlocked = {% if can_checkout == False %}true{% elif can_checkout == True %}false{% else %}{% for item in cart_items %}{% if item.quantity > item.product_variant.stock_quantity or not item.product_variant.is_active or not item.product_variant.product.is_active or item.product_variant.product.is_deleted or not item.product_variant.product.category.is_active %}true || {% endif %}{% endfor %}false{% endif %};
+      // Check if checkout is blocked due to empty cart, stock issues, or unavailability
+      const isCartEmpty = {% if not cart_items %}true{% else %}false{% endif %};
+      const isStockBlocked = {% if can_checkout == False %}true{% elif can_checkout == True %}false{% else %}{% for item in cart_items %}{% if item.product_variant.stock_quantity <= 0 or item.quantity > item.product_variant.stock_quantity or not item.product_variant.is_active or not item.product_variant.product.is_active or item.product_variant.product.is_deleted or not item.product_variant.product.category.is_active %}true || {% endif %}{% endfor %}false{% endif %};
+      const isBlocked = isCartEmpty || isStockBlocked;
 
       // Form submission via fetch so the Order Success Modal displays smoothly
       const checkoutForm = document.getElementById('checkoutForm');
       const submitBtn = document.getElementById('placeOrderSubmitBtn');
       const submitBtnTextSpan = document.getElementById('placeOrderBtnText');
       const stockWarningEl = document.getElementById('checkoutStockWarning');
+      const warningTextEl = document.getElementById('checkoutWarningText');
 
-      // Enforce stock-blocked disabled state on initial page load
-      if (isStockBlocked) {
+      // Enforce blocked disabled state on initial page load
+      if (isBlocked) {
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.classList.add('disabled');
@@ -1858,15 +1983,27 @@
         }
         if (stockWarningEl) {
           stockWarningEl.style.display = 'flex';
+          if (warningTextEl) {
+            warningTextEl.textContent = isCartEmpty
+              ? 'Your cart is empty.'
+              : 'Some items are out of stock or have insufficient stock.';
+          }
         }
       }
 
       if (submitBtn) {
         submitBtn.addEventListener('click', function(e) {
-          if (submitBtn.disabled || submitBtn.classList.contains('disabled') || isStockBlocked) {
+          if (submitBtn.disabled || submitBtn.classList.contains('disabled') || isBlocked) {
             e.preventDefault();
             e.stopPropagation();
-            if (stockWarningEl) stockWarningEl.style.display = 'flex';
+            if (stockWarningEl) {
+              stockWarningEl.style.display = 'flex';
+              if (warningTextEl) {
+                warningTextEl.textContent = isCartEmpty
+                  ? 'Your cart is empty.'
+                  : 'Some items are out of stock or have insufficient stock.';
+              }
+            }
             return false;
           }
         });
@@ -1876,19 +2013,27 @@
         checkoutForm.addEventListener('submit', async function(e) {
           e.preventDefault();
 
-          if (submitBtn.disabled || submitBtn.classList.contains('disabled') || isStockBlocked) {
+          if (submitBtn.disabled || submitBtn.classList.contains('disabled') || isBlocked) {
             e.stopPropagation();
-            if (stockWarningEl) stockWarningEl.style.display = 'flex';
+            if (stockWarningEl) {
+              stockWarningEl.style.display = 'flex';
+              if (warningTextEl) {
+                warningTextEl.textContent = isCartEmpty
+                  ? 'Your cart is empty.'
+                  : 'Some items are out of stock or have insufficient stock.';
+              }
+            }
             return false;
           }
 
           // Get selected payment name for modal
-          let selectedPaymentName = 'Razorpay';
-          const selectedPayment = document.querySelector('.payment-option-card.selected');
+          let selectedPaymentName = 'Cash on Delivery';
+          const selectedPayment = document.querySelector('.payment-option-card.selected:not(.disabled)');
           if (selectedPayment) {
             const method = selectedPayment.getAttribute('data-method');
             if (method === 'cod') selectedPaymentName = 'Cash on Delivery';
             else if (method === 'wallet') selectedPaymentName = 'Wallet';
+            else if (method === 'razorpay') selectedPaymentName = 'Razorpay';
           }
 
           // Get selected address text for modal
@@ -1913,30 +2058,53 @@
 
           try {
             const formData = new FormData(checkoutForm);
+            const csrfToken = (function() {
+              const tokenInput = checkoutForm.querySelector('[name=csrfmiddlewaretoken]');
+              if (tokenInput && tokenInput.value) return tokenInput.value;
+              const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+              return cookie ? cookie.split('=')[1] : '';
+            })();
+
             const response = await fetch(checkoutForm.action || window.location.href, {
               method: 'POST',
               body: formData,
               headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
               }
             });
 
-            if (response.ok) {
-              const responseText = await response.text();
-              // If there was an error in the response
-              if (responseText.includes('alert-box') && !responseText.includes('success')) {
-                window.location.reload();
+            let data = null;
+            try {
+              data = await response.json();
+            } catch (jsonErr) {}
+
+            if (response.status === 201 || (response.ok && data && data.order_number)) {
+              if (data && data.order_number) {
+                window.location.href = `/orders/success/${data.order_number}/`;
               } else {
                 openSuccessModal(selectedPaymentName, selectedAddressText);
               }
             } else {
-              checkoutForm.submit();
+              const errMsg = (data && (data.error || data.message))
+                ? (data.error || data.message)
+                : 'Failed to place order. Please review your cart and details.';
+
+              if (stockWarningEl && warningTextEl) {
+                warningTextEl.textContent = errMsg;
+                stockWarningEl.style.display = 'flex';
+                stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
             }
           } catch (err) {
             console.error('Order submit error:', err);
-            checkoutForm.submit();
+            if (stockWarningEl && warningTextEl) {
+              warningTextEl.textContent = 'A network error occurred. Please try again.';
+              stockWarningEl.style.display = 'flex';
+            }
           } finally {
-            if (isStockBlocked) {
+            if (isBlocked) {
               submitBtn.disabled = true;
               submitBtn.classList.add('disabled');
               submitBtn.setAttribute('aria-disabled', 'true');

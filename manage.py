@@ -4,6 +4,7 @@ import os
 import sys
 
 
+# Run administrative and management tasks for the Django project.
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')

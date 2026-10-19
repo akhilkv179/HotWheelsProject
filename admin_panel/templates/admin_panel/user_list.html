@@ -453,7 +453,9 @@
       font-weight: 500;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
     .alert-box.success {
@@ -467,6 +469,22 @@
       width: 17px;
       height: 17px;
       flex-shrink: 0;
+    }
+
+    .alert-dismiss-btn {
+      background: transparent;
+      border: none;
+      color: inherit;
+      opacity: 0.7;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 0 4px;
+      margin-left: auto;
+    }
+
+    .alert-dismiss-btn:hover {
+      opacity: 1;
     }
 
     /* ==================================================
@@ -918,6 +936,14 @@
       background-color: #22c55e;
     }
 
+    .btn-modal-confirm:disabled,
+    .btn-modal-confirm[disabled],
+    .btn-modal-confirm[aria-disabled="true"] {
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
     /* ==================================================
        RESPONSIVE BREAKPOINTS
        ================================================== */
@@ -1204,20 +1230,23 @@
         </div>
 
         <!-- Preserved Django Messages Block -->
-        {% if messages %}
-          <div class="alert-container">
+        <div class="alert-container" id="adminAlertContainer">
+          {% if messages %}
             {% for message in messages %}
               <div class="alert-box {% if 'success' in message.tags %}success{% endif %}" role="alert">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <span>{{ message }}</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>{{ message }}</span>
+                </div>
+                <button type="button" class="alert-dismiss-btn" onclick="this.closest('.alert-box').remove()">&times;</button>
               </div>
             {% endfor %}
-          </div>
-        {% endif %}
+          {% endif %}
+        </div>
 
         <!-- ==================================================
              USER MANAGEMENT TABLE CARD
@@ -1237,7 +1266,7 @@
               </thead>
               <tbody>
                 {% for user in page_obj %}
-                  <tr>
+                  <tr data-user-id="{{ user.id }}">
                     <!-- Customer ID Column -->
                     <td class="cell-customer-id">
                       #{{ user.id|stringformat:"06d" }}
@@ -1270,7 +1299,7 @@
                     </td>
 
                     <!-- Account Status Badge -->
-                    <td>
+                    <td class="cell-status">
                       {% if user.is_active %}
                         <span class="status-badge active">
                           <span class="status-dot"></span>ACTIVE
@@ -1289,7 +1318,7 @@
                           type="button"
                           class="action-icon-btn is-active-btn"
                           title="Block User"
-                          onclick="openConfirmModal('{% url 'toggle_user_status' user.id %}', '{{ user.username|escapejs }}', true)"
+                          onclick="openConfirmModal('{% url 'toggle_user_status' user.id %}', '{{ user.username|escapejs }}', true, this)"
                           aria-label="Block {{ user.username }}"
                         >
                           <!-- Ban/Slash Circle Icon matching Figma -->
@@ -1303,7 +1332,7 @@
                           type="button"
                           class="action-icon-btn is-blocked-btn"
                           title="Unblock User"
-                          onclick="openConfirmModal('{% url 'toggle_user_status' user.id %}', '{{ user.username|escapejs }}', false)"
+                          onclick="openConfirmModal('{% url 'toggle_user_status' user.id %}', '{{ user.username|escapejs }}', false, this)"
                           aria-label="Unblock {{ user.username }}"
                         >
                           <!-- Checkmark Circle Icon matching Figma -->
@@ -1446,14 +1475,19 @@
 
       <div class="modal-actions">
         <button type="button" class="btn-modal-cancel" id="modalCancelBtn">Cancel</button>
-        <a href="#" class="btn-modal-confirm" id="modalConfirmBtn">Confirm</a>
+        <button type="button" class="btn-modal-confirm" id="modalConfirmBtn">Confirm</button>
       </div>
     </div>
   </div>
 
+  <!-- Hidden CSRF Form for Fallback & Token Provision -->
+  <form id="statusToggleFallbackForm" method="POST" action="" style="display: none;">
+    {% csrf_token %}
+  </form>
+
   <!-- Interactive Client-side Script -->
   <script>
-    // Confirmation Modal Logic
+    // Confirmation Modal & Toggle Status Logic
     const backdrop = document.getElementById('confirmModalBackdrop');
     const modalTitle = document.getElementById('modalTitle');
     const modalDesc = document.getElementById('modalDescription');
@@ -1461,30 +1495,127 @@
     const modalCancelBtn = document.getElementById('modalCancelBtn');
     const modalIconBadge = document.getElementById('modalIconBadge');
     const modalIconSvg = document.getElementById('modalIconSvg');
+    const fallbackForm = document.getElementById('statusToggleFallbackForm');
 
-    function openConfirmModal(url, username, isCurrentlyActive) {
+    let currentActionUrl = '';
+    let currentUsername = '';
+    let currentIsActive = false;
+    let currentTriggerBtn = null;
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeJs(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"');
+    }
+
+    function getCsrfToken() {
+      const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+      if (tokenInput && tokenInput.value) return tokenInput.value;
+      const cookie = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='));
+      return cookie ? cookie.split('=')[1] : '';
+    }
+
+    function scheduleAlertDismissal(alertBox, delay = 4000) {
+      setTimeout(function () {
+        if (alertBox && alertBox.isConnected) {
+          alertBox.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          alertBox.style.opacity = '0';
+          alertBox.style.transform = 'translateY(-6px)';
+          setTimeout(function () {
+            if (alertBox && alertBox.isConnected) alertBox.remove();
+          }, 300);
+        }
+      }, delay);
+    }
+
+    // Auto-dismiss initial server messages
+    document.querySelectorAll('.alert-box').forEach(function (alertBox) {
+      scheduleAlertDismissal(alertBox, 4000);
+    });
+
+    function showAlert(message, type = 'success', duration = 4000) {
+      let container = document.getElementById('adminAlertContainer');
+      if (!container) {
+        container = document.querySelector('.alert-container');
+      }
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'adminAlertContainer';
+        container.className = 'alert-container';
+        const mainViewport = document.querySelector('.content-viewport');
+        if (mainViewport) {
+          mainViewport.insertBefore(container, mainViewport.firstChild);
+        } else {
+          document.body.appendChild(container);
+        }
+      }
+
+      const alertBox = document.createElement('div');
+      alertBox.className = `alert-box ${type === 'success' ? 'success' : ''}`;
+      alertBox.setAttribute('role', 'alert');
+
+      const iconSvg = type === 'success'
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+      alertBox.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          ${iconSvg}
+          <span>${escapeHtml(message)}</span>
+        </div>
+        <button type="button" class="alert-dismiss-btn" onclick="this.closest('.alert-box').remove()">&times;</button>
+      `;
+
+      container.appendChild(alertBox);
+
+      if (duration > 0) {
+        scheduleAlertDismissal(alertBox, duration);
+      }
+    }
+
+    function openConfirmModal(url, username, isCurrentlyActive, btn) {
+      currentActionUrl = url;
+      currentUsername = username;
+      currentIsActive = isCurrentlyActive;
+      currentTriggerBtn = btn || null;
+
       if (isCurrentlyActive) {
         modalTitle.textContent = 'Block Collector';
-        modalDesc.innerHTML = 'Are you sure you want to block <strong class="modal-target-name">' + username + '</strong>? The collector will be immediately restricted from signing in or ordering.';
+        modalDesc.innerHTML = 'Are you sure you want to block <strong class="modal-target-name">' + escapeHtml(username) + '</strong>? The collector will be immediately restricted from signing in or ordering.';
         modalConfirmBtn.textContent = 'Block Collector';
         modalConfirmBtn.className = 'btn-modal-confirm danger';
         modalIconBadge.className = 'modal-icon-badge danger';
         modalIconSvg.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>';
       } else {
         modalTitle.textContent = 'Unblock Collector';
-        modalDesc.innerHTML = 'Are you sure you want to restore access for <strong class="modal-target-name">' + username + '</strong>? The collector will be able to log in and access their profile.';
+        modalDesc.innerHTML = 'Are you sure you want to restore access for <strong class="modal-target-name">' + escapeHtml(username) + '</strong>? The collector will be able to log in and access their profile.';
         modalConfirmBtn.textContent = 'Unblock Collector';
         modalConfirmBtn.className = 'btn-modal-confirm success';
         modalIconBadge.className = 'modal-icon-badge success';
         modalIconSvg.innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>';
       }
 
-      modalConfirmBtn.setAttribute('href', url);
+      modalConfirmBtn.disabled = false;
+      delete modalConfirmBtn.dataset.loading;
       backdrop.classList.add('open');
     }
 
     function closeModal() {
       backdrop.classList.remove('open');
+      modalConfirmBtn.disabled = false;
+      delete modalConfirmBtn.dataset.loading;
     }
 
     if (modalCancelBtn) modalCancelBtn.addEventListener('click', closeModal);
@@ -1492,6 +1623,149 @@
     if (backdrop) {
       backdrop.addEventListener('click', function(e) {
         if (e.target === backdrop) closeModal();
+      });
+    }
+
+    // Toggle Status Confirm POST submission
+    if (modalConfirmBtn) {
+      modalConfirmBtn.addEventListener('click', async function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!currentActionUrl || this.disabled || this.dataset.loading === 'true') {
+          return;
+        }
+
+        this.disabled = true;
+        this.dataset.loading = 'true';
+        const origConfirmText = this.textContent;
+        this.textContent = 'Updating...';
+
+        try {
+          const csrfToken = getCsrfToken();
+          const response = await fetch(currentActionUrl, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+
+          if (response.redirected) {
+            window.location.href = response.url;
+            return;
+          }
+
+          const contentType = response.headers.get('content-type') || '';
+          let data = null;
+          if (contentType.includes('application/json')) {
+            try {
+              data = await response.json();
+            } catch (jsonErr) {
+              console.error('Error parsing toggle status JSON:', jsonErr);
+            }
+          }
+
+          if (response.ok && response.status === 200 && data && data.success) {
+            closeModal();
+
+            const newIsActive = Boolean(data.is_active);
+            const userId = data.user_id;
+
+            // Target the row in the table
+            const targetRow = (currentTriggerBtn && currentTriggerBtn.closest('tr')) ||
+                             (userId ? document.querySelector(`tr[data-user-id="${userId}"]`) : null);
+
+            if (targetRow) {
+              // 1. Update Status Badge
+              const statusCell = targetRow.querySelector('.cell-status');
+              if (statusCell) {
+                if (newIsActive) {
+                  statusCell.innerHTML = `
+                    <span class="status-badge active">
+                      <span class="status-dot"></span>ACTIVE
+                    </span>
+                  `;
+                } else {
+                  statusCell.innerHTML = `
+                    <span class="status-badge blocked">
+                      <span class="status-dot"></span>BLOCKED
+                    </span>
+                  `;
+                }
+              }
+
+              // 2. Update Action Button
+              const actionCell = targetRow.querySelector('.td-action');
+              if (actionCell) {
+                if (newIsActive) {
+                  actionCell.innerHTML = `
+                    <button
+                      type="button"
+                      class="action-icon-btn is-active-btn"
+                      title="Block User"
+                      onclick="openConfirmModal('${currentActionUrl}', '${escapeJs(currentUsername)}', true, this)"
+                      aria-label="Block ${escapeHtml(currentUsername)}"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                      </svg>
+                    </button>
+                  `;
+                } else {
+                  actionCell.innerHTML = `
+                    <button
+                      type="button"
+                      class="action-icon-btn is-blocked-btn"
+                      title="Unblock User"
+                      onclick="openConfirmModal('${currentActionUrl}', '${escapeJs(currentUsername)}', false, this)"
+                      aria-label="Unblock ${escapeHtml(currentUsername)}"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="9 12 11 14 15 10"/>
+                      </svg>
+                    </button>
+                  `;
+                }
+              }
+            }
+
+            const successMsg = data.message || (newIsActive ? 'User activated successfully.' : 'User blocked successfully.');
+            showAlert(successMsg, 'success');
+
+          } else if (response.status === 405 || (!contentType.includes('application/json') && response.ok)) {
+            // Fallback to standard form submission if server requested traditional POST
+            if (fallbackForm) {
+              fallbackForm.action = currentActionUrl;
+              fallbackForm.submit();
+              return;
+            }
+            closeModal();
+            const errMsg = data && (data.message || data.error) ? (data.message || data.error) : 'Unable to update user status.';
+            showAlert(errMsg, 'error');
+          } else {
+            closeModal();
+            const errMsg = data && (data.message || data.error) ? (data.message || data.error) : 'Unable to update user status.';
+            showAlert(errMsg, 'error');
+          }
+        } catch (err) {
+          console.error('Toggle status fetch error:', err);
+          // Fallback to standard form POST on fetch error
+          if (fallbackForm) {
+            fallbackForm.action = currentActionUrl;
+            fallbackForm.submit();
+            return;
+          }
+          closeModal();
+          showAlert('Network error. Please try again.', 'error');
+        } finally {
+          this.disabled = false;
+          delete this.dataset.loading;
+          this.textContent = origConfirmText;
+        }
       });
     }
 

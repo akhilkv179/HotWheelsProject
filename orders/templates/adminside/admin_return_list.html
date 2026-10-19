@@ -2576,7 +2576,7 @@
             <div class="claim-decision-card">
               <div class="card-top-header">
                 <span class="card-section-tag">DISPOSITION DECISION</span>
-                <span class="card-sub-mandate">SELECT ONE MANDATE</span>
+                <span class="card-sub-mandate" id="modalDecisionSubheader">ACTION REQUIRED</span>
               </div>
 
               <!-- Mandate Selection Options (Rendered dynamically based on current status) -->
@@ -2749,13 +2749,17 @@
       const mandateContainer = document.getElementById('mandateOptionsContainer');
       const actionsFooter = document.getElementById('modalActionsFooter');
       const textarea = document.getElementById('modalInternalNoteTextarea');
+      const subheader = document.getElementById('modalDecisionSubheader');
 
       mandateContainer.innerHTML = '';
       actionsFooter.innerHTML = '';
       textarea.readOnly = false;
+      mandateContainer.style.display = 'flex';
+      if (subheader) subheader.style.display = 'inline-block';
 
       // 1. STATUS: requested -> can only transition to 'item_received'
       if (status === 'requested') {
+        if (subheader) subheader.textContent = 'INTAKE REQUIRED';
         mandateContainer.innerHTML = `
           <div class="mandate-option-card selected">
             <div class="mandate-radio-circle"></div>
@@ -2785,39 +2789,9 @@
 
       // 2. STATUS: item_received -> can Approve (inspection_approved) or Reject (inspection_rejected)
       else if (status === 'item_received') {
-        mandateContainer.innerHTML = `
-          <div class="mandate-option-card selected" id="optApproveCard" onclick="selectMandate('approve')">
-            <div class="mandate-radio-circle"></div>
-            <div class="mandate-content">
-              <div class="mandate-top-row">
-                <span class="mandate-title">Approve Return (Restore Stock)</span>
-                <span class="mandate-amount">₹${currentReturnData.totalPrice}</span>
-              </div>
-              <p class="mandate-desc">
-                Physically inspected and approved. Adds ${currentReturnData.quantity} item(s) back into variant product stock and advances to refund settlement.
-              </p>
-              <div class="mandate-badge-bottom">
-                <span>⚡ RESTORES VARIANT STOCK AUTOMATICALLY</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="mandate-option-card" id="optRejectCard" onclick="selectMandate('reject')">
-            <div class="mandate-radio-circle"></div>
-            <div class="mandate-content">
-              <div class="mandate-top-row">
-                <span class="mandate-title">Reject Return Claim</span>
-                <span class="mandate-tag-decline">DECLINE</span>
-              </div>
-              <p class="mandate-desc">
-                Item failed inspection or does not qualify for return. Claim is rejected and closed with no stock or refund changes.
-              </p>
-              <div class="mandate-badge-bottom" style="color: #f87171;">
-                <span>✖ CLOSES CLAIM (NO STOCK RESTORED)</span>
-              </div>
-            </div>
-          </div>
-        `;
+        // Keep single Approve Return and Reject Return Claim action triggers (removes duplicate mandate cards)
+        mandateContainer.style.display = 'none';
+        if (subheader) subheader.style.display = 'none';
 
         actionsFooter.innerHTML = `
           <button type="button" class="btn-approve-claim" id="btnApproveAction" onclick="promptInspectionApproval()">
@@ -2826,7 +2800,7 @@
           </button>
           <button type="button" class="btn-reject-claim" id="btnRejectAction" onclick="promptRejection()">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            <span>REJECT RETURN</span>
+            <span>REJECT RETURN CLAIM</span>
           </button>
           <button type="button" class="btn-cancel-claim" onclick="closeManageReturnModal()">CANCEL</button>
         `;
@@ -2834,6 +2808,7 @@
 
       // 3. STATUS: inspection_approved -> can only transition to 'refund_processed'
       else if (status === 'inspection_approved') {
+        if (subheader) subheader.textContent = 'SETTLEMENT MANDATE';
         mandateContainer.innerHTML = `
           <div class="mandate-option-card selected">
             <div class="mandate-radio-circle"></div>
@@ -2864,6 +2839,7 @@
       // 4. TERMINAL STATES: refund_processed or inspection_rejected
       else {
         textarea.readOnly = true;
+        if (subheader) subheader.style.display = 'none';
         const isRefunded = status === 'refund_processed';
 
         mandateContainer.innerHTML = `

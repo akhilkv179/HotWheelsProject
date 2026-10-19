@@ -11,7 +11,7 @@ from admin_panel.views.admin_report_export_view import (export_orders_excel,expo
 
 
 urlpatterns = [
-    path("admin_login/", admin_login, name="admin_login"),
+    path("admin-login/", admin_login, name="admin_login"),
     path("dashboard/",admin_dashboard, name="admin_dashboard"),
     path("users/",user_list, name="user_list"),
     path("users/<int:user_id>/toggle-status/", toggle_user_status, name="toggle_user_status"),

@@ -1,7 +1,7 @@
 from io import BytesIO
 
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.utils import timezone
 
 from openpyxl import Workbook
@@ -12,10 +12,15 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from orders.models import Order
 
 
+# Fetch order details and format them into tabular data rows for reporting.
 def get_order_report_data():
     orders = Order.objects.select_related("user").order_by("-created_at")
+
     rows = [
-        ["Order Number", "Customer", "Email", "Status", "Subtotal", "Discount", "Shipping", "Total", "Date"]
+        [
+            "Order Number", "Customer", "Email", "Status",
+            "Subtotal", "Discount", "Shipping", "Total", "Date"
+        ]
     ]
 
     for order in orders:
@@ -34,9 +39,24 @@ def get_order_report_data():
     return rows
 
 
+# Generate and download an Excel spreadsheet of all customer orders.
 @staff_member_required
 def export_orders_excel(request):
+
+    if request.method != "GET":
+        if "application/json" in request.headers.get("Accept", ""):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Only GET requests are allowed."
+                },
+                status=405
+            )
+
+        return HttpResponseNotAllowed(["GET"])
+
     rows = get_order_report_data()
+
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = "Orders"
@@ -45,8 +65,12 @@ def export_orders_excel(request):
         worksheet.append(row)
 
     for column in worksheet.columns:
-        max_length = max(len(str(cell.value or "")) for cell in column)
-        worksheet.column_dimensions[column[0].column_letter].width = min(max_length + 2, 30)
+        max_length = max(
+            len(str(cell.value or "")) for cell in column
+        )
+        worksheet.column_dimensions[
+            column[0].column_letter
+        ].width = min(max_length + 2, 30)
 
     output = BytesIO()
     workbook.save(output)
@@ -54,14 +78,34 @@ def export_orders_excel(request):
 
     response = HttpResponse(
         output.getvalue(),
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        content_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
     )
-    response["Content-Disposition"] = 'attachment; filename="hotwheels_orders.xlsx"'
+    response["Content-Disposition"] = (
+        'attachment; filename="hotwheels_orders.xlsx"'
+    )
+
     return response
 
 
+# Generate and download a formatted PDF sales report of all customer orders.
 @staff_member_required
 def export_orders_pdf(request):
+
+    if request.method != "GET":
+        if "application/json" in request.headers.get("Accept", ""):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Only GET requests are allowed."
+                },
+                status=405
+            )
+
+        return HttpResponseNotAllowed(["GET"])
+
     rows = get_order_report_data()
     output = BytesIO()
 
@@ -82,7 +126,10 @@ def export_orders_pdf(request):
         ("FONTSIZE", (0, 0), (-1, -1), 7),
         ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2F2F2")]),
+        (
+            "ROWBACKGROUNDS", (0, 1), (-1, -1),
+            [colors.white, colors.HexColor("#F2F2F2")]
+        ),
         ("LEFTPADDING", (0, 0), (-1, -1), 4),
         ("RIGHTPADDING", (0, 0), (-1, -1), 4),
     ]))
@@ -90,6 +137,12 @@ def export_orders_pdf(request):
     document.build([table])
     output.seek(0)
 
-    response = HttpResponse(output.getvalue(), content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="hotwheels_orders.pdf"'
+    response = HttpResponse(
+        output.getvalue(),
+        content_type="application/pdf"
+    )
+    response["Content-Disposition"] = (
+        'attachment; filename="hotwheels_orders.pdf"'
+    )
+
     return response

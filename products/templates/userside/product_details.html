@@ -69,7 +69,7 @@
     .toast-message {
       background: rgba(20, 20, 26, 0.95);
       backdrop-filter: blur(12px);
-      border-left: 3px solid var(--accent-red);
+      border-left: 3px solid #60a5fa;
       border-top: 1px solid var(--border-subtle);
       border-right: 1px solid var(--border-subtle);
       border-bottom: 1px solid var(--border-subtle);
@@ -96,6 +96,10 @@
 
     .toast-message.warning {
       border-left-color: var(--badge-stock-amber);
+    }
+
+    .toast-message.info {
+      border-left-color: #60a5fa;
     }
 
     .toast-close-btn {
@@ -808,6 +812,7 @@
       border-radius: 50%;
       background: currentColor;
       box-shadow: 0 0 8px currentColor;
+      flex-shrink: 0;
     }
 
     /* Variant Selector */
@@ -822,11 +827,12 @@
 
     .variants-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 10px;
     }
 
     .variant-card-btn {
+      position: relative;
       background: var(--bg-surface);
       border: 1.5px solid var(--border-card);
       border-radius: 10px;
@@ -836,9 +842,12 @@
       transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      justify-content: space-between;
+      gap: 8px;
       color: #ffffff;
       outline: none;
+      min-height: 72px;
+      box-sizing: border-box;
     }
 
     .variant-card-btn:hover {
@@ -853,27 +862,45 @@
     }
 
     .variant-card-btn.out-of-stock {
-      opacity: 0.55;
+      opacity: 0.6;
       border-style: dashed;
     }
 
-    .v-stock-tag {
-      font-size: 9.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #ef4444;
-      background: rgba(239, 68, 68, 0.14);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 1px 6px;
-      border-radius: 4px;
-      white-space: nowrap;
+    .v-card-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 6px;
+      width: 100%;
     }
 
     .v-color-name {
       font-size: 13px;
       font-weight: 700;
+      line-height: 1.25;
+      color: #ffffff;
+      flex: 1 1 auto;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .v-stock-tag {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
       line-height: 1.2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
 
     .v-meta-row {
@@ -1474,22 +1501,34 @@
         grid-template-columns: 1fr;
       }
     }
+
+    @media (max-width: 480px) {
+      .variants-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+      .v-card-top-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+    }
   </style>
 </head>
 
 <body>
+  <div style="display: none;">{% csrf_token %}</div>
 
-  <!-- Toast Messages -->
-  {% if messages %}
-    <div class="toast-messages">
+  <!-- Toast Messages Container -->
+  <div class="toast-messages" id="toastContainer">
+    {% if messages %}
       {% for message in messages %}
         <div class="toast-message {% if message.tags %}{{ message.tags }}{% endif %}">
           <span>{{ message }}</span>
           <button type="button" class="toast-close-btn" onclick="this.closest('.toast-message').remove()">✕</button>
         </div>
       {% endfor %}
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
 
   <!-- Top Navigation Bar -->
   <header class="navbar">
@@ -1714,6 +1753,8 @@
 
           {% if product_unavailable %}
             <span class="unavailable-pill-tag">Unavailable</span>
+          {% elif stock_status == 'sold_out' %}
+            <span class="unavailable-pill-tag">Sold Out</span>
           {% elif product.offer_percentage and product.offer_percentage > 0 %}
             <span class="discount-ribbon-pill">
               {{ product.offer_name|default:"Limited Sale" }} &bull; {{ product.offer_percentage|floatformat:0 }}% OFF
@@ -1782,18 +1823,12 @@
             </span>
           </div>
         {% else %}
-          <div id="stockBanner" class="stock-banner {% if stock_status == 'sold_out' %}sold-out{% elif stock_status == 'low_stock' %}low-stock{% else %}in-stock{% endif %}">
+          {% with first_variant=variants.0 %}
+          <div id="stockBanner" class="stock-banner {% if stock_status == 'sold_out' or not first_variant or first_variant.stock_quantity <= 0 or first_variant.stock_status == 'out_of_stock' %}sold-out{% elif first_variant.stock_status == 'low_stock' %}low-stock{% else %}in-stock{% endif %}">
             <span class="pulse-dot"></span>
-            <span id="stockStatusText">
-              {% if stock_status == "sold_out" %}
-                Sold Out — Currently unavailable for purchase
-              {% elif stock_status == "low_stock" %}
-                Low Stock — Only {{ total_stock }} collector models left!
-              {% else %}
-                In Stock &amp; Ready to Ship ({{ total_stock }} units available)
-              {% endif %}
-            </span>
+            <span id="stockStatusText">{% if stock_status == "sold_out" %}Sold Out — Currently unavailable for purchase{% elif not first_variant or first_variant.stock_quantity <= 0 or first_variant.stock_status == 'out_of_stock' %}Sold Out — This variant is currently unavailable{% elif first_variant.stock_status == "low_stock" %}Low Stock — Only {{ first_variant.stock_quantity }} left for this variant!{% else %}In Stock &amp; Ready to Ship ({{ first_variant.stock_quantity }} units available){% endif %}</span>
           </div>
+          {% endwith %}
         {% endif %}
 
         <!-- Variant Selector -->
@@ -1812,7 +1847,7 @@
                 data-status="{{ variant.stock_status }}"
                 data-wishlist="{% if variant.wishlist_item_id %}{{ variant.wishlist_item_id }}{% endif %}"
               >
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                <div class="v-card-top-row">
                   <span class="v-color-name">{{ variant.color }}</span>
                   {% if variant.stock_quantity <= 0 or variant.stock_status == 'out_of_stock' %}
                     <span class="v-stock-tag">Out of Stock</span>
@@ -1833,6 +1868,7 @@
             <button
               type="button"
               class="btn-add-cart-main disabled"
+              id="addToCartBtn"
               disabled
               aria-disabled="true"
             >
@@ -1840,7 +1876,7 @@
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
               </svg>
-              <span>PRODUCT UNAVAILABLE</span>
+              <span id="addToCartText">PRODUCT UNAVAILABLE</span>
             </button>
           {% else %}
             <!-- Add to Cart Link -->
@@ -2360,6 +2396,8 @@
       const isUserAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
       const offerPercentage = {% if product.offer_percentage and product.offer_percentage > 0 %}{{ product.offer_percentage }}{% else %}null{% endif %};
 
+      let selectedVariant = variantsList.length > 0 ? variantsList[0] : null;
+
       variantBtns.forEach((btn) => {
         btn.addEventListener("click", function () {
           variantBtns.forEach((b) => b.classList.remove("active"));
@@ -2368,6 +2406,7 @@
           const variantId = parseInt(this.getAttribute("data-id"), 10);
           const variant = variantsList.find((v) => v.id === variantId);
           if (!variant) return;
+          selectedVariant = variant;
 
           // Update price display
           if (displayedPrice) {
@@ -2455,28 +2494,222 @@
         });
       });
 
-      // Prevent navigation on disabled Add to Cart button
+      function getCsrfToken() {
+        const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (tokenInput && tokenInput.value) return tokenInput.value;
+        const cookie = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='));
+        return cookie ? cookie.split('=')[1] : '';
+      }
+
+      function scheduleToastDismissal(toast, delay = 4000) {
+        if (!toast) return;
+        setTimeout(function () {
+          if (!toast || !toast.parentElement) return;
+          toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(20px)';
+          setTimeout(function () {
+            toast.remove();
+          }, 400);
+        }, delay);
+      }
+
+      // Schedule dismissal for any server-rendered initial messages
+      document.querySelectorAll(".toast-messages .toast-message").forEach(function (toast) {
+        scheduleToastDismissal(toast);
+      });
+
+      function showToast(message, type = 'success') {
+        let container = document.getElementById('toastContainer');
+        if (!container) {
+          container = document.querySelector('.toast-messages');
+        }
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'toastContainer';
+          container.className = 'toast-messages';
+          document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast-message ${type}`;
+        toast.innerHTML = `<span>${message}</span><button type="button" class="toast-close-btn" onclick="this.closest('.toast-message').remove()">✕</button>`;
+        container.appendChild(toast);
+        scheduleToastDismissal(toast, 4000);
+      }
+
+      // Add to Cart AJAX Handler (POST with Accept: application/json)
       if (addToCartBtn) {
-        addToCartBtn.addEventListener("click", function (e) {
+        addToCartBtn.addEventListener("click", async function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
           if (this.classList.contains("disabled") || this.getAttribute("aria-disabled") === "true") {
-            e.preventDefault();
             return false;
+          }
+
+          if (!isUserAuthenticated) {
+            window.location.href = "{% url 'login' %}?next=" + encodeURIComponent(window.location.pathname);
+            return false;
+          }
+
+          const url = this.getAttribute("href");
+          if (!url || url === "javascript:void(0);" || url === "#" || this.dataset.loading === "true") {
+            return false;
+          }
+
+          this.dataset.loading = "true";
+          const origText = addToCartText ? addToCartText.textContent : "ADD TO CART";
+          if (addToCartText) addToCartText.textContent = "ADDING...";
+
+          try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (jsonErr) {
+                console.error("JSON parse error:", jsonErr);
+              }
+            }
+
+            if (response.ok && response.status === 200 && (!data || data.success !== false)) {
+              const msg = data && data.message ? data.message : "Product added to cart.";
+              showToast(msg, "success");
+              if (addToCartText) addToCartText.textContent = "ADDED TO CART";
+              setTimeout(() => {
+                if (addToCartText && this.dataset.loading !== "true") {
+                  addToCartText.textContent = "ADD TO CART";
+                }
+              }, 1500);
+
+              // Server deletes the variant from wishlist when added to cart
+              if (wishlistBtn && wishlistText) {
+                wishlistBtn.classList.remove("active");
+                wishlistText.textContent = "Add to Wishlist";
+                const svg = wishlistBtn.querySelector("svg");
+                if (svg) svg.setAttribute("fill", "none");
+                if (selectedVariant) {
+                  selectedVariant.wishlist_item_id = null;
+                }
+              }
+            } else {
+              // 409 Conflict (e.g. out of stock or max quantity) or 400 Bad Request
+              const errMsg = data && (data.message || data.error)
+                ? (data.message || data.error)
+                : "Unable to add product to cart.";
+              showToast(errMsg, "error");
+
+              if (data && data.message && (data.message.toLowerCase().includes("out of stock") || data.message.toLowerCase().includes("unavailable"))) {
+                this.classList.add("disabled");
+                this.setAttribute("aria-disabled", "true");
+                this.setAttribute("href", "javascript:void(0);");
+                if (addToCartText) addToCartText.textContent = "OUT OF STOCK";
+              } else if (addToCartText) {
+                addToCartText.textContent = origText;
+              }
+            }
+          } catch (err) {
+            console.error("Add to cart error:", err);
+            showToast("Network error. Please try again.", "error");
+            if (addToCartText) addToCartText.textContent = origText;
+          } finally {
+            delete this.dataset.loading;
+          }
+        });
+      }
+
+      // Wishlist Heart Button AJAX Handler (POST with Accept: application/json)
+      if (wishlistBtn) {
+        wishlistBtn.addEventListener("click", async function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (!isUserAuthenticated) {
+            window.location.href = "{% url 'login' %}?next=" + encodeURIComponent(window.location.pathname);
+            return;
+          }
+
+          const url = this.getAttribute("href");
+          if (!url || url === "#" || this.dataset.loading === "true") return;
+
+          this.dataset.loading = "true";
+          const svg = this.querySelector("svg");
+
+          try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (jsonErr) {}
+            }
+
+            if (response.status === 201 || (response.ok && data && data.action === "added")) {
+              this.classList.add("active");
+              if (wishlistText) wishlistText.textContent = "Saved to Wishlist";
+              if (svg) svg.setAttribute("fill", "currentColor");
+              const msg = data && data.message ? data.message : "Product added to wishlist.";
+              showToast(msg, "success");
+
+              if (selectedVariant) {
+                selectedVariant.wishlist_item_id = data && data.wishlist_item_id ? data.wishlist_item_id : true;
+              }
+            } else if (response.status === 200 || (response.ok && data && data.action === "removed")) {
+              this.classList.remove("active");
+              if (wishlistText) wishlistText.textContent = "Add to Wishlist";
+              if (svg) svg.setAttribute("fill", "none");
+              showToast("Product removed from wishlist.", "success");
+
+              if (selectedVariant) {
+                selectedVariant.wishlist_item_id = null;
+              }
+            } else {
+              const errMsg = data && (data.message || data.error)
+                ? (data.message || data.error)
+                : "Unable to update wishlist.";
+              showToast(errMsg, "error");
+            }
+          } catch (err) {
+            console.error("Wishlist toggle error:", err);
+            showToast("Network error. Please try again.", "error");
+          } finally {
+            delete this.dataset.loading;
           }
         });
       }
     })();
-
-    // Auto-dismiss toast messages after 4 seconds
-    setTimeout(function () {
-      document.querySelectorAll(".toast-message").forEach(function (toast) {
-        toast.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-        toast.style.opacity = "0";
-        toast.style.transform = "translateX(20px)";
-        setTimeout(function () {
-          toast.remove();
-        }, 400);
-      });
-    }, 4000);
   </script>
 </body>
 </html>

@@ -11,6 +11,7 @@ from django.views.decorators.cache import never_cache
 # ^This Python library allows your Django server to make HTTP requests to Google's servers.
 
 
+# Redirect the user to Google OAuth login with a secure state token.
 @never_cache
 def google_login(request):
 
@@ -47,6 +48,7 @@ def google_login(request):
     )
 
     return redirect(authorization_url)
+# Handle Google OAuth callback, authenticate or register the user, and sign them in.
 @never_cache
 def google_callback(request):
 
@@ -131,7 +133,7 @@ def google_callback(request):
         user.set_unusable_password()
         user.save()
 
-    if user.is_blocked:
+    if not user.is_active:
         messages.error(request, "Your account has been blocked.")
         return redirect("login")
 

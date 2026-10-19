@@ -1,5 +1,7 @@
-from django.contrib import messages
-from django.shortcuts import render, redirect
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.cache import never_cache
 
 from ..forms import ForgotPasswordForm
@@ -8,9 +10,20 @@ from ..services.otp_service import generate_otp, get_otp_expiry
 from ..services.email_service import send_otp_email
 
 
+# Process password recovery requests and send a verification OTP to the user.
 @never_cache
 def forgot_password(request):
     """Validate the email and start the password-reset OTP process."""
+
+    # Return JSON for unsupported HTTP methods.
+    if request.method not in ["GET", "POST"]:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Method not allowed.",
+            },
+            status=405,
+        )
 
     if request.method == "POST":
         form = ForgotPasswordForm(request.POST)
@@ -23,15 +36,17 @@ def forgot_password(request):
                 email__iexact=email
             ).first()
 
+            # Use a generic response to avoid revealing registered emails.
             if user is None:
-                messages.error(
-                    request,
-                    "No account found with this email.",
-                )
-                return render(
-                    request,
-                    "accounts/forgot_password.html",
-                    {"form": form},
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "message": (
+                            "If an account exists with this email, "
+                            "an OTP has been sent."
+                        ),
+                    },
+                    status=200,
                 )
 
             # Store the account email in the session.
@@ -49,20 +64,30 @@ def forgot_password(request):
             # Send the OTP to the registered email address.
             send_otp_email(user.email, otp)
 
-            messages.success(
-                request,
-                "OTP has been sent to your email.",
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": (
+                        "If an account exists with this email, "
+                        "an OTP has been sent."
+                    ),
+                    "redirect_url": reverse("verify_reset_otp"),
+                },
+                status=200,
             )
 
-            return redirect("verify_reset_otp")
+        # Return form validation errors as JSON.
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Please enter a valid email address.",
+                "errors": form.errors.get_json_data(),
+            },
+            status=400,
+        )
 
-        # Display the form validation errors.
-        for field_errors in form.errors.values():
-            for error in field_errors:
-                messages.error(request, error)
-
-    else:
-        form = ForgotPasswordForm()
+    # Display the existing forgot password page.
+    form = ForgotPasswordForm()
 
     return render(
         request,

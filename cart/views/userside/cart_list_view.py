@@ -1,12 +1,30 @@
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponseNotAllowed
+from django.shortcuts import render
 
 from cart.models import Cart
 
 
+# Check whether the client expects a JSON response.
+def wants_json(request):
+    return "application/json" in request.headers.get("Accept", "")
+
+
+# Display items in the user's cart with prices, availability, and totals.
+@login_required
 def cart_list(request):
 
-    # if not request.user.is_authenticated:
-    #     return redirect("login")
+    if request.method != "GET":
+        if wants_json(request):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Only GET requests are allowed."
+                },
+                status=405
+            )
+
+        return HttpResponseNotAllowed(["GET"])
 
     cart, created = Cart.objects.get_or_create(
         user=request.user
@@ -21,6 +39,7 @@ def cart_list(request):
     )
 
     total_price = 0
+    items_data = []
 
     for item in cart_items:
 
@@ -40,7 +59,36 @@ def cart_list(request):
         if item.is_available:
             total_price += item.subtotal
 
-    return render(request,"userside/cart.html",
+        items_data.append({
+            "id": item.id,
+            "product_id": product.id,
+            "product_name": product.name,
+            "variant_id": variant.id,
+            "quantity": item.quantity,
+            "unit_price": str(item.unit_price),
+            "subtotal": str(item.subtotal),
+            "stock_quantity": variant.stock_quantity,
+            "is_available": item.is_available,
+        })
+
+    if wants_json(request):
+        return JsonResponse(
+            {
+                "success": True,
+                "cart_id": cart.id,
+                "items": items_data,
+                "total_price": str(total_price),
+                "item_count": len(items_data),
+                "has_unavailable_items": any(
+                    not item["is_available"] for item in items_data
+                ),
+            },
+            status=200
+        )
+
+    return render(
+        request,
+        "userside/cart.html",
         {
             "cart": cart,
             "cart_items": cart_items,
