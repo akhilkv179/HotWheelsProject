@@ -1,0 +1,3250 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Category Management | Hot Wheels Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
+  <style>
+    /* ==================================================
+       CSS RESET & DESIGN TOKENS
+       ================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0b0b0e;
+      --bg-sidebar: #070709;
+      --bg-card: #121217;
+      --bg-card-hover: #16161d;
+      --bg-row-hover: #181820;
+      --bg-input: #15151c;
+      --bg-modal: #14141a;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-input: rgba(255, 255, 255, 0.09);
+      --border-top-accent: #e51b24;
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff222e;
+      --accent-orange: #ff4d00;
+      --accent-coral: #f87171;
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --text-header: #c5c7d0;
+      --badge-active-bg: rgba(34, 197, 94, 0.12);
+      --badge-active-border: rgba(34, 197, 94, 0.28);
+      --badge-active-text: #22c55e;
+      --badge-blocked-bg: rgba(239, 68, 68, 0.12);
+      --badge-blocked-border: rgba(239, 68, 68, 0.28);
+      --badge-blocked-text: #ef4444;
+      --badge-offer-bg: rgba(245, 158, 11, 0.12);
+      --badge-offer-border: rgba(245, 158, 11, 0.3);
+      --badge-offer-text: #fbbf24;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Admin Layout: Sidebar + Main Content */
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR
+       ================================================== */
+    .admin-sidebar {
+      width: 250px;
+      min-width: 250px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 20px 24px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand-header {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: linear-gradient(180deg, var(--accent-orange), var(--accent-red));
+      border-radius: 2px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #555765;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      stroke: var(--text-dim);
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background-color: #16161d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+      margin-top: 20px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* ==================================================
+       MAIN CONTENT AREA
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(229, 27, 36, 0.04), transparent 70%);
+    }
+
+    /* Top Navigation Bar */
+    .admin-topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 44px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .topbar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .topbar-badge .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+      box-shadow: 0 0 8px rgba(229, 27, 36, 0.8);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    .topbar-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 8px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      position: relative;
+    }
+
+    .topbar-icon-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .topbar-icon-btn svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: 8px;
+    }
+
+    .profile-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1e1f26;
+      border: 1.5px solid rgba(229, 27, 36, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .profile-role {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      line-height: 1.2;
+    }
+
+    /* Content Viewport */
+    .content-viewport {
+      padding: 40px 44px 60px 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Page Header Section */
+    .page-header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .header-text-block {
+      max-width: 600px;
+    }
+
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: clamp(26px, 3.5vw, 36px);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Primary Add Category Button */
+    .btn-add-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 46px;
+      padding: 0 24px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(229, 27, 36, 0.45);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-add-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 26px rgba(229, 27, 36, 0.65);
+      filter: brightness(1.08);
+    }
+
+    .btn-add-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-add-primary svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2.5;
+    }
+
+    /* Django Messages Alerts */
+    .alert-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-box {
+      background: rgba(229, 27, 36, 0.12);
+      border: 1px solid rgba(229, 27, 36, 0.35);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .alert-box.success {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.35);
+      border-left-color: #22c55e;
+      color: #86efac;
+    }
+
+    .alert-content-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-box svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .alert-dismiss-btn {
+      background: transparent;
+      border: none;
+      color: inherit;
+      opacity: 0.7;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 6px;
+      transition: opacity 0.15s ease;
+    }
+
+    .alert-dismiss-btn:hover {
+      opacity: 1;
+    }
+
+    /* ==================================================
+       CARD CONTAINER (TABLE + SEARCH)
+       ================================================== */
+    .dashboard-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-topbar {
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .card-count-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.08em;
+    }
+
+    /* Search Component */
+    .search-form-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background-color: #171720;
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 0 12px;
+      height: 40px;
+      width: 260px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-input-box:focus-within {
+      border-color: rgba(229, 27, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .search-icon {
+      color: var(--text-dim);
+      margin-right: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .search-field {
+      flex: 1;
+      height: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .search-field::placeholder {
+      color: #555768;
+      font-size: 12.5px;
+    }
+
+    .btn-search-submit {
+      height: 40px;
+      padding: 0 16px;
+      background-color: #20202a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-search-submit:hover {
+      background-color: #272836;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-clear-search {
+      height: 40px;
+      padding: 0 14px;
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      color: #f87171;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-clear-search:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ff4d4d;
+    }
+
+    /* Sorting Component */
+    .sort-select-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background-color: #171720;
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 0 34px 0 34px;
+      height: 40px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .sort-select-box:focus-within {
+      border-color: rgba(229, 27, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .sort-icon {
+      position: absolute;
+      left: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .sort-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .sort-select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding: 0;
+      width: 100%;
+    }
+
+    .sort-select option {
+      background-color: #15151c;
+      color: #ffffff;
+      padding: 8px;
+    }
+
+    .select-chevron {
+      position: absolute;
+      right: 10px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .select-chevron svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ==================================================
+       RESPONSIVE TABLE
+       ================================================== */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #23242e var(--bg-card);
+    }
+
+    .table-container::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: var(--bg-card);
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background-color: #23242e;
+      border-radius: 3px;
+    }
+
+    .premium-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    .premium-table th {
+      padding: 16px 24px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #717382;
+      background-color: #101015;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .premium-table td {
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+      color: #d1d5db;
+      vertical-align: middle;
+      transition: background-color 0.15s ease;
+    }
+
+    .premium-table tbody tr:hover td {
+      background-color: var(--bg-row-hover);
+    }
+
+    .premium-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Category Name Cell */
+    .category-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .category-icon-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background-color: #1a1a23;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-coral);
+      flex-shrink: 0;
+    }
+
+    .category-icon-badge svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .category-name-text {
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    /* Description Cell */
+    .category-desc-text {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.45;
+      max-width: 320px;
+    }
+
+    /* Products Count Badge */
+    .products-count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #e5e7eb;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .products-count-badge svg {
+      width: 14px;
+      height: 14px;
+      color: var(--text-dim);
+    }
+
+    /* Offer Cell */
+    .offer-tag-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      background-color: var(--badge-offer-bg);
+      border: 1px solid var(--badge-offer-border);
+      color: var(--badge-offer-text);
+      font-size: 12px;
+      font-weight: 700;
+      max-width: 240px;
+    }
+
+    .offer-percent-highlight {
+      background-color: rgba(245, 158, 11, 0.2);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .offer-name-subtext {
+      color: #fef3c7;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .no-offer-dash {
+      color: var(--text-dim);
+      font-weight: 600;
+      padding-left: 8px;
+    }
+
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .badge-active {
+      background-color: var(--badge-active-bg);
+      border: 1px solid var(--badge-active-border);
+      color: var(--badge-active-text);
+    }
+
+    .badge-active .badge-dot {
+      background-color: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+    }
+
+    .badge-inactive {
+      background-color: var(--badge-blocked-bg);
+      border: 1px solid var(--badge-blocked-border);
+      color: var(--badge-blocked-text);
+    }
+
+    .badge-inactive .badge-dot {
+      background-color: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    /* Action Buttons Row */
+    .action-buttons-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background-color: #171821;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      position: relative;
+    }
+
+    .btn-action-icon svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .btn-action-icon:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Edit Category Button */
+    .btn-action-icon.btn-edit:hover {
+      background-color: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    /* Delete Category Button */
+    .btn-action-icon.btn-delete:hover {
+      background-color: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    /* Restore Category Button */
+    .btn-action-icon.btn-restore {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+
+    .btn-action-icon.btn-restore:hover {
+      background-color: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.5);
+      color: #10b981;
+    }
+
+    /* Toggle List/Unlist Button */
+    .btn-action-icon.btn-toggle-list:hover {
+      background-color: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .btn-action-icon.disabled,
+    .btn-action-icon:disabled {
+      opacity: 0.3 !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      filter: grayscale(1) !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    tr.category-row-deleted {
+      opacity: 0.62;
+    }
+
+    tr.category-row-deleted .category-name-text {
+      text-decoration: line-through;
+      color: #9ca3af;
+    }
+
+    .badge-deleted {
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .badge-deleted .badge-dot {
+      background-color: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    /* Add Offer Button */
+    .btn-action-icon.btn-offer-add:hover {
+      background-color: rgba(34, 197, 94, 0.15);
+      border-color: rgba(34, 197, 94, 0.4);
+      color: #4ade80;
+    }
+
+    /* Edit Offer Button */
+    .btn-action-icon.btn-offer-edit:hover {
+      background-color: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    /* Toggle Offer Button */
+    .btn-action-icon.btn-offer-toggle:hover {
+      background-color: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.4);
+      color: #c084fc;
+    }
+
+    /* Empty Table State */
+    .empty-state-row td {
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+    }
+
+    .empty-icon-wrap svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* ==================================================
+       PAGINATION BAR
+       ================================================== */
+    .card-footer-pagination {
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border-subtle);
+      background-color: #0f1015;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-nav-arrow,
+    .page-link-num {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      border-radius: 6px;
+      background-color: #161720;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .page-nav-arrow:hover,
+    .page-link-num:hover {
+      background-color: #21222e;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .page-link-num.active {
+      background-color: var(--accent-red);
+      border-color: var(--accent-red);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.4);
+    }
+
+    .page-nav-arrow.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .page-ellipsis-dots {
+      color: var(--text-dim);
+      padding: 0 4px;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    /* ==================================================
+       MODALS SYSTEM
+       ================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      background-color: var(--bg-modal);
+      border: 1px solid var(--border-card);
+      border-top: 2px solid var(--border-top-accent);
+      border-radius: 16px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85);
+      position: relative;
+      transform: scale(0.96) translateY(8px);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-backdrop.open .modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      padding: 24px 28px 20px 28px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .modal-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .modal-subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .modal-close-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .modal-body {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Modal Form Controls */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--text-header);
+      text-transform: uppercase;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: rgba(229, 27, 36, 0.6);
+      background-color: #1a1a23;
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+    }
+
+    .form-file-input {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-file-input:focus {
+      border-color: rgba(229, 27, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .form-file-input::file-selector-button {
+      background-color: #22232d;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 14px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .form-file-input::file-selector-button:hover {
+      background-color: var(--accent-red);
+      border-color: var(--accent-red);
+    }
+
+    .form-hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* Modal Footer Actions */
+    .modal-footer {
+      padding: 18px 28px 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      border-top: 1px solid var(--border-subtle);
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-modal-cancel {
+      height: 42px;
+      padding: 0 18px;
+      background-color: #1b1c24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-modal-cancel:hover {
+      background-color: #242531;
+      color: #ffffff;
+    }
+
+    .btn-modal-submit {
+      height: 42px;
+      padding: 0 22px;
+      background-color: var(--accent-red);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.4);
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .btn-modal-submit:hover {
+      background-color: var(--accent-red-hover);
+      box-shadow: 0 6px 18px rgba(229, 27, 36, 0.6);
+    }
+
+    /* Delete Confirmation Card Specifics */
+    .delete-modal-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 32px 28px 24px 28px;
+    }
+
+    .delete-icon-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(229, 27, 36, 0.12);
+      border: 1px solid rgba(229, 27, 36, 0.3);
+      color: var(--accent-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .delete-icon-badge svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .toggle-icon-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .toggle-icon-badge svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .delete-modal-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .delete-modal-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+      max-width: 360px;
+    }
+
+    .delete-target-highlight {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .delete-modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    /* Category Image Preview & Crop Controls */
+    .category-image-preview-card {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #171722;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .preview-thumb-box {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      background: #0d0d12;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .preview-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .crop-status-badge {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 3px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .preview-actions-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .btn-crop-action {
+      height: 32px;
+      padding: 0 12px;
+      background: rgba(96, 165, 250, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      border-radius: 6px;
+      color: #60a5fa;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      width: fit-content;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-crop-action:hover {
+      background: rgba(96, 165, 250, 0.22);
+      color: #93c5fd;
+    }
+
+    .btn-remove-preview {
+      background: transparent;
+      border: none;
+      color: #f87171;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      width: fit-content;
+      transition: color 0.15s ease;
+    }
+
+    .btn-remove-preview:hover {
+      color: #ef4444;
+      text-decoration: underline;
+    }
+
+    /* Cropper Tool Controls */
+    .cropper-tool-btn {
+      height: 34px;
+      padding: 0 11px;
+      background-color: #1c1d27;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 7px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .cropper-tool-btn:hover {
+      background-color: #272836;
+    }
+
+    .cropper-tool-btn.active {
+      background-color: var(--accent-red);
+      border-color: var(--accent-red);
+      color: #ffffff;
+    }
+
+    /* ==================================================
+       RESPONSIVE BREAKPOINTS
+       ================================================== */
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        position: fixed;
+        left: -260px;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.7);
+      }
+
+      .admin-sidebar.mobile-open {
+        transform: translateX(260px);
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .content-viewport {
+        padding: 28px 24px 50px 24px;
+      }
+
+      .admin-topbar {
+        padding: 0 24px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .btn-add-primary {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .card-topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-form-wrap {
+        width: 100%;
+      }
+
+      .search-input-box {
+        width: 100%;
+      }
+
+      .sort-select-box {
+        width: 100%;
+      }
+
+      .card-footer-pagination {
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .form-row-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- ==================================================
+         1. LEFT SIDEBAR
+         ================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+
+        <!-- Brand Header -->
+        <div class="brand-header">
+          <span class="brand-title">ADMIN</span>
+        </div>
+
+        <!-- Navigation Sections -->
+        <nav class="sidebar-nav">
+
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="nav-group">
+            <span class="nav-group-label">CONTENT</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+              <span>Banners</span>
+            </a>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Bottom Logout Link -->
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==================================================
+         2. MAIN CONTENT
+         ================================================== -->
+    <main class="admin-main">
+
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="topbar-badge">
+            <span class="badge-dot"></span>
+            <span>HOT WHEELS HUB &bull; ADMINISTRATOR CONSOLE</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Quick Search Icon -->
+          <button type="button" class="topbar-icon-btn" title="Focus search" onclick="document.getElementById('categorySearchInput').focus();">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+
+          <!-- Notification Bell -->
+          <button type="button" class="topbar-icon-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+
+          <!-- Admin Profile Area -->
+          <div class="topbar-profile">
+            <div class="profile-avatar-circle">A</div>
+            <div class="profile-info">
+              <span class="profile-name">Chief Collector</span>
+              <span class="profile-role">SYSTEM ADMIN</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Viewport -->
+      <div class="content-viewport">
+
+        <!-- Django Flash Messages -->
+        {% if messages %}
+          <div class="alert-container">
+            {% for message in messages %}
+              <div class="alert-box {% if message.tags == 'success' %}success{% endif %}">
+                <div class="alert-content-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>{{ message }}</span>
+                </div>
+                <button type="button" class="alert-dismiss-btn" onclick="this.parentElement.remove();">&times;</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- 3. Page Header Row with Add Category Button -->
+        <div class="page-header-row">
+          <div class="header-text-block">
+            <h1 class="page-title">CATEGORY MANAGEMENT</h1>
+            <p class="page-subtitle">Manage categories for your Hot Wheels die-cast collection.</p>
+          </div>
+
+          <!-- 4. Add Category Button -->
+          <button type="button" class="btn-add-primary" onclick="openModal('addCategoryModal');">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>+ ADD CATEGORY</span>
+          </button>
+        </div>
+
+        <!-- 5. Category Table Card -->
+        <div class="dashboard-card">
+
+          <!-- Card Header & Search -->
+          <div class="card-topbar">
+            <div class="card-title-group">
+              <h2 class="card-title">ALL CATEGORIES</h2>
+              {% if page_obj.paginator.count is not None %}
+                <span class="card-count-badge">{{ page_obj.paginator.count }} TOTAL</span>
+              {% endif %}
+            </div>
+
+            <!-- Search & Sort Form -->
+            <form method="GET" action="{% url 'admin_category_list' %}" class="search-form-wrap">
+              <div class="search-input-box">
+                <span class="search-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  id="categorySearchInput"
+                  name="search"
+                  value="{{ search_query }}"
+                  class="search-field"
+                  placeholder="Search categories..."
+                  autocomplete="off"
+                >
+              </div>
+
+              <!-- Sorting Dropdown -->
+              <div class="sort-select-box">
+                <span class="sort-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 16 4 4 4-4"/>
+                    <path d="M7 20V4"/>
+                    <path d="m21 8-4-4-4 4"/>
+                    <path d="M17 4v16"/>
+                  </svg>
+                </span>
+                <select name="sort" id="categorySortSelect" class="sort-select" onchange="this.form.submit()" aria-label="Sort categories">
+                  <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                  <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                  <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Name A–Z</option>
+                  <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name Z–A</option>
+                </select>
+                <span class="select-chevron" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+              </div>
+
+              <button type="submit" class="btn-search-submit">
+                SEARCH
+              </button>
+
+              {% if search_query or sort_by and sort_by != 'newest' %}
+                <a href="{% url 'admin_category_list' %}" class="btn-clear-search">
+                  CLEAR
+                </a>
+              {% endif %}
+            </form>
+          </div>
+
+          <!-- 6. Category Table -->
+          <div class="table-container">
+            <table class="premium-table">
+              <thead>
+                <tr>
+                  <th>CATEGORY NAME</th>
+                  <th>DESCRIPTION</th>
+                  <th>PRODUCTS</th>
+                  <th>OFFER</th>
+                  <th>STATUS</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for category in page_obj %}
+                  <tr class="category-row {% if category.is_deleted %}category-row-deleted{% endif %}" id="category-row-{{ category.id }}">
+                    <!-- CATEGORY NAME -->
+                    <td>
+                      <div class="category-name-cell">
+                        <div class="category-icon-badge">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                            <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+                          </svg>
+                        </div>
+                        <span class="category-name-text">{{ category.name }}</span>
+                      </div>
+                    </td>
+
+                    <!-- DESCRIPTION -->
+                    <td>
+                      <p class="category-desc-text" title="{{ category.description }}">
+                        {{ category.description|default:"—"|truncatechars:65 }}
+                      </p>
+                    </td>
+
+                    <!-- PRODUCTS COUNT -->
+                    <td>
+                      <span class="products-count-badge" title="{{ category.products.count }} Products in this category">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2 11 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/>
+                          <circle cx="7" cy="17" r="2"/>
+                          <circle cx="17" cy="17" r="2"/>
+                        </svg>
+                        <span>{{ category.products.count }}</span>
+                      </span>
+                    </td>
+
+                    <!-- OFFER -->
+                    <td>
+                      {% if category.current_offer %}
+                        <div class="offer-tag-badge" title="{{ category.current_offer.offer_name }} ({{ category.current_offer.discount_value }}% OFF) - Active until {{ category.current_offer.end_date }}">
+                          <span class="offer-percent-highlight">{{ category.current_offer.discount_value|floatformat:0 }}%</span>
+                          <span class="offer-name-subtext">{{ category.current_offer.offer_name }}</span>
+                        </div>
+                      {% else %}
+                        <span class="no-offer-dash">-</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- STATUS -->
+                    <td>
+                      {% if category.is_deleted %}
+                        <span class="badge badge-deleted">
+                          <span class="badge-dot"></span>
+                          <span>DELETED</span>
+                        </span>
+                      {% elif category.is_active %}
+                        <span class="badge badge-active">
+                          <span class="badge-dot"></span>
+                          <span>LISTED</span>
+                        </span>
+                      {% else %}
+                        <span class="badge badge-inactive">
+                          <span class="badge-dot"></span>
+                          <span>UNLISTED</span>
+                        </span>
+                      {% endif %}
+                    </td>
+
+                    <!-- ACTIONS -->
+                    <td>
+                      <div class="action-buttons-wrap">
+
+                        <!-- Edit Category Button -->
+                        <button
+                          type="button"
+                          class="btn-action-icon btn-edit btn-edit-category {% if category.is_deleted %}disabled{% endif %}"
+                          title="{% if category.is_deleted %}Editing disabled for deleted category{% else %}Edit Category{% endif %}"
+                          aria-label="Edit Category"
+                          {% if category.is_deleted %}disabled aria-disabled="true"{% endif %}
+                          data-id="{{ category.id }}"
+                          data-name="{{ category.name }}"
+                          data-description="{{ category.description }}"
+                          data-url="{% url 'admin_category_edit' category.id %}"
+                          data-image="{% if category.image %}{{ category.image.url }}{% endif %}"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                          </svg>
+                        </button>
+
+                        <!-- Toggle List/Unlist Category Button -->
+                        <button
+                          type="button"
+                          class="btn-action-icon btn-toggle-list btn-toggle-category-status {% if category.is_deleted %}disabled{% endif %}"
+                          title="{% if category.is_deleted %}Listing disabled for deleted category{% elif category.is_active %}Unlist Category{% else %}List Category{% endif %}"
+                          aria-label="Toggle Category Status"
+                          {% if category.is_deleted %}disabled aria-disabled="true"{% endif %}
+                          data-id="{{ category.id }}"
+                          data-name="{{ category.name }}"
+                          data-action="{% if category.is_active %}unlist{% else %}list{% endif %}"
+                          data-url="{% url 'category_unlist' category.id %}"
+                        >
+                          {% if category.is_active %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                              <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                          {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                          {% endif %}
+                        </button>
+
+                        <!-- Delete / Restore Category Button -->
+                        <button
+                          type="button"
+                          class="btn-action-icon {% if category.is_deleted %}btn-restore{% else %}btn-delete{% endif %} btn-delete-category"
+                          title="{% if category.is_deleted %}Restore Category{% else %}Delete Category{% endif %}"
+                          aria-label="{% if category.is_deleted %}Restore Category{% else %}Delete Category{% endif %}"
+                          data-id="{{ category.id }}"
+                          data-name="{{ category.name }}"
+                          data-action="{% if category.is_deleted %}restore{% else %}delete{% endif %}"
+                          data-delete-url="{% url 'admin_category_delete' category.id %}"
+                          data-restore-url="{% url 'category_restore' category.id %}"
+                          data-url="{% if category.is_deleted %}{% url 'category_restore' category.id %}{% else %}{% url 'admin_category_delete' category.id %}{% endif %}"
+                        >
+                          {% if category.is_deleted %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="1 4 1 10 7 10"/>
+                              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                            </svg>
+                          {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="3 6 5 6 21 6"/>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              <line x1="10" y1="11" x2="10" y2="17"/>
+                              <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                          {% endif %}
+                        </button>
+
+                        {% if not category.is_deleted %}
+                          <!-- Add Offer Button (Available if active) -->
+                          {% if category.is_active %}
+                            <button
+                              type="button"
+                              class="btn-action-icon btn-offer-add btn-add-offer"
+                              title="Add Category Offer"
+                              aria-label="Add Category Offer"
+                              data-id="{{ category.id }}"
+                              data-category-name="{{ category.name }}"
+                              data-url="{% url 'admin_category_offer' category.id %}"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="5" x2="5" y2="19"/>
+                                <circle cx="6.5" cy="6.5" r="2.5"/>
+                                <circle cx="17.5" cy="17.5" r="2.5"/>
+                              </svg>
+                            </button>
+                          {% endif %}
+
+                          <!-- Offer Specific Actions if Active Offer Exists -->
+                          {% if category.current_offer %}
+                            <!-- Edit Offer Button -->
+                            <button
+                              type="button"
+                              class="btn-action-icon btn-offer-edit btn-edit-offer"
+                              title="Edit Offer: {{ category.current_offer.offer_name }}"
+                              aria-label="Edit Offer"
+                              data-offer-id="{{ category.current_offer.id }}"
+                              data-category-name="{{ category.name }}"
+                              data-offer-name="{{ category.current_offer.offer_name }}"
+                              data-discount="{{ category.current_offer.discount_value }}"
+                              data-start="{{ category.current_offer.start_date|date:'Y-m-d\TH:i' }}"
+                              data-end="{{ category.current_offer.end_date|date:'Y-m-d\TH:i' }}"
+                              data-url="{% url 'admin_category_offer_edit' category.current_offer.id %}"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                              </svg>
+                            </button>
+
+                            <!-- Disable / Toggle Offer Button -->
+                            <a
+                              href="{% url 'admin_category_offer_toggle' category.current_offer.id %}"
+                              class="btn-action-icon btn-offer-toggle"
+                              title="{% if category.current_offer.is_active %}Disable Offer{% else %}Activate Offer{% endif %}"
+                              aria-label="Toggle Offer"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="5" width="22" height="14" rx="7" ry="7"/>
+                                <circle cx="{% if category.current_offer.is_active %}16{% else %}8{% endif %}" cy="12" r="3"/>
+                              </svg>
+                            </a>
+                          {% endif %}
+                        {% endif %}
+
+                      </div>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr class="empty-state-row">
+                    <td colspan="6">
+                      <div class="empty-state-content">
+                        <div class="empty-icon-wrap">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                          </svg>
+                        </div>
+                        <p style="font-size: 15px; font-weight: 700; color: #ffffff;">No categories found.</p>
+                        <p style="font-size: 13px; color: var(--text-dim);">
+                          {% if search_query %}
+                            No category matching "{{ search_query }}" was found. Try clearing your search.
+                          {% else %}
+                            Get started by adding your first product category.
+                          {% endif %}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 13. Pagination Bar -->
+          {% if page_obj and page_obj.paginator.count > 0 %}
+            <div class="card-footer-pagination">
+              <span class="pagination-info">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                {% if page_obj.paginator.count %}
+                  ({{ page_obj.paginator.count }} categor{{ page_obj.paginator.count|pluralize:"y,ies" }})
+                {% endif %}
+              </span>
+
+              <nav class="pagination-bar" aria-label="Table Pagination">
+
+                <!-- Previous Arrow Button -->
+                {% if page_obj.has_previous %}
+                  <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-nav-arrow" aria-label="Previous Page">
+                    &lsaquo;
+                  </a>
+                {% else %}
+                  <span class="page-nav-arrow disabled" aria-disabled="true">&lsaquo;</span>
+                {% endif %}
+
+                <!-- Dynamic Page Numbers -->
+                {% if page_obj.paginator.num_pages <= 7 %}
+                  {% for p in page_obj.paginator.page_range %}
+                    {% if p == page_obj.number %}
+                      <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                    {% else %}
+                      <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ p }}</a>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  {% if page_obj.number <= 4 %}
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p <= 5 %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
+                  {% elif page_obj.number >= page_obj.paginator.num_pages|add:"-3" %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">1</a>
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.paginator.num_pages|add:"-4" %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">1</a>
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.number|add:"-1" and p <= page_obj.number|add:"1" %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
+                  {% endif %}
+                {% endif %}
+
+                <!-- Next Arrow Button -->
+                {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="page-nav-arrow" aria-label="Next Page">
+                    &rsaquo;
+                  </a>
+                {% else %}
+                  <span class="page-nav-arrow disabled" aria-disabled="true">&rsaquo;</span>
+                {% endif %}
+
+              </nav>
+            </div>
+          {% endif %}
+
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==================================================
+       MODALS
+       ================================================== -->
+
+  <!-- 4. ADD CATEGORY MODAL -->
+  <div class="modal-backdrop" id="addCategoryModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">ADD NEW CATEGORY</h3>
+          <p class="modal-subtitle">Create a new product category for die-cast collectibles.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('addCategoryModal');">&times;</button>
+      </div>
+
+      <form method="POST" action="{% url 'admin_category_add' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="addCategoryName">Category Name</label>
+            <input
+              type="text"
+              id="addCategoryName"
+              name="name"
+              class="form-input"
+              placeholder="e.g. Vintage Muscle Cars"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="addCategoryDescription">Description</label>
+            <textarea
+              id="addCategoryDescription"
+              name="description"
+              class="form-textarea"
+              placeholder="Detailed description of this die-cast category..."
+              rows="3"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="addCategoryImage">Category Image</label>
+            <input
+              type="file"
+              id="addCategoryImage"
+              name="image"
+              class="form-file-input"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            >
+            <span class="form-hint">Accepted formats: JPG, JPEG, PNG, WEBP</span>
+
+            <!-- Staged Image Preview with Crop & Remove Buttons -->
+            <div id="addCategoryPreviewArea" class="category-image-preview-card" style="display: none;">
+              <div class="preview-thumb-box">
+                <img id="addCategoryPreviewImg" src="" alt="Category preview">
+                <span class="crop-status-badge" id="addCategoryCropBadge" style="display: none;">CROPPED</span>
+              </div>
+              <div class="preview-actions-box">
+                <button type="button" class="btn-crop-action" id="openAddCropperBtn">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                    <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                  </svg>
+                  <span>Crop Image</span>
+                </button>
+                <button type="button" class="btn-remove-preview" id="removeAddPreviewBtn">
+                  ✕ Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('addCategoryModal');">
+            Cancel
+          </button>
+          <button type="submit" class="btn-modal-submit">
+            Add Category
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 9. EDIT CATEGORY MODAL -->
+  <div class="modal-backdrop" id="editCategoryModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">EDIT CATEGORY</h3>
+          <p class="modal-subtitle">Update category details and information.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('editCategoryModal');">&times;</button>
+      </div>
+
+      <form method="POST" id="editCategoryForm" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="editCategoryName">Category Name</label>
+            <input
+              type="text"
+              id="editCategoryName"
+              name="name"
+              class="form-input"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editCategoryDescription">Description</label>
+            <textarea
+              id="editCategoryDescription"
+              name="description"
+              class="form-textarea"
+              rows="3"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editCategoryImage">Category Image</label>
+            <input
+              type="file"
+              id="editCategoryImage"
+              name="image"
+              class="form-file-input"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            >
+            <span class="form-hint">Accepted formats: JPG, JPEG, PNG, WEBP</span>
+
+            <!-- Staged / Current Image Preview with Crop & Clear Buttons -->
+            <div id="editCategoryPreviewArea" class="category-image-preview-card" style="display: none;">
+              <div class="preview-thumb-box">
+                <img id="editCategoryPreviewImg" src="" alt="Category preview">
+                <span class="crop-status-badge" id="editCategoryCropBadge" style="display: none;">CROPPED</span>
+              </div>
+              <div class="preview-actions-box">
+                <button type="button" class="btn-crop-action" id="openEditCropperBtn">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                    <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                  </svg>
+                  <span>Crop Image</span>
+                </button>
+                <button type="button" class="btn-remove-preview" id="removeEditPreviewBtn">
+                  ✕ Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('editCategoryModal');">
+            Cancel
+          </button>
+          <button type="submit" class="btn-modal-submit">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CATEGORY CROPPER MODAL -->
+  <div class="modal-backdrop" id="categoryCropperModal" style="z-index: 1050;">
+    <div class="modal-card" style="max-width: 720px; width: 92%;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">CROP CATEGORY IMAGE</h3>
+          <p class="modal-subtitle">Refine frame, aspect ratio, and composition.</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeCategoryCropperBtn">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 18px 22px;">
+        <div style="width: 100%; height: 360px; background-color: #08080b; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <img id="categoryCropperTargetImg" src="" alt="Category to crop" style="max-width: 100%; max-height: 100%; display: block;">
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button type="button" class="cropper-tool-btn active" data-cat-aspect="1">1:1 Square</button>
+            <button type="button" class="cropper-tool-btn" data-cat-aspect="1.3333">4:3 Standard</button>
+            <button type="button" class="cropper-tool-btn" data-cat-aspect="1.7777">16:9 Banner</button>
+            <button type="button" class="cropper-tool-btn" data-cat-aspect="NaN">Free</button>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button type="button" class="cropper-tool-btn" id="catRotateLeftBtn" title="Rotate -90°">↺ 90°</button>
+            <button type="button" class="cropper-tool-btn" id="catRotateRightBtn" title="Rotate +90°">↻ 90°</button>
+            <button type="button" class="cropper-tool-btn" id="catZoomInBtn" title="Zoom In">+ Zoom</button>
+            <button type="button" class="cropper-tool-btn" id="catZoomOutBtn" title="Zoom Out">- Zoom</button>
+            <button type="button" class="cropper-tool-btn" id="catResetCropBtn" title="Reset">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 16px 22px;">
+        <button type="button" class="btn-modal-cancel" id="cancelCategoryCropBtn">
+          Cancel
+        </button>
+        <button type="button" class="btn-modal-submit" id="applyCategoryCropBtn" style="background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);">
+          Apply &amp; Save Crop
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. DELETE / RESTORE CATEGORY CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="deleteCategoryModal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="delete-modal-content">
+        <div class="delete-icon-badge" id="deleteCategoryIconBadge">
+          <svg id="deleteCategoryIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </div>
+        <h3 class="delete-modal-title" id="deleteCategoryModalTitle">Delete Category?</h3>
+        <p class="delete-modal-desc" id="deleteCategoryModalDesc">
+          Are you sure you want to delete <span class="delete-target-highlight" id="deleteCategoryTargetName">this category</span>? This will unlist the category from the store catalog.
+        </p>
+        <div class="delete-modal-actions">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('deleteCategoryModal');">
+            Cancel
+          </button>
+          <button type="button" id="deleteCategoryConfirmBtn" class="btn-modal-submit" style="background-color: var(--accent-red);">
+            Delete Category
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10b. TOGGLE LIST/UNLIST CATEGORY CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="toggleCategoryModal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="delete-modal-content">
+        <div class="toggle-icon-badge" id="toggleCategoryIconBadge">
+          <svg id="toggleCategoryIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <h3 class="delete-modal-title" id="toggleCategoryModalTitle">Unlist Category?</h3>
+        <p class="delete-modal-desc">
+          Are you sure you want to <span id="toggleCategoryActionWord" style="color: #ffffff; font-weight: 700;">unlist</span> <span class="delete-target-highlight" id="toggleCategoryTargetName">this category</span>? <span id="toggleCategoryDescSuffix">This will hide the category from customer view.</span>
+        </p>
+        <div class="delete-modal-actions">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('toggleCategoryModal');">
+            Cancel
+          </button>
+          <a href="#" id="toggleCategoryConfirmBtn" class="btn-modal-submit" style="background-color: #d97706;">
+            Confirm
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. ADD OFFER MODAL -->
+  <div class="modal-backdrop" id="addOfferModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">ADD CATEGORY OFFER</h3>
+          <p class="modal-subtitle">Apply a promotional discount for <span style="color: #ffffff; font-weight: 700;" id="addOfferCategoryTarget"></span>.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('addOfferModal');">&times;</button>
+      </div>
+
+      <form method="POST" id="addOfferForm" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="addOfferName">Offer Name</label>
+            <input
+              type="text"
+              id="addOfferName"
+              name="offer_name"
+              class="form-input"
+              placeholder="e.g. Summer Collector Sale"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="addOfferDiscount">Discount Percentage (%)</label>
+            <input
+              type="number"
+              id="addOfferDiscount"
+              name="discount_value"
+              class="form-input"
+              placeholder="e.g. 15"
+              min="1"
+              max="100"
+              step="0.01"
+              required
+            >
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="addOfferStart">Start Date</label>
+              <input
+                type="datetime-local"
+                id="addOfferStart"
+                name="start_date"
+                class="form-input"
+                required
+              >
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="addOfferEnd">End Date</label>
+              <input
+                type="datetime-local"
+                id="addOfferEnd"
+                name="end_date"
+                class="form-input"
+                required
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('addOfferModal');">
+            Cancel
+          </button>
+          <button type="submit" class="btn-modal-submit">
+            Apply Offer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 12. EDIT OFFER MODAL -->
+  <div class="modal-backdrop" id="editOfferModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">EDIT CATEGORY OFFER</h3>
+          <p class="modal-subtitle">Modify the promotional offer for <span style="color: #ffffff; font-weight: 700;" id="editOfferCategoryTarget"></span>.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('editOfferModal');">&times;</button>
+      </div>
+
+      <form method="POST" id="editOfferForm" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="editOfferName">Offer Name</label>
+            <input
+              type="text"
+              id="editOfferName"
+              name="offer_name"
+              class="form-input"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editOfferDiscount">Discount Percentage (%)</label>
+            <input
+              type="number"
+              id="editOfferDiscount"
+              name="discount_value"
+              class="form-input"
+              min="1"
+              max="100"
+              step="0.01"
+              required
+            >
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="editOfferStart">Start Date</label>
+              <input
+                type="datetime-local"
+                id="editOfferStart"
+                name="start_date"
+                class="form-input"
+                required
+              >
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editOfferEnd">End Date</label>
+              <input
+                type="datetime-local"
+                id="editOfferEnd"
+                name="end_date"
+                class="form-input"
+                required
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('editOfferModal');">
+            Cancel
+          </button>
+          <button type="submit" class="btn-modal-submit">
+            Update Offer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================================================
+       JAVASCRIPT FOR MODALS & RESPONSIVE BEHAVIOR
+       ================================================== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script>
+    // Modal Open & Close Utilities
+    let categoryCropperInstance = null;
+    let currentCroppingContext = null; // 'add' or 'edit'
+
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        const firstInput = modal.querySelector('input:not([type="hidden"]), textarea');
+        if (firstInput) {
+          setTimeout(function() { firstInput.focus(); }, 120);
+        }
+      }
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+      if (modalId === 'categoryCropperModal' && categoryCropperInstance) {
+        categoryCropperInstance.destroy();
+        categoryCropperInstance = null;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Mobile Sidebar Toggle
+      const mobileToggle = document.getElementById('mobileMenuToggle');
+      const sidebar = document.getElementById('adminSidebar');
+      if (mobileToggle && sidebar) {
+        mobileToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          sidebar.classList.toggle('mobile-open');
+        });
+
+        document.addEventListener('click', function(e) {
+          if (sidebar.classList.contains('mobile-open') && !sidebar.contains(e.target) && e.target !== mobileToggle) {
+            sidebar.classList.remove('mobile-open');
+          }
+        });
+      }
+
+      // 2. Escape Key to Close Modals
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.modal-backdrop.open').forEach(function(modal) {
+            closeModal(modal.id);
+          });
+        }
+      });
+
+      // 3. Click Backdrop Outside Modal Card to Close
+      document.querySelectorAll('.modal-backdrop').forEach(function(modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === this) {
+            closeModal(this.id);
+          }
+        });
+      });
+
+      // ----------------------------------------------------------------
+      // Category Image Cropping Workflow (Add & Edit)
+      // ----------------------------------------------------------------
+      function openCategoryCropper(imageSrc, context) {
+        currentCroppingContext = context;
+        const targetImg = document.getElementById('categoryCropperTargetImg');
+        targetImg.crossOrigin = 'anonymous';
+        targetImg.src = imageSrc;
+
+        openModal('categoryCropperModal');
+
+        if (categoryCropperInstance) {
+          categoryCropperInstance.destroy();
+          categoryCropperInstance = null;
+        }
+
+        // Reset aspect ratios to 1:1 default
+        document.querySelectorAll('[data-cat-aspect]').forEach(function(b) {
+          b.classList.remove('active');
+        });
+        const defaultAspectBtn = document.querySelector('[data-cat-aspect="1"]');
+        if (defaultAspectBtn) defaultAspectBtn.classList.add('active');
+
+        categoryCropperInstance = new Cropper(targetImg, {
+          aspectRatio: 1,
+          viewMode: 2,
+          autoCropArea: 0.9,
+          responsive: true,
+          restore: false,
+          guides: true,
+          center: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          checkCrossOrigin: false,
+        });
+      }
+
+      // Cropper close buttons
+      const closeCatBtn = document.getElementById('closeCategoryCropperBtn');
+      if (closeCatBtn) {
+        closeCatBtn.addEventListener('click', function() {
+          closeModal('categoryCropperModal');
+        });
+      }
+      const cancelCatBtn = document.getElementById('cancelCategoryCropBtn');
+      if (cancelCatBtn) {
+        cancelCatBtn.addEventListener('click', function() {
+          closeModal('categoryCropperModal');
+        });
+      }
+
+      // Aspect Ratios & Tools
+      document.querySelectorAll('[data-cat-aspect]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('[data-cat-aspect]').forEach(function(b) { b.classList.remove('active'); });
+          this.classList.add('active');
+          const val = parseFloat(this.getAttribute('data-cat-aspect'));
+          if (categoryCropperInstance) {
+            categoryCropperInstance.setAspectRatio(isNaN(val) ? NaN : val);
+          }
+        });
+      });
+
+      const rotLeft = document.getElementById('catRotateLeftBtn');
+      if (rotLeft) rotLeft.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.rotate(-90));
+
+      const rotRight = document.getElementById('catRotateRightBtn');
+      if (rotRight) rotRight.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.rotate(90));
+
+      const zoomIn = document.getElementById('catZoomInBtn');
+      if (zoomIn) zoomIn.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.zoom(0.1));
+
+      const zoomOut = document.getElementById('catZoomOutBtn');
+      if (zoomOut) zoomOut.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.zoom(-0.1));
+
+      const resetCrop = document.getElementById('catResetCropBtn');
+      if (resetCrop) resetCrop.addEventListener('click', () => categoryCropperInstance && categoryCropperInstance.reset());
+
+      // Apply Crop
+      const applyCatBtn = document.getElementById('applyCategoryCropBtn');
+      if (applyCatBtn) {
+        applyCatBtn.addEventListener('click', function() {
+          if (!categoryCropperInstance || !currentCroppingContext) return;
+
+          const canvas = categoryCropperInstance.getCroppedCanvas({
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+          });
+
+          if (!canvas) {
+            alert('Could not process cropped canvas.');
+            return;
+          }
+
+          canvas.toBlob(function(blob) {
+            if (!blob) {
+              alert('Failed to generate cropped file blob.');
+              return;
+            }
+
+            const filename = 'category_' + currentCroppingContext + '_' + Date.now() + '.jpg';
+            const fileObj = new File([blob], filename, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+
+            const dt = new DataTransfer();
+            dt.items.add(fileObj);
+
+            if (currentCroppingContext === 'add') {
+              const addInput = document.getElementById('addCategoryImage');
+              if (addInput) addInput.files = dt.files;
+
+              const previewImg = document.getElementById('addCategoryPreviewImg');
+              if (previewImg) previewImg.src = URL.createObjectURL(blob);
+
+              const previewArea = document.getElementById('addCategoryPreviewArea');
+              if (previewArea) previewArea.style.display = 'flex';
+
+              const badge = document.getElementById('addCategoryCropBadge');
+              if (badge) badge.style.display = 'inline-block';
+            } else if (currentCroppingContext === 'edit') {
+              const editInput = document.getElementById('editCategoryImage');
+              if (editInput) editInput.files = dt.files;
+
+              const previewImg = document.getElementById('editCategoryPreviewImg');
+              if (previewImg) previewImg.src = URL.createObjectURL(blob);
+
+              const previewArea = document.getElementById('editCategoryPreviewArea');
+              if (previewArea) previewArea.style.display = 'flex';
+
+              const badge = document.getElementById('editCategoryCropBadge');
+              if (badge) badge.style.display = 'inline-block';
+            }
+
+            closeModal('categoryCropperModal');
+          }, 'image/jpeg', 0.92);
+        });
+      }
+
+      // Add Modal File Picker Events
+      const addCategoryInput = document.getElementById('addCategoryImage');
+      if (addCategoryInput) {
+        addCategoryInput.addEventListener('change', function() {
+          if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const objUrl = URL.createObjectURL(file);
+            document.getElementById('addCategoryPreviewImg').src = objUrl;
+            document.getElementById('addCategoryPreviewArea').style.display = 'flex';
+            document.getElementById('addCategoryCropBadge').style.display = 'none';
+            openCategoryCropper(objUrl, 'add');
+          }
+        });
+      }
+
+      const openAddCropperBtn = document.getElementById('openAddCropperBtn');
+      if (openAddCropperBtn) {
+        openAddCropperBtn.addEventListener('click', function() {
+          const previewImg = document.getElementById('addCategoryPreviewImg');
+          if (previewImg && previewImg.src) {
+            openCategoryCropper(previewImg.src, 'add');
+          }
+        });
+      }
+
+      const removeAddPreviewBtn = document.getElementById('removeAddPreviewBtn');
+      if (removeAddPreviewBtn) {
+        removeAddPreviewBtn.addEventListener('click', function() {
+          if (addCategoryInput) addCategoryInput.value = '';
+          const previewArea = document.getElementById('addCategoryPreviewArea');
+          if (previewArea) previewArea.style.display = 'none';
+        });
+      }
+
+      // Edit Modal File Picker Events
+      const editCategoryInput = document.getElementById('editCategoryImage');
+      if (editCategoryInput) {
+        editCategoryInput.addEventListener('change', function() {
+          if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const objUrl = URL.createObjectURL(file);
+            document.getElementById('editCategoryPreviewImg').src = objUrl;
+            document.getElementById('editCategoryPreviewArea').style.display = 'flex';
+            document.getElementById('editCategoryCropBadge').style.display = 'none';
+            openCategoryCropper(objUrl, 'edit');
+          }
+        });
+      }
+
+      const openEditCropperBtn = document.getElementById('openEditCropperBtn');
+      if (openEditCropperBtn) {
+        openEditCropperBtn.addEventListener('click', function() {
+          const previewImg = document.getElementById('editCategoryPreviewImg');
+          if (previewImg && previewImg.src) {
+            openCategoryCropper(previewImg.src, 'edit');
+          }
+        });
+      }
+
+      const removeEditPreviewBtn = document.getElementById('removeEditPreviewBtn');
+      if (removeEditPreviewBtn) {
+        removeEditPreviewBtn.addEventListener('click', function() {
+          if (editCategoryInput) editCategoryInput.value = '';
+          const previewArea = document.getElementById('editCategoryPreviewArea');
+          if (previewArea) previewArea.style.display = 'none';
+        });
+      }
+
+      // 4. Edit Category Trigger
+      document.querySelectorAll('.btn-edit-category').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          if (this.classList.contains('disabled') || this.hasAttribute('disabled')) {
+            e.preventDefault();
+            return;
+          }
+          const url = this.getAttribute('data-url');
+          const name = this.getAttribute('data-name');
+          const description = this.getAttribute('data-description');
+          const image = this.getAttribute('data-image');
+
+          const form = document.getElementById('editCategoryForm');
+          const nameInput = document.getElementById('editCategoryName');
+          const descInput = document.getElementById('editCategoryDescription');
+          const editPreviewArea = document.getElementById('editCategoryPreviewArea');
+          const editPreviewImg = document.getElementById('editCategoryPreviewImg');
+          const editCropBadge = document.getElementById('editCategoryCropBadge');
+
+          if (editCategoryInput) editCategoryInput.value = '';
+          if (form) form.action = url;
+          if (nameInput) nameInput.value = name || '';
+          if (descInput) descInput.value = description || '';
+
+          if (image) {
+            if (editPreviewImg) editPreviewImg.src = image;
+            if (editPreviewArea) editPreviewArea.style.display = 'flex';
+            if (editCropBadge) editCropBadge.style.display = 'none';
+          } else {
+            if (editPreviewArea) editPreviewArea.style.display = 'none';
+          }
+
+          openModal('editCategoryModal');
+        });
+      });
+
+      // 5. Delete / Restore Category Trigger
+      let pendingCategoryBtn = null;
+      document.querySelectorAll('.btn-delete-category').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          if (this.classList.contains('disabled') || this.hasAttribute('disabled')) {
+            e.preventDefault();
+            return;
+          }
+          pendingCategoryBtn = this;
+          const action = this.getAttribute('data-action') || 'delete';
+          const name = this.getAttribute('data-name');
+          const deleteUrl = this.getAttribute('data-delete-url') || this.getAttribute('data-url');
+          const restoreUrl = this.getAttribute('data-restore-url') || this.getAttribute('data-url');
+          const url = action === 'restore' ? restoreUrl : deleteUrl;
+
+          const modalTitle = document.getElementById('deleteCategoryModalTitle');
+          const modalDesc = document.getElementById('deleteCategoryModalDesc');
+          const targetText = document.getElementById('deleteCategoryTargetName');
+          const confirmBtn = document.getElementById('deleteCategoryConfirmBtn');
+          const iconBadge = document.getElementById('deleteCategoryIconBadge');
+          const iconSvg = document.getElementById('deleteCategoryIconSvg');
+
+          if (targetText) targetText.textContent = '"' + (name || 'this category') + '"';
+
+          if (action === 'restore') {
+            if (modalTitle) modalTitle.textContent = 'Restore Category?';
+            if (modalDesc) {
+              modalDesc.innerHTML = 'Are you sure you want to restore <span class="delete-target-highlight">"' + (name || 'this category') + '"</span>? This will make the category available again in the store catalog.';
+            }
+            if (confirmBtn) {
+              confirmBtn.setAttribute('data-target-url', url);
+              confirmBtn.textContent = 'Restore Category';
+              confirmBtn.style.backgroundColor = '#15803d';
+              confirmBtn.style.borderColor = '#22c55e';
+            }
+            if (iconBadge) {
+              iconBadge.style.color = '#34d399';
+              iconBadge.style.backgroundColor = 'rgba(52, 211, 153, 0.15)';
+              iconBadge.style.borderColor = 'rgba(52, 211, 153, 0.35)';
+            }
+            if (iconSvg) {
+              iconSvg.innerHTML = '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>';
+            }
+          } else {
+            if (modalTitle) modalTitle.textContent = 'Delete Category?';
+            if (modalDesc) {
+              modalDesc.innerHTML = 'Are you sure you want to delete <span class="delete-target-highlight">"' + (name || 'this category') + '"</span>? This will unlist the category from the store catalog.';
+            }
+            if (confirmBtn) {
+              confirmBtn.setAttribute('data-target-url', url);
+              confirmBtn.textContent = 'Delete Category';
+              confirmBtn.style.backgroundColor = 'var(--accent-red)';
+              confirmBtn.style.borderColor = '';
+            }
+            if (iconBadge) {
+              iconBadge.style.color = 'var(--accent-red)';
+              iconBadge.style.backgroundColor = 'rgba(229, 27, 36, 0.12)';
+              iconBadge.style.borderColor = 'rgba(229, 27, 36, 0.3)';
+            }
+            if (iconSvg) {
+              iconSvg.innerHTML = '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>';
+            }
+          }
+
+          openModal('deleteCategoryModal');
+        });
+      });
+
+      const deleteCategoryConfirmBtn = document.getElementById('deleteCategoryConfirmBtn');
+      if (deleteCategoryConfirmBtn) {
+        deleteCategoryConfirmBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (!pendingCategoryBtn) return;
+
+          const action = pendingCategoryBtn.getAttribute('data-action') || 'delete';
+          const deleteUrl = pendingCategoryBtn.getAttribute('data-delete-url');
+          const restoreUrl = pendingCategoryBtn.getAttribute('data-restore-url');
+          const targetUrl = action === 'delete' ? deleteUrl : restoreUrl;
+          const row = pendingCategoryBtn.closest('tr');
+
+          // Immediate logo switch and state change
+          if (action === 'delete') {
+            pendingCategoryBtn.setAttribute('data-action', 'restore');
+            pendingCategoryBtn.classList.remove('btn-delete');
+            pendingCategoryBtn.classList.add('btn-restore');
+            pendingCategoryBtn.title = 'Restore Category';
+            pendingCategoryBtn.setAttribute('aria-label', 'Restore Category');
+            pendingCategoryBtn.setAttribute('data-url', restoreUrl);
+            pendingCategoryBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              </svg>
+            `;
+
+            if (row) {
+              row.classList.add('category-row-deleted');
+              const otherBtns = row.querySelectorAll('.btn-edit, .btn-offer-add, .btn-offer-edit, .btn-offer-toggle, .btn-toggle-list');
+              otherBtns.forEach(function(b) {
+                b.classList.add('disabled');
+                b.setAttribute('aria-disabled', 'true');
+                if (b.tagName === 'BUTTON') b.disabled = true;
+              });
+              const statusBadge = row.querySelector('.badge');
+              if (statusBadge) {
+                statusBadge.className = 'badge badge-deleted';
+                statusBadge.innerHTML = '<span class="badge-dot"></span><span>DELETED</span>';
+              }
+            }
+          } else {
+            pendingCategoryBtn.setAttribute('data-action', 'delete');
+            pendingCategoryBtn.classList.remove('btn-restore');
+            pendingCategoryBtn.classList.add('btn-delete');
+            pendingCategoryBtn.title = 'Delete Category';
+            pendingCategoryBtn.setAttribute('aria-label', 'Delete Category');
+            pendingCategoryBtn.setAttribute('data-url', deleteUrl);
+            pendingCategoryBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+            `;
+
+            if (row) {
+              row.classList.remove('category-row-deleted');
+              const otherBtns = row.querySelectorAll('.btn-edit, .btn-offer-add, .btn-offer-edit, .btn-offer-toggle, .btn-toggle-list');
+              otherBtns.forEach(function(b) {
+                b.classList.remove('disabled');
+                b.removeAttribute('aria-disabled');
+                if (b.tagName === 'BUTTON') b.disabled = false;
+              });
+              const statusBadge = row.querySelector('.badge');
+              if (statusBadge) {
+                statusBadge.className = 'badge badge-active';
+                statusBadge.innerHTML = '<span class="badge-dot"></span><span>LISTED</span>';
+              }
+            }
+          }
+
+          closeModal('deleteCategoryModal');
+
+          if (targetUrl) {
+            window.location.href = targetUrl;
+          }
+        });
+      }
+
+      // 5b. Toggle Category Status (List / Unlist) Trigger
+      document.querySelectorAll('.btn-toggle-category-status').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          if (this.classList.contains('disabled') || this.hasAttribute('disabled')) {
+            e.preventDefault();
+            return;
+          }
+          const url = this.getAttribute('data-url');
+          const name = this.getAttribute('data-name');
+          const action = this.getAttribute('data-action') || 'unlist';
+
+          const modalTitle = document.getElementById('toggleCategoryModalTitle');
+          const actionWord = document.getElementById('toggleCategoryActionWord');
+          const targetName = document.getElementById('toggleCategoryTargetName');
+          const descSuffix = document.getElementById('toggleCategoryDescSuffix');
+          const confirmBtn = document.getElementById('toggleCategoryConfirmBtn');
+          const iconBadge = document.getElementById('toggleCategoryIconBadge');
+          const iconSvg = document.getElementById('toggleCategoryIconSvg');
+
+          if (modalTitle) modalTitle.textContent = action === 'unlist' ? 'Unlist Category?' : 'List Category?';
+          if (actionWord) actionWord.textContent = action;
+          if (targetName) targetName.textContent = '"' + (name || 'this category') + '"';
+          if (descSuffix) descSuffix.textContent = action === 'unlist' ? 'This will hide the category from customer view.' : 'This will make the category visible to customers.';
+
+          if (confirmBtn) {
+            confirmBtn.href = url;
+            confirmBtn.textContent = action === 'unlist' ? 'Unlist Category' : 'List Category';
+            confirmBtn.style.backgroundColor = action === 'unlist' ? '#d97706' : '#15803d';
+          }
+
+          if (iconBadge && iconSvg) {
+            if (action === 'unlist') {
+              iconBadge.style.color = '#fbbf24';
+              iconBadge.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
+              iconBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+              iconSvg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+            } else {
+              iconBadge.style.color = '#34d399';
+              iconBadge.style.backgroundColor = 'rgba(52, 211, 153, 0.15)';
+              iconBadge.style.borderColor = 'rgba(52, 211, 153, 0.35)';
+              iconSvg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+            }
+          }
+
+          openModal('toggleCategoryModal');
+        });
+      });
+
+      // 6. Add Offer Trigger
+      document.querySelectorAll('.btn-add-offer').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const url = this.getAttribute('data-url');
+          const categoryName = this.getAttribute('data-category-name');
+
+          const form = document.getElementById('addOfferForm');
+          const targetName = document.getElementById('addOfferCategoryTarget');
+
+          if (form) form.action = url;
+          if (targetName) targetName.textContent = categoryName || '';
+
+          // Default start date to now and end date to 7 days from now if empty
+          const startInput = document.getElementById('addOfferStart');
+          const endInput = document.getElementById('addOfferEnd');
+          if (startInput && !startInput.value) {
+            const now = new Date();
+            startInput.value = now.toISOString().slice(0, 16);
+          }
+          if (endInput && !endInput.value) {
+            const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            endInput.value = nextWeek.toISOString().slice(0, 16);
+          }
+
+          openModal('addOfferModal');
+        });
+      });
+
+      // 7. Edit Offer Trigger
+      document.querySelectorAll('.btn-edit-offer').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const url = this.getAttribute('data-url');
+          const categoryName = this.getAttribute('data-category-name');
+          const offerName = this.getAttribute('data-offer-name');
+          const discount = this.getAttribute('data-discount');
+          const start = this.getAttribute('data-start');
+          const end = this.getAttribute('data-end');
+
+          const form = document.getElementById('editOfferForm');
+          const targetText = document.getElementById('editOfferCategoryTarget');
+          const nameInput = document.getElementById('editOfferName');
+          const discountInput = document.getElementById('editOfferDiscount');
+          const startInput = document.getElementById('editOfferStart');
+          const endInput = document.getElementById('editOfferEnd');
+
+          if (form) form.action = url;
+          if (targetText) targetText.textContent = categoryName || '';
+          if (nameInput) nameInput.value = offerName || '';
+          if (discountInput) discountInput.value = discount || '';
+          if (startInput && start) startInput.value = start;
+          if (endInput && end) endInput.value = end;
+
+          openModal('editOfferModal');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

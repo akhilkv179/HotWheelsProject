@@ -1,0 +1,3320 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Return Management | Hot Wheels Admin</title>
+
+  <!-- Fonts: Montserrat for racing display headings, Inter for clean administrative UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Design Tokens matching Hot Wheels Admin System */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-body: #0b0b0e;
+      --bg-sidebar: #08080a;
+      --bg-card: #141418;
+      --bg-card-inner: #0d0d11;
+      --bg-input: #0e0e12;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-item: rgba(255, 255, 255, 0.08);
+
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff232d;
+      --accent-red-glow: rgba(229, 27, 36, 0.35);
+      --accent-orange: #f97316;
+      --accent-yellow: #eab308;
+      --accent-green: #22c55e;
+      --accent-blue: #3b82f6;
+      --accent-purple: #a855f7;
+
+      --text-white: #ffffff;
+      --text-muted: #8e8f9c;
+      --text-dim: #5c5d6b;
+      --text-header-gold: #c7beaf;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+
+      /* Return Status Badges */
+      --status-requested-bg: rgba(234, 179, 8, 0.12);
+      --status-requested-border: rgba(234, 179, 8, 0.35);
+      --status-requested-text: #facc15;
+      --status-requested-dot: #eab308;
+
+      --status-received-bg: rgba(59, 130, 246, 0.12);
+      --status-received-border: rgba(59, 130, 246, 0.35);
+      --status-received-text: #60a5fa;
+      --status-received-dot: #3b82f6;
+
+      --status-approved-bg: rgba(34, 197, 94, 0.12);
+      --status-approved-border: rgba(34, 197, 94, 0.35);
+      --status-approved-text: #4ade80;
+      --status-approved-dot: #22c55e;
+
+      --status-rejected-bg: rgba(239, 68, 68, 0.12);
+      --status-rejected-border: rgba(239, 68, 68, 0.35);
+      --status-rejected-text: #f87171;
+      --status-rejected-dot: #ef4444;
+
+      --status-refunded-bg: rgba(168, 85, 247, 0.12);
+      --status-refunded-border: rgba(168, 85, 247, 0.35);
+      --status-refunded-text: #c084fc;
+      --status-refunded-dot: #a855f7;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Overall Layout: Sidebar + Main Content */
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR
+       ================================================== */
+    .admin-sidebar {
+      width: 250px;
+      min-width: 250px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 18px 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .admin-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .admin-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand-header {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #555765;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      stroke: var(--text-dim);
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background-color: #16161d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* ==================================================
+       MAIN CONTENT CANVAS
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-body);
+      background-image: radial-gradient(ellipse 70% 35% at 50% 0%, rgba(229, 27, 36, 0.03), transparent 70%);
+    }
+
+    /* Topbar */
+    .admin-topbar {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 3.5vw, 48px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .system-status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7b7d8d;
+    }
+
+    .system-status-indicator .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    .system-status-indicator span.status-val {
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .topbar-icon-btn {
+      background: transparent;
+      border: none;
+      color: #8c8d98;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.15s ease;
+    }
+
+    .topbar-icon-btn:hover {
+      color: #ffffff;
+    }
+
+    .topbar-icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+    }
+
+    .profile-role {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #636473;
+      text-transform: uppercase;
+    }
+
+    .profile-avatar-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #181820;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8e8f9c;
+    }
+
+    /* Main Viewport Container */
+    .admin-viewport {
+      padding: 34px clamp(20px, 3.5vw, 48px) 60px clamp(20px, 3.5vw, 48px);
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Page Heading Row */
+    .page-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .page-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .page-main-title {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .page-subtitle {
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #857e75;
+    }
+
+    .page-actions-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .system-time-display {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b6b7a;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .time-val {
+      color: var(--accent-red);
+      font-weight: 800;
+      font-size: 12.5px;
+      letter-spacing: 0.08em;
+    }
+
+    .btn-back-orders {
+      background: #181820;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-back-orders:hover {
+      background: #23232c;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* Alerts */
+    .alert-banner {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      border-left: 3px solid var(--accent-green);
+      color: #86efac;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .alert-banner.error {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.35);
+      border-left-color: var(--accent-red);
+      color: #fca5a5;
+    }
+
+    .alert-banner.info {
+      background: rgba(59, 130, 246, 0.12);
+      border-color: rgba(59, 130, 246, 0.35);
+      border-left-color: var(--accent-blue);
+      color: #93c5fd;
+    }
+
+    /* ==================================================
+       KPI STATS GRID
+       ================================================== */
+    .stats-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .kpi-card.requested::before { background: var(--accent-yellow); }
+    .kpi-card.received::before { background: var(--accent-blue); }
+    .kpi-card.approved::before { background: var(--accent-green); }
+    .kpi-card.completed::before { background: var(--accent-purple); }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 900;
+      font-family: var(--font-heading);
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ==================================================
+       SEARCH & FILTER BAR
+       ================================================== */
+    .search-returns-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .search-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .search-card-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #a3a4b2;
+    }
+
+    .search-card-label .dot {
+      color: var(--accent-red);
+      font-size: 16px;
+      line-height: 0;
+    }
+
+    .search-form-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .search-input-wrapper svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .search-main-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-item);
+      border-radius: 8px;
+      padding: 11px 16px 11px 40px;
+      font-family: var(--font-main);
+      font-size: 13px;
+      color: #ffffff;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .search-main-input:focus {
+      border-color: rgba(229, 27, 36, 0.5);
+    }
+
+    .search-main-input::placeholder {
+      color: #555768;
+    }
+
+    .filter-select {
+      background: var(--bg-input);
+      border: 1px solid var(--border-item);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-family: var(--font-main);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #e5e7eb;
+      outline: none;
+      cursor: pointer;
+      min-width: 170px;
+      transition: border-color 0.15s ease;
+    }
+
+    .filter-select:focus {
+      border-color: rgba(229, 27, 36, 0.5);
+    }
+
+    .btn-reset-filters {
+      background: #181820;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #9ca3af;
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-reset-filters:hover {
+      background: #24242e;
+      color: #ffffff;
+    }
+
+    /* ==================================================
+       RETURNS DATA TABLE CARD
+       ================================================== */
+    .returns-table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-responsive-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .returns-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .returns-data-table thead {
+      background-color: #101014;
+      border-bottom: 1px solid var(--border-item);
+    }
+
+    .returns-data-table th {
+      padding: 14px 18px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8c8e9d;
+      white-space: nowrap;
+    }
+
+    .returns-data-table tbody tr {
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background-color 0.15s ease;
+    }
+
+    .returns-data-table tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .returns-data-table td {
+      padding: 16px 18px;
+      vertical-align: middle;
+      color: #d1d5db;
+    }
+
+    /* Return ID Cell */
+    .return-id-badge {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Order Link Cell */
+    .order-link-btn {
+      color: #e51b24;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s ease;
+    }
+
+    .order-link-btn:hover {
+      color: #ff3b44;
+      text-decoration: underline;
+    }
+
+    .order-link-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke-width: 2;
+    }
+
+    /* Customer Info Cell */
+    .customer-info-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .customer-name {
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .customer-handle {
+      font-size: 11px;
+      color: #71717a;
+    }
+
+    /* Product Cell */
+    .product-info-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 220px;
+    }
+
+    .product-title {
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .product-meta-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .variant-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1px 7px;
+      border-radius: 4px;
+      color: #9ca3af;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+
+    .qty-tag {
+      color: var(--accent-red);
+      font-weight: 700;
+    }
+
+    .price-tag {
+      color: #d1d5db;
+      font-weight: 600;
+    }
+
+    /* Reason & Notes Cell */
+    .reason-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 240px;
+    }
+
+    .reason-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #1c1c24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+      font-weight: 700;
+      color: #f3f4f6;
+      text-transform: capitalize;
+      width: fit-content;
+    }
+
+    .reason-desc-text {
+      font-size: 11.5px;
+      color: #9ca3af;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Date Cell */
+    .date-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      white-space: nowrap;
+    }
+
+    .date-main {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .date-sub {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-badge.requested {
+      background: var(--status-requested-bg);
+      border: 1px solid var(--status-requested-border);
+      color: var(--status-requested-text);
+    }
+    .status-badge.requested .dot {
+      background: var(--status-requested-dot);
+      box-shadow: 0 0 6px var(--status-requested-dot);
+    }
+
+    .status-badge.item_received {
+      background: var(--status-received-bg);
+      border: 1px solid var(--status-received-border);
+      color: var(--status-received-text);
+    }
+    .status-badge.item_received .dot {
+      background: var(--status-received-dot);
+      box-shadow: 0 0 6px var(--status-received-dot);
+    }
+
+    .status-badge.inspection_approved {
+      background: var(--status-approved-bg);
+      border: 1px solid var(--status-approved-border);
+      color: var(--status-approved-text);
+    }
+    .status-badge.inspection_approved .dot {
+      background: var(--status-approved-dot);
+      box-shadow: 0 0 6px var(--status-approved-dot);
+    }
+
+    .status-badge.inspection_rejected {
+      background: var(--status-rejected-bg);
+      border: 1px solid var(--status-rejected-border);
+      color: var(--status-rejected-text);
+    }
+    .status-badge.inspection_rejected .dot {
+      background: var(--status-rejected-dot);
+      box-shadow: 0 0 6px var(--status-rejected-dot);
+    }
+
+    .status-badge.refund_processed {
+      background: var(--status-refunded-bg);
+      border: 1px solid var(--status-refunded-border);
+      color: var(--status-refunded-text);
+    }
+    .status-badge.refund_processed .dot {
+      background: var(--status-refunded-dot);
+      box-shadow: 0 0 6px var(--status-refunded-dot);
+    }
+
+    /* ==================================================
+       MANAGE RETURN ACTION BUTTON
+       ================================================== */
+    .action-cell {
+      white-space: nowrap;
+    }
+
+    .btn-manage-return {
+      background: #181820;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-manage-return:hover {
+      background: #23232c;
+      border-color: var(--accent-red);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.25);
+    }
+
+    .btn-manage-return svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--accent-red);
+      transition: transform 0.15s ease;
+    }
+
+    .btn-manage-return:hover svg {
+      transform: scale(1.1);
+    }
+
+    .badge-terminal-mini {
+      display: block;
+      font-size: 10px;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+
+    /* Empty state */
+    .empty-state-cell {
+      text-align: center;
+      padding: 50px 20px !important;
+      color: #6b7280;
+    }
+
+    .empty-state-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .empty-state-wrap svg {
+      width: 44px;
+      height: 44px;
+      stroke: #3f3f46;
+    }
+
+    /* Table Footer & Pagination */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-item);
+      background: #101014;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b7280;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .table-footer-info {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .footer-count-val {
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+      height: 32px;
+      min-width: 32px;
+      padding: 0 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      user-select: none;
+      box-sizing: border-box;
+      white-space: nowrap;
+    }
+
+    .pagination-btn.active {
+      background: var(--accent-red);
+      color: #ffffff;
+      box-shadow: 0 2px 10px var(--accent-red-glow);
+      cursor: default;
+      border: 1px solid var(--accent-red);
+    }
+
+    .pagination-btn.inactive {
+      background: #18181f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #9ca3af;
+    }
+
+    .pagination-btn.inactive:hover {
+      background: #24242e;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .pagination-btn.nav-edge {
+      background: #18181f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #9ca3af;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .pagination-btn.nav-edge:hover:not(.disabled) {
+      background: #24242e;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .pagination-btn.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: #131317;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      color: #52525b;
+    }
+
+    .pagination-ellipsis {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 4px;
+      color: #6b7280;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    /* ==================================================
+       MANAGE RETURN MODAL (Exact Reference Design)
+       ================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(5, 5, 8, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: modalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-container-claim {
+      background: #101116;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      max-width: 1100px;
+      width: 100%;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Claim Modal Top Header */
+    .claim-modal-header {
+      padding: 22px 28px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      background: #0d0e12;
+    }
+
+    .claim-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-back-nav {
+      background: transparent;
+      border: none;
+      color: #8c8d98;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      transition: color 0.15s ease;
+    }
+
+    .btn-back-nav:hover {
+      color: #ffffff;
+    }
+
+    .claim-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .claim-main-title {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .chip-return-id {
+      background: #1b1c24;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-family: var(--font-heading);
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #e5e7eb;
+      letter-spacing: 0.05em;
+    }
+
+    .chip-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+      color: #facc15;
+    }
+
+    .chip-status-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #eab308;
+    }
+
+    .claim-header-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .claim-meta-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .meta-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #636473;
+      text-transform: uppercase;
+    }
+
+    .meta-val {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: #e5e7eb;
+      text-transform: uppercase;
+    }
+
+    .meta-val.text-red {
+      color: var(--accent-red);
+    }
+
+    .btn-claim-close {
+      background: #1a1b24;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #8c8d98;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-claim-close:hover {
+      background: #252633;
+      color: #ffffff;
+    }
+
+    /* Modal Main Body Grid (2 Columns) */
+    .claim-modal-body {
+      padding: 26px 28px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1.15fr 0.95fr;
+      gap: 24px;
+      background: #0f1015;
+    }
+
+    .claim-info-card,
+    .claim-decision-card {
+      background: #14151d;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .card-top-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 12px;
+    }
+
+    .card-section-tag {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .original-order-link {
+      font-size: 11px;
+      font-weight: 700;
+      color: #8e8f9c;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s ease;
+    }
+
+    .original-order-link strong {
+      color: var(--accent-red);
+      font-weight: 800;
+    }
+
+    .original-order-link:hover {
+      color: #ffffff;
+    }
+
+    .card-sub-mandate {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #6b6c7a;
+      text-transform: uppercase;
+    }
+
+    /* Dual Grid for Customer & Settlement */
+    .subcard-dual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .info-subcard {
+      background: #0e0e13;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .subcard-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #636473;
+    }
+
+    .subcard-primary-text {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subcard-sub-text {
+      font-size: 11.5px;
+      color: #8c8d98;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge-collector {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #eab308;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .badge-refund-support {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #22c55e;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Product Item Card */
+    .product-item-card {
+      background: #0e0e13;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .product-thumb-box {
+      width: 54px;
+      height: 54px;
+      border-radius: 8px;
+      background: #181922;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .product-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-thumb-box svg {
+      width: 26px;
+      height: 26px;
+      stroke: #52525b;
+    }
+
+    .product-details-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .product-series-tag {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #8b8c9c;
+      text-transform: uppercase;
+    }
+
+    .product-item-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .product-specs-line {
+      font-size: 11.5px;
+      color: #71717a;
+    }
+
+    .product-qty-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      background: #161720;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+    }
+
+    .product-qty-badge span {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #71717a;
+      text-transform: uppercase;
+    }
+
+    .product-qty-badge strong {
+      font-size: 16px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    /* Reported Reason Section */
+    .reason-report-box {
+      background: #0e0e13;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .reason-report-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .reason-chip-tag {
+      background: rgba(229, 27, 36, 0.15);
+      border: 1px solid rgba(229, 27, 36, 0.35);
+      color: #fca5a5;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .reason-quote-box {
+      font-size: 12.5px;
+      color: #d1d5db;
+      line-height: 1.55;
+      font-style: italic;
+    }
+
+    .user-note-box {
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .note-mini-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8c8d98;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .user-note-box p {
+      font-size: 12px;
+      color: #a1a1aa;
+    }
+
+    /* Mandate Options (Right Column) */
+    .mandate-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mandate-option-card {
+      background: #0e0e13;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+      position: relative;
+    }
+
+    .mandate-option-card:hover {
+      background: #14151e;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .mandate-option-card.selected {
+      border-color: var(--accent-red);
+      background: #161722;
+    }
+
+    .mandate-radio-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #52525b;
+      margin-top: 2px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s ease;
+    }
+
+    .mandate-option-card.selected .mandate-radio-circle {
+      border-color: var(--accent-red);
+    }
+
+    .mandate-radio-circle::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: transparent;
+      transition: background-color 0.15s ease;
+    }
+
+    .mandate-option-card.selected .mandate-radio-circle::after {
+      background: var(--accent-red);
+    }
+
+    .mandate-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mandate-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .mandate-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+    }
+
+    .mandate-amount {
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #ffffff;
+      font-family: var(--font-heading);
+    }
+
+    .mandate-tag-decline {
+      font-size: 10px;
+      font-weight: 800;
+      color: #f87171;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .mandate-desc {
+      font-size: 11.5px;
+      color: #8c8d98;
+      line-height: 1.45;
+    }
+
+    .mandate-badge-bottom {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #22c55e;
+      margin-top: 3px;
+    }
+
+    /* Remarks & Inspection Log */
+    .remarks-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .remarks-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .remarks-marshal-tag {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: #555768;
+      text-transform: uppercase;
+    }
+
+    .remarks-textarea {
+      width: 100%;
+      background: #0e0e13;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: var(--font-main);
+      font-size: 12.5px;
+      color: #ffffff;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .remarks-textarea:focus {
+      border-color: rgba(229, 27, 36, 0.5);
+    }
+
+    .remarks-textarea::placeholder {
+      color: #4b4c59;
+    }
+
+    /* Action Buttons Footer */
+    .claim-actions-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .btn-approve-claim {
+      width: 100%;
+      background: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(229, 27, 36, 0.35);
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-approve-claim:hover {
+      background: var(--accent-red-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-reject-claim {
+      width: 100%;
+      background: #171821;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f87171;
+      border-radius: 8px;
+      padding: 11px 18px;
+      font-family: var(--font-main);
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-reject-claim:hover {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .btn-cancel-claim {
+      background: transparent;
+      border: none;
+      color: #71717a;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      align-self: center;
+      padding: 4px 8px;
+      transition: color 0.15s ease;
+    }
+
+    .btn-cancel-claim:hover {
+      color: #ffffff;
+    }
+
+    /* Terminal Status Alert in Modal */
+    .terminal-claim-banner {
+      background: #0e0e13;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .terminal-claim-banner.refunded {
+      border-color: rgba(168, 85, 247, 0.3);
+      color: #c084fc;
+    }
+
+    .terminal-claim-banner.rejected {
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    /* ==================================================
+       ACTION CONFIRMATION OVERLAY MODAL
+       ================================================== */
+    .modal-dialog-confirm {
+      background: #171822;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      max-width: 440px;
+      width: 100%;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+      position: relative;
+    }
+
+    .confirm-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-icon-box.warning {
+      background: rgba(234, 179, 8, 0.15);
+      border: 1px solid rgba(234, 179, 8, 0.3);
+      color: #facc15;
+    }
+
+    .confirm-icon-box.danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .confirm-title {
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .confirm-text {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #e5e7eb;
+    }
+
+    .confirm-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .btn-confirm-cancel {
+      flex: 1;
+      background: #20212d;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #d1d5db;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-confirm-cancel:hover {
+      background: #2b2c3c;
+      color: #ffffff;
+    }
+
+    .btn-confirm-proceed {
+      flex: 1.2;
+      background: var(--accent-green);
+      border: none;
+      color: #0b0b0e;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-confirm-proceed:hover {
+      background: #16a34a;
+      transform: translateY(-1px);
+    }
+
+    .btn-confirm-proceed.danger {
+      background: var(--accent-red);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.35);
+    }
+
+    .btn-confirm-proceed.danger:hover {
+      background: var(--accent-red-hover);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        bottom: 0;
+      }
+      .admin-sidebar.open {
+        transform: translateX(250px);
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+      .claim-modal-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .admin-viewport {
+        padding: 20px 16px 40px 16px;
+      }
+      .page-title-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .page-actions-right {
+        align-items: flex-start;
+      }
+      .search-form-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-wrapper {
+        min-width: 100%;
+      }
+      .filter-select {
+        width: 100%;
+      }
+      .subcard-dual-grid {
+        grid-template-columns: 1fr;
+      }
+      .claim-header-right {
+        display: none;
+      }
+      .table-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+      }
+      .pagination-bar {
+        justify-content: center;
+      }
+      .nav-btn-text {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- ==================================================
+         SIDEBAR NAVIGATION
+         ================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+
+        <!-- Brand Title: ADMIN -->
+        <div class="brand-header">
+          <span class="brand-title">ADMIN</span>
+        </div>
+
+        <nav class="sidebar-nav">
+
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <!-- Active State on Returns -->
+            <a href="{% url 'admin_return_list' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"/>
+                <polyline points="23 20 23 14 17 14"/>
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+              </svg>
+              <span>Returns</span>
+            </a>
+            <a href="{% url 'admin_inventory_list' %}" class="nav-item" title="Coupons">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="nav-group">
+            <span class="nav-group-label">CONTENT</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+              <span>Banners</span>
+            </a>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Logout Item at Bottom -->
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==================================================
+         MAIN CONTENT AREA
+         ================================================== -->
+    <main class="admin-main">
+
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle navigation">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="system-status-indicator">
+            <span class="status-dot"></span>
+            <span>SYSTEM STATUS:</span>
+            <span class="status-val">OPERATIONAL</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Notification Bell -->
+          <button type="button" class="topbar-icon-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+
+          <!-- User Profile -->
+          <div class="topbar-profile">
+            <div class="profile-info">
+              <span class="profile-name">Race Control</span>
+              <span class="profile-role">ADMIN</span>
+            </div>
+            <div class="profile-avatar-circle">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Viewport Content -->
+      <div class="admin-viewport">
+
+        <!-- Django Flash Messages -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert-banner {% if message.tags %}{{ message.tags }}{% endif %}">
+              <span>{{ message }}</span>
+              <button type="button" style="background:none; border:none; color:inherit; cursor:pointer;" onclick="this.parentElement.remove();">&times;</button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Page Header Row -->
+        <div class="page-title-row">
+          <div class="page-title-group">
+            <h1 class="page-main-title">RETURN MANAGEMENT</h1>
+            <p class="page-subtitle">OVERVIEW OF HOT WHEELS RETURN REQUESTS</p>
+          </div>
+
+          <div class="page-actions-right">
+            <div class="system-time-display">
+              <span>SYSTEM TIME</span>
+              <span class="time-val" id="liveUtcClock">--:--:-- UTC</span>
+            </div>
+            <a href="{% url 'admin_order_list' %}" class="btn-back-orders">
+              &larr; BACK TO ORDERS
+            </a>
+          </div>
+        </div>
+
+        <!-- ==================================================
+             SUMMARY METRIC CARDS
+             ================================================== -->
+        <div class="stats-kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">TOTAL RETURNS</span>
+            <span class="kpi-value" id="kpiTotalCount">{{ paginator.count|default:returns|length }}</span>
+            <span class="kpi-sub">All return records</span>
+          </div>
+
+          <div class="kpi-card requested">
+            <span class="kpi-label">AWAITING RECEIPT</span>
+            <span class="kpi-value" id="kpiRequestedCount">0</span>
+            <span class="kpi-sub">Status: Requested</span>
+          </div>
+
+          <div class="kpi-card received">
+            <span class="kpi-label">UNDER INSPECTION</span>
+            <span class="kpi-value" id="kpiReceivedCount">0</span>
+            <span class="kpi-sub">Status: Item Received</span>
+          </div>
+
+          <div class="kpi-card approved">
+            <span class="kpi-label">STOCK RESTORED</span>
+            <span class="kpi-value" id="kpiApprovedCount">0</span>
+            <span class="kpi-sub">Inspection Approved</span>
+          </div>
+
+          <div class="kpi-card completed">
+            <span class="kpi-label">REFUND COMPLETED</span>
+            <span class="kpi-value" id="kpiRefundedCount">0</span>
+            <span class="kpi-sub">Processing complete</span>
+          </div>
+        </div>
+
+        <!-- ==================================================
+             SEARCH & FILTER CONTROLS CARD
+             ================================================== -->
+        <section class="search-returns-card">
+          <div class="search-card-header">
+            <div class="search-card-label">
+              <span class="dot">&bull;</span>
+              <span>FILTER RETURN REQUESTS</span>
+            </div>
+            <span style="font-size: 11px; color: #71717a;" id="matchingResultsLabel">Showing all records</span>
+          </div>
+
+          <div class="search-form-row">
+            <!-- Search Text Input -->
+            <div class="search-input-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                type="text"
+                id="searchReturnInput"
+                placeholder="Search by Return ID, Order #, Customer, or Product..."
+                class="search-main-input"
+              >
+            </div>
+
+            <!-- Status Filter Dropdown -->
+            <select id="statusFilterSelect" class="filter-select">
+              <option value="">All Statuses</option>
+              <option value="requested">Requested</option>
+              <option value="item_received">Item Received</option>
+              <option value="inspection_approved">Inspection Approved</option>
+              <option value="inspection_rejected">Inspection Rejected</option>
+              <option value="refund_processed">Refund Processed</option>
+            </select>
+
+            <!-- Reset Filter Button -->
+            <button type="button" id="btnResetFilters" class="btn-reset-filters">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              </svg>
+              <span>RESET</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- ==================================================
+             RETURNS DATA TABLE CARD
+             ================================================== -->
+        <section class="returns-table-card">
+          <div class="table-responsive-wrap">
+            <table class="returns-data-table" id="returnsTable">
+              <thead>
+                <tr>
+                  <th>RETURN ID</th>
+                  <th>ORDER #</th>
+                  <th>CUSTOMER</th>
+                  <th>PRODUCT &amp; VARIANT</th>
+                  <th>REASON &amp; NOTES</th>
+                  <th>REQUEST DATE</th>
+                  <th>STATUS</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for return_request in returns %}
+                  <tr
+                    class="return-row"
+                    data-return-id="{{ return_request.id }}"
+                    data-status="{{ return_request.status }}"
+                    data-order="{{ return_request.order_item.order.order_number|default:'' }}"
+                    data-customer="{{ return_request.user.username }} {{ return_request.user.get_full_name|default:'' }}"
+                    data-product="{{ return_request.order_item.product_name|default:'' }}"
+                    data-reason="{{ return_request.reason|default:'' }}"
+                  >
+                    <!-- 1. RETURN ID -->
+                    <td>
+                      <span class="return-id-badge">#RET-{{ return_request.id }}</span>
+                    </td>
+
+                    <!-- 2. ORDER # -->
+                    <td>
+                      {% if return_request.order_item.order.order_number %}
+                        <a href="{% url 'admin_order_detail' return_request.order_item.order.order_number %}" class="order-link-btn" title="View Order Details">
+                          <span>#{{ return_request.order_item.order.order_number }}</span>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span style="color: #6b7280;">N/A</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- 3. CUSTOMER -->
+                    <td>
+                      <div class="customer-info-cell">
+                        <span class="customer-name">
+                          {{ return_request.user.get_full_name|default:return_request.user.username }}
+                        </span>
+                        <span class="customer-handle">@{{ return_request.user.username }}</span>
+                      </div>
+                    </td>
+
+                    <!-- 4. PRODUCT & VARIANT -->
+                    <td>
+                      <div class="product-info-cell">
+                        <span class="product-title" title="{{ return_request.order_item.product_name }}">
+                          {{ return_request.order_item.product_name }}
+                        </span>
+                        <div class="product-meta-row">
+                          {% if return_request.order_item.product_variant %}
+                            <span class="variant-pill">
+                              {{ return_request.order_item.product_variant.color }} · {{ return_request.order_item.product_variant.size }}
+                            </span>
+                          {% endif %}
+                          <span class="qty-tag">Qty: {{ return_request.order_item.quantity }}</span>
+                          <span class="price-tag">&bull; ₹{{ return_request.order_item.total_price }}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- 5. REASON & CUSTOMER NOTES -->
+                    <td>
+                      <div class="reason-cell">
+                        <span class="reason-badge">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                          </svg>
+                          {{ return_request.reason }}
+                        </span>
+
+                        {% if return_request.description %}
+                          <p class="reason-desc-text" title="{{ return_request.description }}">
+                            {{ return_request.description }}
+                          </p>
+                        {% endif %}
+                      </div>
+                    </td>
+
+                    <!-- 6. REQUEST DATE -->
+                    <td>
+                      <div class="date-cell">
+                        <span class="date-main">{{ return_request.requested_at|date:"d M Y" }}</span>
+                        <span class="date-sub">{{ return_request.requested_at|date:"h:i A" }}</span>
+                      </div>
+                    </td>
+
+                    <!-- 7. STATUS BADGE -->
+                    <td>
+                      {% if return_request.status == "requested" %}
+                        <span class="status-badge requested">
+                          <span class="dot"></span> REQUESTED
+                        </span>
+                      {% elif return_request.status == "item_received" %}
+                        <span class="status-badge item_received">
+                          <span class="dot"></span> ITEM RECEIVED
+                        </span>
+                      {% elif return_request.status == "inspection_approved" %}
+                        <span class="status-badge inspection_approved">
+                          <span class="dot"></span> INSPECTION APPROVED
+                        </span>
+                      {% elif return_request.status == "inspection_rejected" %}
+                        <span class="status-badge inspection_rejected">
+                          <span class="dot"></span> INSPECTION REJECTED
+                        </span>
+                      {% elif return_request.status == "refund_processed" %}
+                        <span class="status-badge refund_processed">
+                          <span class="dot"></span> REFUND PROCESSED
+                        </span>
+                      {% else %}
+                        <span class="status-badge">
+                          <span class="dot"></span> {{ return_request.status|title }}
+                        </span>
+                      {% endif %}
+                    </td>
+
+                    <!-- 8. ACTION BUTTON: "Manage Return" Modal Trigger -->
+                    <td class="action-cell">
+                      <button
+                        type="button"
+                        class="btn-manage-return"
+                        onclick="openManageReturnModal({{ return_request.id }});"
+                        title="Review and process return claim #{{ return_request.id }}"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        <span>Manage Return</span>
+                      </button>
+
+                      {% if return_request.status == "refund_processed" or return_request.status == "inspection_rejected" %}
+                        <span class="badge-terminal-mini">Completed</span>
+                      {% endif %}
+
+                      <!-- Embedded JSON payload for this return request -->
+                      <script type="application/json" id="return-data-{{ return_request.id }}">
+                        {
+                          "id": {{ return_request.id }},
+                          "orderNumber": "{{ return_request.order_item.order.order_number|default:''|escapejs }}",
+                          "orderDetailUrl": "{% if return_request.order_item.order.order_number %}{% url 'admin_order_detail' return_request.order_item.order.order_number %}{% endif %}",
+                          "customerName": "{{ return_request.user.get_full_name|default:return_request.user.username|escapejs }}",
+                          "customerEmail": "{{ return_request.user.email|default:''|escapejs }}",
+                          "customerUsername": "{{ return_request.user.username|escapejs }}",
+                          "productName": "{{ return_request.order_item.product_name|escapejs }}",
+                          "variantColor": "{{ return_request.order_item.product_variant.color|default:''|escapejs }}",
+                          "variantSize": "{{ return_request.order_item.product_variant.size|default:''|escapejs }}",
+                          "quantity": {{ return_request.order_item.quantity|default:1 }},
+                          "totalPrice": "{{ return_request.order_item.total_price|default:'0.00' }}",
+                          "unitPrice": "{{ return_request.order_item.unit_price|default:'0.00' }}",
+                          "imageUrl": "{{ return_request.order_item.product_variant.images.first.image_url|default:''|escapejs }}",
+                          "reason": "{{ return_request.reason|escapejs }}",
+                          "description": "{{ return_request.description|escapejs }}",
+                          "userAddNote": "{{ return_request.user_add_note|default:''|escapejs }}",
+                          "internalNote": "{{ return_request.internal_note|default:''|escapejs }}",
+                          "status": "{{ return_request.status }}",
+                          "requestedAt": "{{ return_request.requested_at|date:'d M Y • h:i A' }}",
+                          "processedAt": "{{ return_request.processed_at|date:'d M Y • h:i A'|default:'' }}",
+                          "updateUrl": "{% url 'admin_update_return_status' return_request.id %}"
+                        }
+                      </script>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="8" class="empty-state-cell">
+                      <div class="empty-state-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="1 4 1 10 7 10"/>
+                          <polyline points="23 20 23 14 17 14"/>
+                          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                        </svg>
+                        <p style="font-size: 14px; font-weight: 600; color: #9ca3af;">No return requests found.</p>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table Footer & Pagination -->
+          <div class="table-footer">
+            <div class="table-footer-info">
+              SHOWING <span id="visibleRowCount" class="footer-count-val">{{ page_obj|length }}</span> OF <span class="footer-count-val">{{ page_obj.paginator.count|default:returns|length }}</span> RETURN REQUESTS
+              {% if page_obj and page_obj.paginator.num_pages > 1 %}
+                <span style="margin-left: 6px; color: #6b7280; font-weight: 600;">(PAGE {{ page_obj.number }} OF {{ page_obj.paginator.num_pages }})</span>
+              {% endif %}
+            </div>
+
+            {% if page_obj and page_obj.paginator.num_pages > 0 %}
+              <nav class="pagination-bar" aria-label="Return Requests Pagination">
+                <!-- First Page -->
+                {% if page_obj.has_previous %}
+                  <a href="?page=1{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn nav-edge" aria-label="First Page" title="First Page">
+                    &laquo;<span class="nav-btn-text" style="margin-left: 4px;">First</span>
+                  </a>
+                {% else %}
+                  <span class="pagination-btn nav-edge disabled" aria-disabled="true" title="First Page">
+                    &laquo;<span class="nav-btn-text" style="margin-left: 4px;">First</span>
+                  </span>
+                {% endif %}
+
+                <!-- Previous Page -->
+                {% if page_obj.has_previous %}
+                  <a href="?page={{ page_obj.previous_page_number }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn nav-edge" aria-label="Previous Page" title="Previous Page">
+                    &lsaquo;<span class="nav-btn-text" style="margin-left: 4px;">Prev</span>
+                  </a>
+                {% else %}
+                  <span class="pagination-btn nav-edge disabled" aria-disabled="true" title="Previous Page">
+                    &lsaquo;<span class="nav-btn-text" style="margin-left: 4px;">Prev</span>
+                  </span>
+                {% endif %}
+
+                <!-- Numbered Pages -->
+                {% if page_obj.paginator.num_pages <= 7 %}
+                  {% for p in page_obj.paginator.page_range %}
+                    {% if p == page_obj.number %}
+                      <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                    {% else %}
+                      <a href="?page={{ p }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ p }}</a>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  {% if page_obj.number <= 4 %}
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p <= 5 %}
+                        {% if p == page_obj.number %}
+                          <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="pagination-ellipsis">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ page_obj.paginator.num_pages }}</a>
+                  {% elif page_obj.number >= page_obj.paginator.num_pages|add:"-3" %}
+                    <a href="?page=1{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">1</a>
+                    <span class="pagination-ellipsis">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.paginator.num_pages|add:"-4" %}
+                        {% if p == page_obj.number %}
+                          <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <a href="?page=1{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">1</a>
+                    <span class="pagination-ellipsis">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.number|add:"-1" and p <= page_obj.number|add:"1" %}
+                        {% if p == page_obj.number %}
+                          <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="pagination-ellipsis">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ page_obj.paginator.num_pages }}</a>
+                  {% endif %}
+                {% endif %}
+
+                <!-- Next Page -->
+                {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn nav-edge" aria-label="Next Page" title="Next Page">
+                    <span class="nav-btn-text" style="margin-right: 4px;">Next</span>&rsaquo;
+                  </a>
+                {% else %}
+                  <span class="pagination-btn nav-edge disabled" aria-disabled="true" title="Next Page">
+                    <span class="nav-btn-text" style="margin-right: 4px;">Next</span>&rsaquo;
+                  </span>
+                {% endif %}
+
+                <!-- Last Page -->
+                {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.paginator.num_pages }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn nav-edge" aria-label="Last Page" title="Last Page">
+                    <span class="nav-btn-text" style="margin-right: 4px;">Last</span>&raquo;
+                  </a>
+                {% else %}
+                  <span class="pagination-btn nav-edge disabled" aria-disabled="true" title="Last Page">
+                    <span class="nav-btn-text" style="margin-right: 4px;">Last</span>&raquo;
+                  </span>
+                {% endif %}
+              </nav>
+            {% else %}
+              <div>
+                <span>HOT WHEELS RETURN OPERATIONS</span>
+              </div>
+            {% endif %}
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==================================================
+       MANAGE RETURN CLAIM MODAL (Exact Reference Layout)
+       ================================================== -->
+  <div class="modal-overlay" id="manageReturnModal" role="dialog" aria-modal="true" aria-labelledby="modalClaimTitle">
+    <div class="modal-container-claim">
+
+      <!-- Modal Top Bar -->
+      <div class="claim-modal-header">
+        <div class="claim-header-left">
+          <button type="button" class="btn-back-nav" onclick="closeManageReturnModal();">
+            &larr; BACK TO ORDER RETURNS
+          </button>
+          <div class="claim-title-row">
+            <h2 class="claim-main-title" id="modalClaimTitle">PROCESS RETURN CLAIM</h2>
+            <span class="chip-return-id" id="modalChipReturnId">#RET-0000</span>
+            <span class="chip-status-pill" id="modalChipStatus">
+              <span class="dot"></span>
+              <span id="modalChipStatusText">PENDING INSPECTION</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="claim-header-right">
+          <div class="claim-meta-item">
+            <span class="meta-label">CLAIM TIMESTAMP</span>
+            <span class="meta-val" id="modalClaimTimestamp">-- --- ---- • --:-- IST</span>
+          </div>
+          <div class="claim-meta-item">
+            <span class="meta-label">QUEUE PRIORITY</span>
+            <span class="meta-val text-red">HIGH SLA (&lt; 2H)</span>
+          </div>
+          <button type="button" class="btn-claim-close" onclick="closeManageReturnModal();" aria-label="Close modal">
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body (2-Column Layout matching screenshot) -->
+      <div class="claim-modal-body">
+
+        <!-- LEFT COLUMN: CLAIM INFORMATION -->
+        <div class="claim-info-col">
+          <div class="claim-info-card">
+            <div class="card-top-header">
+              <span class="card-section-tag">CLAIM INFORMATION</span>
+              <a href="#" id="modalOrderLink" class="original-order-link" target="_blank" title="View Order Details">
+                <span>ORIGINAL ORDER:</span> <strong id="modalOriginalOrder">#ORD-00000</strong>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
+            </div>
+
+            <!-- Customer & Settlement Dual Grid -->
+            <div class="subcard-dual-grid">
+              <!-- Customer Card -->
+              <div class="info-subcard">
+                <span class="subcard-label">CUSTOMER</span>
+                <div class="subcard-primary-text" id="modalCustomerName">Customer Name</div>
+                <div class="subcard-sub-text" id="modalCustomerEmail">customer@example.com</div>
+                <div class="badge-collector">
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <span>HW CLUB LEVEL 3 COLLECTOR</span>
+                </div>
+              </div>
+
+              <!-- Settlement Card -->
+              <div class="info-subcard">
+                <span class="subcard-label">TRANSACTION SETTLEMENT</span>
+                <div class="subcard-primary-text" id="modalSettlementAmount">₹0.00</div>
+                <div class="subcard-sub-text" id="modalSettlementSub">Item Value (Qty: 1)</div>
+                <div class="badge-refund-support">
+                  <span>⚡ ZERO RESTOCK FEE APPLIED</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Product Card -->
+            <div class="product-item-card">
+              <div class="product-details-content">
+                <span class="product-series-tag">PREMIUM DIECAST</span>
+                <div class="product-item-title" id="modalProductTitle">Product Name</div>
+                <div class="product-specs-line" id="modalProductSpecs">1:64 Scale • Color</div>
+              </div>
+              <div class="product-qty-badge">
+                <span>QTY</span>
+                <strong id="modalProductQty">1</strong>
+              </div>
+            </div>
+
+            <!-- Reported Reason Card -->
+            <div class="reason-report-box">
+              <div class="reason-report-header">
+                <span class="subcard-label">REPORTED REASON FOR CLAIM</span>
+                <span class="reason-chip-tag" id="modalReasonChip">DAMAGED IN TRANSIT</span>
+              </div>
+              <div class="reason-quote-box">
+                <p id="modalReasonDescription">"Customer description..."</p>
+              </div>
+              <div class="user-note-box" id="modalUserNoteWrap" style="display: none;">
+                <span class="note-mini-label">Customer Additional Note:</span>
+                <p id="modalUserNoteText">--</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: DISPOSITION DECISION & SUBMIT FORM -->
+        <div class="claim-decision-col">
+          <!-- Standard POST Form connected directly to existing backend route -->
+          <form method="POST" id="manageReturnForm" action="">
+            {% csrf_token %}
+            <!-- Status value is set by the chosen action button -->
+            <input type="hidden" name="status" id="formTargetStatus" value="">
+
+            <div class="claim-decision-card">
+              <div class="card-top-header">
+                <span class="card-section-tag">DISPOSITION DECISION</span>
+                <span class="card-sub-mandate" id="modalDecisionSubheader">ACTION REQUIRED</span>
+              </div>
+
+              <!-- Mandate Selection Options (Rendered dynamically based on current status) -->
+              <div class="mandate-options-list" id="mandateOptionsContainer">
+                <!-- Dynamically populated -->
+              </div>
+
+              <!-- Admin Remarks & Inspection Log -->
+              <div class="remarks-section">
+                <div class="remarks-header">
+                  <span class="subcard-label">ADMIN REMARKS &amp; INSPECTION LOG</span>
+                  <span class="remarks-marshal-tag">LOGGED IN MARSHAL RECORD</span>
+                </div>
+                <textarea
+                  name="internal_note"
+                  id="modalInternalNoteTextarea"
+                  class="remarks-textarea"
+                  rows="4"
+                  placeholder="Enter courier escalation notes, package condition verification, or customer communication..."
+                ></textarea>
+              </div>
+
+              <!-- Action Buttons Footer -->
+              <div class="claim-actions-footer" id="modalActionsFooter">
+                <!-- Dynamically populated buttons -->
+              </div>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================================================
+       CONFIRMATION OVERLAY DIALOG (For Approve / Reject)
+       ================================================== -->
+  <div class="modal-overlay" id="actionConfirmModal" role="dialog" aria-modal="true" style="z-index: 1100;">
+    <div class="modal-dialog-confirm">
+      <div class="confirm-icon-box warning" id="confirmIconBox">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+
+      <h3 class="confirm-title" id="confirmModalHeading">Confirm Action</h3>
+      <p class="confirm-text" id="confirmModalText">
+        Approving this return will add the returned item's quantity back to product stock. Confirm only after inspecting the item.
+      </p>
+
+      <div class="confirm-actions-row">
+        <button type="button" class="btn-confirm-cancel" onclick="closeConfirmModal();">Cancel</button>
+        <button type="button" class="btn-confirm-proceed" id="btnConfirmProceed">Confirm &amp; Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================
+       SCRIPTS: Live Clock, Modal Logic, Transitions, Filtering
+       ================================================== -->
+  <script>
+    // Currently active return object data
+    let currentReturnData = null;
+    let pendingStatusToSubmit = null;
+
+    /**
+     * Opens the Manage Return modal populated with the specific return data.
+     */
+    function openManageReturnModal(returnId) {
+      const dataScript = document.getElementById('return-data-' + returnId);
+      if (!dataScript) {
+        console.error('Return data not found for ID:', returnId);
+        return;
+      }
+
+      try {
+        currentReturnData = JSON.parse(dataScript.textContent);
+      } catch (e) {
+        console.error('Error parsing return data JSON:', e);
+        return;
+      }
+
+      const form = document.getElementById('manageReturnForm');
+      form.action = currentReturnData.updateUrl;
+
+      // Populate Header
+      document.getElementById('modalChipReturnId').textContent = '#RET-' + currentReturnData.id;
+      document.getElementById('modalClaimTimestamp').textContent = currentReturnData.requestedAt || 'N/A';
+
+      // Status Chip styling
+      const statusPill = document.getElementById('modalChipStatus');
+      const statusText = document.getElementById('modalChipStatusText');
+      const statusClean = (currentReturnData.status || '').toLowerCase().trim();
+
+      // Reset status pill classes
+      statusPill.className = 'chip-status-pill ' + statusClean;
+      if (statusClean === 'requested') {
+        statusText.textContent = 'PENDING INTAKE';
+      } else if (statusClean === 'item_received') {
+        statusText.textContent = 'PENDING INSPECTION';
+      } else if (statusClean === 'inspection_approved') {
+        statusText.textContent = 'INSPECTION APPROVED';
+      } else if (statusClean === 'inspection_rejected') {
+        statusText.textContent = 'INSPECTION REJECTED';
+      } else if (statusClean === 'refund_processed') {
+        statusText.textContent = 'REFUND PROCESSED';
+      } else {
+        statusText.textContent = statusClean.toUpperCase();
+      }
+
+      // Populate Left Column: Order & Customer
+      const orderLink = document.getElementById('modalOrderLink');
+      const originalOrder = document.getElementById('modalOriginalOrder');
+      if (currentReturnData.orderNumber) {
+        originalOrder.textContent = '#' + currentReturnData.orderNumber;
+        orderLink.href = currentReturnData.orderDetailUrl || '#';
+        orderLink.style.display = 'inline-flex';
+      } else {
+        originalOrder.textContent = 'N/A';
+        orderLink.style.display = 'none';
+      }
+
+      document.getElementById('modalCustomerName').textContent = currentReturnData.customerName || 'Anonymous Customer';
+      document.getElementById('modalCustomerEmail').textContent = currentReturnData.customerEmail || ('@' + currentReturnData.customerUsername);
+
+      // Settlement
+      document.getElementById('modalSettlementAmount').textContent = '₹' + currentReturnData.totalPrice;
+      document.getElementById('modalSettlementSub').textContent = 'Item Price: ₹' + currentReturnData.unitPrice + ' (Qty: ' + currentReturnData.quantity + ')';
+
+      // Product
+      document.getElementById('modalProductTitle').textContent = currentReturnData.productName;
+      let specs = [];
+      if (currentReturnData.variantSize) specs.push(currentReturnData.variantSize);
+      if (currentReturnData.variantColor) specs.push(currentReturnData.variantColor);
+      document.getElementById('modalProductSpecs').textContent = specs.length > 0 ? specs.join(' • ') : 'Standard Edition';
+      document.getElementById('modalProductQty').textContent = currentReturnData.quantity;
+
+
+      // Reason & Customer Description
+      document.getElementById('modalReasonChip').textContent = currentReturnData.reason || 'RETURN CLAIM';
+      document.getElementById('modalReasonDescription').textContent = currentReturnData.description ? ('"' + currentReturnData.description + '"') : '"No customer description provided."';
+
+      const userNoteWrap = document.getElementById('modalUserNoteWrap');
+      const userNoteText = document.getElementById('modalUserNoteText');
+      if (currentReturnData.userAddNote && currentReturnData.userAddNote.trim() !== '') {
+        userNoteText.textContent = currentReturnData.userAddNote;
+        userNoteWrap.style.display = 'block';
+      } else {
+        userNoteWrap.style.display = 'none';
+      }
+
+      // Admin Remarks Textarea
+      const textarea = document.getElementById('modalInternalNoteTextarea');
+      textarea.value = currentReturnData.internalNote || '';
+
+      // Populate Right Column: Disposition Mandates & Action Buttons
+      setupDispositionSection(statusClean);
+
+      // Open Modal
+      document.getElementById('manageReturnModal').classList.add('active');
+    }
+
+    /**
+     * Builds the mandate cards and action buttons based strictly on backend status transition rules.
+     */
+    function setupDispositionSection(status) {
+      const mandateContainer = document.getElementById('mandateOptionsContainer');
+      const actionsFooter = document.getElementById('modalActionsFooter');
+      const textarea = document.getElementById('modalInternalNoteTextarea');
+      const subheader = document.getElementById('modalDecisionSubheader');
+
+      mandateContainer.innerHTML = '';
+      actionsFooter.innerHTML = '';
+      textarea.readOnly = false;
+      mandateContainer.style.display = 'flex';
+      if (subheader) subheader.style.display = 'inline-block';
+
+      // 1. STATUS: requested -> can only transition to 'item_received'
+      if (status === 'requested') {
+        if (subheader) subheader.textContent = 'INTAKE REQUIRED';
+        mandateContainer.innerHTML = `
+          <div class="mandate-option-card selected">
+            <div class="mandate-radio-circle"></div>
+            <div class="mandate-content">
+              <div class="mandate-top-row">
+                <span class="mandate-title">Receive Item at Facility</span>
+                <span class="mandate-amount" style="color: #60a5fa;">INTAKE</span>
+              </div>
+              <p class="mandate-desc">
+                Confirm shipment arrival and verify delivery at the returns depot. Package must be checked into inventory records prior to inspection.
+              </p>
+              <div class="mandate-badge-bottom" style="color: #60a5fa;">
+                <span>📦 INTAKE SCAN REQUIRED</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        actionsFooter.innerHTML = `
+          <button type="button" class="btn-approve-claim" onclick="submitStatusDirect('item_received')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>MARK ITEM AS RECEIVED</span>
+          </button>
+          <button type="button" class="btn-cancel-claim" onclick="closeManageReturnModal()">CANCEL</button>
+        `;
+      }
+
+      // 2. STATUS: item_received -> can Approve (inspection_approved) or Reject (inspection_rejected)
+      else if (status === 'item_received') {
+        // Keep single Approve Return and Reject Return Claim action triggers (removes duplicate mandate cards)
+        mandateContainer.style.display = 'none';
+        if (subheader) subheader.style.display = 'none';
+
+        actionsFooter.innerHTML = `
+          <button type="button" class="btn-approve-claim" id="btnApproveAction" onclick="promptInspectionApproval()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>APPROVE RETURN (₹${currentReturnData.totalPrice})</span>
+          </button>
+          <button type="button" class="btn-reject-claim" id="btnRejectAction" onclick="promptRejection()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span>REJECT RETURN CLAIM</span>
+          </button>
+          <button type="button" class="btn-cancel-claim" onclick="closeManageReturnModal()">CANCEL</button>
+        `;
+      }
+
+      // 3. STATUS: inspection_approved -> can only transition to 'refund_processed'
+      else if (status === 'inspection_approved') {
+        if (subheader) subheader.textContent = 'SETTLEMENT MANDATE';
+        mandateContainer.innerHTML = `
+          <div class="mandate-option-card selected">
+            <div class="mandate-radio-circle"></div>
+            <div class="mandate-content">
+              <div class="mandate-top-row">
+                <span class="mandate-title">Process Refund (Original Method)</span>
+                <span class="mandate-amount">₹${currentReturnData.totalPrice}</span>
+              </div>
+              <p class="mandate-desc">
+                Settlement payout to customer. Stock quantity was already restored to inventory during inspection approval.
+              </p>
+              <div class="mandate-badge-bottom" style="color: #c084fc;">
+                <span>⚡ FINAL REFUND SETTLEMENT</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        actionsFooter.innerHTML = `
+          <button type="button" class="btn-approve-claim" onclick="submitStatusDirect('refund_processed')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>PROCESS REFUND (₹${currentReturnData.totalPrice})</span>
+          </button>
+          <button type="button" class="btn-cancel-claim" onclick="closeManageReturnModal()">CANCEL</button>
+        `;
+      }
+
+      // 4. TERMINAL STATES: refund_processed or inspection_rejected
+      else {
+        textarea.readOnly = true;
+        if (subheader) subheader.style.display = 'none';
+        const isRefunded = status === 'refund_processed';
+
+        mandateContainer.innerHTML = `
+          <div class="terminal-claim-banner ${isRefunded ? 'refunded' : 'rejected'}">
+            <strong style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;">
+              ${isRefunded ? '✓ REFUND PROCESSED &amp; SETTLED' : '✖ INSPECTION REJECTED &amp; CLOSED'}
+            </strong>
+            <span style="font-size: 11.5px; color: #a1a1aa;">
+              ${isRefunded
+                ? 'Claim successfully resolved. Product variant was restocked and refund marked complete.'
+                : 'Claim declined during inspection. Return closed without stock addition or refund.'}
+            </span>
+            ${currentReturnData.processedAt ? `<small style="font-size: 10.5px; color: #71717a; margin-top: 4px;">Completed on ${currentReturnData.processedAt}</small>` : ''}
+          </div>
+        `;
+
+        actionsFooter.innerHTML = `
+          <button type="button" class="btn-manage-return" style="width: 100%; justify-content: center;" onclick="closeManageReturnModal()">
+            CLOSE
+          </button>
+        `;
+      }
+    }
+
+    /**
+     * Card selection highlight helper when status is item_received
+     */
+    function selectMandate(choice) {
+      const cardApp = document.getElementById('optApproveCard');
+      const cardRej = document.getElementById('optRejectCard');
+      if (!cardApp || !cardRej) return;
+
+      if (choice === 'approve') {
+        cardApp.classList.add('selected');
+        cardRej.classList.remove('selected');
+      } else {
+        cardRej.classList.add('selected');
+        cardApp.classList.remove('selected');
+      }
+    }
+
+    /**
+     * Closes the main Manage Return modal.
+     */
+    function closeManageReturnModal() {
+      const modal = document.getElementById('manageReturnModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+      currentReturnData = null;
+    }
+
+    /**
+     * Prompt 1: Explicit Inspection Approval confirmation dialog
+     * Required exact statement:
+     * "Approving this return will add the returned item's quantity back to product stock. Confirm only after inspecting the item."
+     */
+    function promptInspectionApproval() {
+      pendingStatusToSubmit = 'inspection_approved';
+
+      const iconBox = document.getElementById('confirmIconBox');
+      iconBox.className = 'confirm-icon-box warning';
+      iconBox.innerHTML = `
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      `;
+
+      document.getElementById('confirmModalHeading').textContent = 'Confirm Inspection Approval';
+      document.getElementById('confirmModalText').textContent =
+        "Approving this return will add the returned item's quantity back to product stock. Confirm only after inspecting the item.";
+
+      const proceedBtn = document.getElementById('btnConfirmProceed');
+      proceedBtn.className = 'btn-confirm-proceed';
+      proceedBtn.textContent = 'Confirm & Restore Stock';
+
+      document.getElementById('actionConfirmModal').classList.add('active');
+    }
+
+    /**
+     * Prompt 2: Inspection Rejection confirmation dialog
+     */
+    function promptRejection() {
+      pendingStatusToSubmit = 'inspection_rejected';
+
+      const iconBox = document.getElementById('confirmIconBox');
+      iconBox.className = 'confirm-icon-box danger';
+      iconBox.innerHTML = `
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      `;
+
+      document.getElementById('confirmModalHeading').textContent = 'Confirm Return Rejection';
+      document.getElementById('confirmModalText').textContent =
+        "Are you sure you want to reject this return claim? Rejection will close this request without restoring stock or processing a refund.";
+
+      const proceedBtn = document.getElementById('btnConfirmProceed');
+      proceedBtn.className = 'btn-confirm-proceed danger';
+      proceedBtn.textContent = 'Confirm Rejection';
+
+      document.getElementById('actionConfirmModal').classList.add('active');
+    }
+
+    /**
+     * Closes the confirmation overlay dialog.
+     */
+    function closeConfirmModal() {
+      const modal = document.getElementById('actionConfirmModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+      pendingStatusToSubmit = null;
+    }
+
+    /**
+     * Handles Proceed on the confirmation dialog.
+     */
+    document.getElementById('btnConfirmProceed').addEventListener('click', function() {
+      if (pendingStatusToSubmit) {
+        const status = pendingStatusToSubmit;
+        closeConfirmModal();
+        submitStatusDirect(status);
+      }
+    });
+
+    /**
+     * Sets target status on hidden form input and submits via standard POST.
+     */
+    function submitStatusDirect(targetStatus) {
+      const form = document.getElementById('manageReturnForm');
+      const statusInput = document.getElementById('formTargetStatus');
+      statusInput.value = targetStatus;
+      form.submit();
+    }
+
+    // Escape Key & Backdrop Click handlers
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const confirmModal = document.getElementById('actionConfirmModal');
+        if (confirmModal && confirmModal.classList.contains('active')) {
+          closeConfirmModal();
+          return;
+        }
+        closeManageReturnModal();
+      }
+    });
+
+    document.getElementById('manageReturnModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeManageReturnModal();
+      }
+    });
+
+    document.getElementById('actionConfirmModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeConfirmModal();
+      }
+    });
+
+    // ==================================================
+    // DOM Ready: Live Clock, KPI Counters, Search & Filter
+    // ==================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Live UTC Clock
+      function updateUtcClock() {
+        const now = new Date();
+        const hours = String(now.getUTCHours()).padStart(2, '0');
+        const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+        const clockEl = document.getElementById('liveUtcClock');
+        if (clockEl) {
+          clockEl.textContent = hours + ':' + minutes + ':' + seconds + ' UTC';
+        }
+      }
+      setInterval(updateUtcClock, 1000);
+      updateUtcClock();
+
+      // 2. Mobile Menu Toggle
+      const toggleBtn = document.getElementById('mobileMenuToggle');
+      const sidebar = document.getElementById('adminSidebar');
+      if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', function() {
+          sidebar.classList.toggle('open');
+        });
+      }
+
+      // 3. Compute KPI Counts
+      let reqCount = 0;
+      let recCount = 0;
+      let appCount = 0;
+      let refCount = 0;
+
+      document.querySelectorAll('.return-row').forEach(row => {
+        const st = (row.dataset.status || '').toLowerCase().trim();
+        if (st === 'requested') reqCount++;
+        else if (st === 'item_received') recCount++;
+        else if (st === 'inspection_approved') appCount++;
+        else if (st === 'refund_processed') refCount++;
+      });
+
+      const elReq = document.getElementById('kpiRequestedCount');
+      if (elReq) elReq.textContent = reqCount;
+      const elRec = document.getElementById('kpiReceivedCount');
+      if (elRec) elRec.textContent = recCount;
+      const elApp = document.getElementById('kpiApprovedCount');
+      if (elApp) elApp.textContent = appCount;
+      const elRef = document.getElementById('kpiRefundedCount');
+      if (elRef) elRef.textContent = refCount;
+
+      // 4. Live Realtime Search & Filtering
+      const searchInput = document.getElementById('searchReturnInput');
+      const statusSelect = document.getElementById('statusFilterSelect');
+      const resetBtn = document.getElementById('btnResetFilters');
+      const visibleCountEl = document.getElementById('visibleRowCount');
+      const matchingResultsLabel = document.getElementById('matchingResultsLabel');
+      const rows = document.querySelectorAll('.return-row');
+      const totalRows = rows.length;
+
+      function filterRows() {
+        const query = (searchInput.value || '').toLowerCase().trim();
+        const selectedStatus = (statusSelect.value || '').toLowerCase().trim();
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+          const rowStatus = (row.dataset.status || '').toLowerCase().trim();
+          const rowText = (
+            (row.dataset.returnId || '') + ' ' +
+            (row.dataset.order || '') + ' ' +
+            (row.dataset.customer || '') + ' ' +
+            (row.dataset.product || '') + ' ' +
+            (row.dataset.reason || '')
+          ).toLowerCase();
+
+          const matchesQuery = query === '' || rowText.includes(query);
+          const matchesStatus = selectedStatus === '' || rowStatus === selectedStatus;
+
+          if (matchesQuery && matchesStatus) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        if (visibleCountEl) {
+          visibleCountEl.textContent = visibleCount;
+        }
+
+        if (matchingResultsLabel) {
+          if (query !== '' || selectedStatus !== '') {
+            matchingResultsLabel.textContent = `Showing ${visibleCount} of ${totalRows} matching records`;
+          } else {
+            matchingResultsLabel.textContent = 'Showing all records';
+          }
+        }
+      }
+
+      if (searchInput) searchInput.addEventListener('input', filterRows);
+      if (statusSelect) statusSelect.addEventListener('change', filterRows);
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+          if (searchInput) searchInput.value = '';
+          if (statusSelect) statusSelect.value = '';
+          filterRows();
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>

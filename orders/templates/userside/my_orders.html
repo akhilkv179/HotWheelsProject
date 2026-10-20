@@ -1,0 +1,1940 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order History | Hot Wheels HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Design Tokens matching Hot Wheels HUB */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0a0a0c;
+      --bg-surface: #101014;
+      --bg-card: #151519;
+      --bg-card-inner: #101013;
+      --bg-item: #1b1b22;
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-item: rgba(255, 255, 255, 0.08);
+
+      --accent-coral: #f5a596;
+      --accent-coral-hover: #fca5a5;
+      --accent-orange: #f97316;
+      --accent-green: #22c55e;
+      --accent-blue: #3b82f6;
+      --accent-red: #e51b24;
+
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-display: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation */
+    .navbar {
+      height: 72px;
+      background: rgba(10, 10, 12, 0.96);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(24px, 5vw, 64px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(20px, 4vw, 44px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-white);
+    }
+
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.35);
+    }
+
+    .logo-badge svg {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      padding: 6px 0;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: #ffffff;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.2s ease;
+      text-decoration: none;
+    }
+
+    .nav-action-btn:hover {
+      color: #ffffff;
+    }
+
+    .nav-action-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+    }
+
+    .nav-avatar-link {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .nav-avatar-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid rgba(229, 27, 36, 0.6);
+    }
+
+    .nav-avatar-placeholder {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #22222a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Main Container Viewport */
+    .orders-viewport {
+      flex: 1;
+      padding: 44px clamp(24px, 5vw, 64px) 80px clamp(24px, 5vw, 64px);
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Django Messages */
+    .alert-container {
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-box {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert-box.success {
+      background: rgba(34, 197, 94, 0.14) !important;
+      border: 1px solid rgba(34, 197, 94, 0.35) !important;
+      border-left: 3px solid #22c55e !important;
+      color: #86efac !important;
+    }
+
+    .alert-box svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke: var(--accent-red);
+    }
+
+    .alert-box.success svg {
+      stroke: #22c55e !important;
+    }
+
+    /* 2-Column Layout (Sidebar + Main Content) */
+    .orders-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    /* LEFT SIDEBAR */
+    .orders-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* User Profile Card in Sidebar */
+    .user-profile-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 32px 24px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin-bottom: 16px;
+    }
+
+    .profile-avatar-img {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(229, 27, 36, 0.5);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .profile-avatar-default {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #1d1d23 0%, #121215 100%);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .profile-avatar-default svg {
+      width: 44px;
+      height: 44px;
+      stroke: #8e8e98;
+    }
+
+    .user-card-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-white);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .user-card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .user-card-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+    }
+
+    /* Sidebar Navigation Menu */
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .sidebar-menu-item {
+      width: 100%;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .sidebar-link:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .sidebar-link.active {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .sidebar-link svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      margin: 8px 12px;
+    }
+
+    .logout-form {
+      width: 100%;
+    }
+
+    .sidebar-logout-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      text-align: left;
+    }
+
+    .sidebar-logout-btn:hover {
+      color: var(--accent-red);
+      background-color: rgba(229, 27, 36, 0.08);
+    }
+
+    .sidebar-logout-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    /* RIGHT MAIN CONTENT AREA */
+    .orders-main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Page Title & Search Bar Row */
+    .page-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .page-heading {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    /* Search Bar */
+    .order-search-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #141418;
+      border: 1px solid var(--border-item);
+      border-radius: 8px;
+      padding: 4px 6px 4px 12px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .order-search-form:focus-within {
+      border-color: rgba(245, 165, 150, 0.4);
+      box-shadow: 0 0 0 1px rgba(245, 165, 150, 0.2);
+    }
+
+    .order-search-icon {
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+    }
+
+    .order-search-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+
+    .order-search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      width: 210px;
+    }
+
+    .order-search-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .order-search-btn {
+      background: #202026;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .order-search-btn:hover {
+      background: #2a2a34;
+      color: #ffffff;
+    }
+
+    .order-clear-link {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 12px;
+      padding: 6px 8px;
+      transition: color 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .order-clear-link:hover {
+      color: var(--accent-coral);
+    }
+
+    /* ORDER CARDS CONTAINER */
+    .orders-cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Single Order Card */
+    .order-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .order-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Card Top Header */
+    .order-card-header {
+      padding: 22px 24px 18px 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .order-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .order-number-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .order-number-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    /* Status Badges */
+    .order-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 4px;
+      line-height: 1;
+    }
+
+    .order-status-badge.shipped {
+      background: rgba(249, 115, 22, 0.16);
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+    }
+
+    .order-status-badge.delivered {
+      background: rgba(34, 197, 94, 0.16);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .order-status-badge.pending {
+      background: rgba(245, 158, 11, 0.16);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .order-status-badge.confirmed {
+      background: rgba(59, 130, 246, 0.16);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .order-status-badge.cancelled {
+      background: rgba(239, 68, 68, 0.16);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .order-status-badge.returned {
+      background: rgba(168, 85, 247, 0.16);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    .status-check {
+      font-size: 11px;
+    }
+
+    .order-placed-date {
+      font-size: 13px;
+      color: #8e8e98;
+    }
+
+    .order-header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .order-total-price {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    .order-items-count {
+      font-size: 12.5px;
+      color: #8e8e98;
+    }
+
+    /* Card Body Area */
+    .order-card-body {
+      padding: 0 24px 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Tracking Banner */
+    .order-tracking-banner {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      text-decoration: none;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .order-tracking-banner:hover {
+      background: #141418;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .tracking-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .tracking-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(249, 115, 22, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f97316;
+      flex-shrink: 0;
+    }
+
+    .tracking-icon-box svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .tracking-info-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tracking-id-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.01em;
+    }
+
+    .tracking-id-text span {
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .tracking-est-text {
+      font-size: 12px;
+      color: #8e8e98;
+    }
+
+    .tracking-arrow {
+      color: #8e8e98;
+      display: flex;
+      align-items: center;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .order-tracking-banner:hover .tracking-arrow {
+      transform: translateX(3px);
+      color: #ffffff;
+    }
+
+    .tracking-arrow svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2.2;
+    }
+
+    /* Products Thumbnails Container - Multi Items */
+    .order-items-thumbnails-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Thumbnail Box */
+    .order-item-thumb-card {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      border-radius: 10px;
+      background-color: var(--bg-card-inner);
+      border: 1px solid var(--border-item);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .order-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .order-thumb-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      background: #141419;
+    }
+
+    .order-thumb-placeholder svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .order-thumb-qty {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      line-height: 1.2;
+      backdrop-filter: blur(4px);
+    }
+
+    /* +N More Box */
+    .order-item-more-card {
+      width: 76px;
+      height: 76px;
+      border-radius: 10px;
+      border: 1px dashed rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .order-item-more-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+    }
+
+    .order-item-more-card svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .order-item-more-card span {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    /* Single Item Layout (matching reference screenshot card 2) */
+    .order-item-single-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .order-item-single-row .order-item-thumb-card {
+      width: 82px;
+      height: 82px;
+    }
+
+    .order-item-single-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .order-item-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+
+    .order-item-category {
+      font-size: 13px;
+      color: #8e8e98;
+    }
+
+    .order-item-date-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      color: #a1a1aa;
+      margin-top: 4px;
+      width: fit-content;
+    }
+
+    .order-item-date-badge svg {
+      width: 13px;
+      height: 13px;
+      color: #8e8e98;
+    }
+
+    /* Card Action Footer */
+    .order-card-footer {
+      background: #111115;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    /* Action Buttons */
+    .order-btn-secondary {
+      background: #1e1e24;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      color: #ffffff;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .order-btn-secondary:hover {
+      background: #272730;
+      border-color: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+    }
+
+    .order-btn-primary {
+      background: var(--accent-coral);
+      border: 1px solid transparent;
+      color: #121215;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .order-btn-primary:hover {
+      background: var(--accent-coral-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(245, 165, 150, 0.35);
+      color: #0c0c0e;
+    }
+
+    /* Divider between cards */
+    .order-cards-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      margin: 8px 0;
+    }
+
+    /* Empty State */
+    .orders-empty-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 64px 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .empty-state-icon-box {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .empty-state-icon-box svg {
+      width: 36px;
+      height: 36px;
+      stroke-width: 1.6;
+    }
+
+    .empty-state-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.03em;
+    }
+
+    .empty-state-text {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 380px;
+      line-height: 1.5;
+    }
+
+    .empty-state-btn {
+      margin-top: 8px;
+      background: var(--accent-coral);
+      color: #121215;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .empty-state-btn:hover {
+      background: var(--accent-coral-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Pagination / Load Older Orders */
+    .pagination-wrapper {
+      margin-top: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .load-older-btn {
+      background: transparent;
+      border: none;
+      color: var(--accent-coral);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.15s ease, transform 0.15s ease;
+    }
+
+    .load-older-btn:hover {
+      color: #ffffff;
+      transform: translateY(1px);
+    }
+
+    .load-older-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.4;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .page-box.active {
+      background: var(--accent-coral);
+      color: #121215;
+      box-shadow: 0 2px 10px rgba(245, 165, 150, 0.35);
+    }
+
+    .page-box.inactive {
+      background: #18181e;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: #9ca3af;
+    }
+
+    .page-box.inactive:hover {
+      background: #24242d;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .page-arrow {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: #18181e;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .page-arrow:hover:not(.disabled) {
+      background: #24242d;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .page-arrow.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .page-arrow svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 2.2;
+    }
+
+    /* Site Footer */
+    .site-footer {
+      background-color: #060608;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 48px clamp(24px, 5vw, 64px) 28px clamp(24px, 5vw, 64px);
+      margin-top: auto;
+    }
+
+    .footer-columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: clamp(24px, 4vw, 48px);
+      margin-bottom: 40px;
+    }
+
+    .footer-brand .brand-logo {
+      margin-bottom: 14px;
+    }
+
+    .footer-brand-text {
+      font-size: 13px;
+      color: #7b7c87;
+      line-height: 1.6;
+      max-width: 260px;
+    }
+
+    .footer-column-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 16px;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: #8e8e98;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    .social-icons-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .social-icon-btn {
+      color: #8e8e98;
+      transition: color 0.15s ease;
+    }
+
+    .social-icon-btn:hover {
+      color: #ffffff;
+    }
+
+    .social-icon-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+    }
+
+    .social-text-links {
+      font-size: 12.5px;
+      color: #8e8e98;
+    }
+
+    .footer-bottom-bar {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-copyright {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #636470;
+      text-transform: uppercase;
+    }
+
+    .footer-accent-bar {
+      width: 120px;
+      height: 2px;
+      background: linear-gradient(90deg, #ff4d00 0%, #e51b24 100%);
+      border-radius: 2px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .orders-layout {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .footer-columns {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 20px;
+      }
+      .nav-links {
+        display: none;
+      }
+      .orders-viewport {
+        padding: 24px 16px 60px 16px;
+      }
+      .order-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .order-header-right {
+        align-items: flex-start;
+      }
+      .order-card-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .order-btn-secondary, .order-btn-primary {
+        width: 100%;
+        text-align: center;
+      }
+      .footer-columns {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+      .footer-bottom-bar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .page-title-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .order-search-form {
+        width: 100%;
+      }
+      .order-search-input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="{% url 'home' %}" class="brand-logo">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+            <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+            <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+          </svg>
+        </div>
+        <span class="brand-name">HUB</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="{% url 'home' %}" class="nav-link">HOME</a></li>
+        <li><a href="{% url 'user_product_list' %}" class="nav-link">SHOP</a></li>
+        <li><a href="{% url 'user_category_list' %}" class="nav-link">COLLECTIONS</a></li>
+        <li><a href="#" class="nav-link">ABOUT</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-right">
+      <a href="{% url 'user_product_list' %}" class="nav-action-btn" title="Search Products" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'wishlist' %}" class="nav-action-btn" title="Wishlist" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'cart_list' %}" class="nav-action-btn" title="Cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </a>
+
+      <!-- User Profile Avatar in Navbar -->
+      <a href="{% url 'profile' %}" class="nav-avatar-link" title="My Profile">
+        {% if request.user.profile_image %}
+          <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" class="nav-avatar-img">
+        {% else %}
+          <div class="nav-avatar-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+        {% endif %}
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="orders-viewport">
+
+    <!-- Django Messages Alert -->
+    {% if messages %}
+      <div class="alert-container">
+        {% for message in messages %}
+          <div class="alert-box {% if 'success' in message.tags %}success{% endif %}">
+            {% if 'success' in message.tags %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- 2-Column Grid Layout matching Reference Design -->
+    <div class="orders-layout">
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="orders-sidebar">
+
+        <!-- User Profile Card -->
+        <div class="user-profile-card">
+          <div class="avatar-wrapper">
+            {% if request.user.profile_image %}
+              <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" class="profile-avatar-img">
+            {% else %}
+              <div class="profile-avatar-default">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <h2 class="user-card-name">{{ request.user.first_name|default:request.user.username }}</h2>
+          <div class="user-card-badge">COLLECTOR</div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a href="{% url 'profile' %}" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>My Profile</span>
+            </a>
+          </li>
+
+          <!-- Orders (Active state) -->
+          <li class="sidebar-menu-item">
+            <a href="{% url 'user_order_list' %}" class="sidebar-link active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                <path d="M13 5v2"/>
+                <path d="M13 17v2"/>
+                <path d="M13 11v2"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              <span>Wallet</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="{% url 'address_list' %}" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>Addresses</span>
+            </a>
+          </li>
+
+          <li class="sidebar-divider"></li>
+
+          <!-- Logout Action via POST -->
+          <li class="sidebar-menu-item">
+            <form method="POST" action="{% url 'logout' %}" class="logout-form">
+              {% csrf_token %}
+              <button type="submit" class="sidebar-logout-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Logout</span>
+              </button>
+            </form>
+          </li>
+        </ul>
+
+      </aside>
+
+      <!-- RIGHT MAIN CONTENT -->
+      <section class="orders-main-content">
+
+        <!-- Page Title & Search Bar Row -->
+        <div class="page-title-row">
+          <h1 class="page-heading">ORDER HISTORY</h1>
+
+          <!-- Search form preserving backend search_query logic -->
+          <form method="GET" action="{% url 'user_order_list' %}" class="order-search-form">
+            <div class="order-search-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search by order number"
+              value="{{ search_query }}"
+              class="order-search-input"
+            >
+            {% if search_query %}
+              <a href="{% url 'user_order_list' %}" class="order-clear-link" title="Clear search">✕</a>
+            {% endif %}
+            <button type="submit" class="order-search-btn">Search</button>
+          </form>
+        </div>
+
+        <!-- Orders Cards List -->
+        <div class="orders-cards-list">
+
+          {% for order in orders %}
+            <article class="order-card">
+
+              <!-- Card Header -->
+              <div class="order-card-header">
+                <div class="order-header-left">
+                  <div class="order-number-row">
+                    <span class="order-number-title">Order #{{ order.order_number }}</span>
+
+                    <!-- Dynamic Status Badge -->
+                    {% with status_clean=order.status|lower %}
+                      {% if status_clean == "shipped" %}
+                        <span class="order-status-badge shipped">
+                          <span class="status-dot"></span> SHIPPED
+                        </span>
+                      {% elif status_clean == "delivered" %}
+                        <span class="order-status-badge delivered">
+                          <span class="status-check">✔</span> DELIVERED
+                        </span>
+                      {% elif status_clean == "pending" %}
+                        <span class="order-status-badge pending">
+                          <span class="status-dot"></span> PENDING
+                        </span>
+                      {% elif status_clean == "confirmed" %}
+                        <span class="order-status-badge confirmed">
+                          <span class="status-dot"></span> CONFIRMED
+                        </span>
+                      {% elif status_clean == "cancelled" %}
+                        <span class="order-status-badge cancelled">
+                          <span class="status-check">✕</span> CANCELLED
+                        </span>
+                      {% elif "return" in status_clean %}
+                        <span class="order-status-badge returned">
+                          <span class="status-dot"></span> {{ order.status|upper }}
+                        </span>
+                      {% else %}
+                        <span class="order-status-badge shipped">
+                          <span class="status-dot"></span> {{ order.status|upper }}
+                        </span>
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+
+                  <p class="order-placed-date">Placed on {{ order.created_at|date:"M d, Y" }}</p>
+                </div>
+
+                <div class="order-header-right">
+                  <div class="order-total-price">
+                    ₹<span class="order-price-val">{{ order.total_amount|floatformat:0 }}</span>
+                  </div>
+                  <div class="order-items-count">
+                    {{ order.items.count }} Item{% if order.items.count != 1 %}s{% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Body: Tracking Banner + Product Display -->
+              <div class="order-card-body">
+
+                <!-- Tracking Banner for active / shipped / in-transit orders -->
+                {% with status_clean=order.status|lower %}
+                  {% if status_clean != "cancelled" and status_clean != "returned" %}
+                    <a href="{% url 'user_order_detail' order.order_number %}" class="order-tracking-banner" title="Track this order">
+                      <div class="tracking-banner-left">
+                        <div class="tracking-icon-box">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 3h15v13H1z"/>
+                            <path d="M16 8h4l3 3v5h-7V8z"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                          </svg>
+                        </div>
+                        <div class="tracking-info-col">
+                          <div class="tracking-id-text">
+                            Tracking ID: <span>FDX-{{ order.order_number|slice:":8"|upper }}</span>
+                          </div>
+                          <div class="tracking-est-text">
+                            {% if status_clean == "delivered" %}
+                              Delivered successfully on {{ order.updated_at|date:"M d, Y" }}
+                            {% elif status_clean == "shipped" %}
+                              In Transit &bull; Estimated Delivery: {{ order.created_at|date:"M d, Y" }}
+                            {% elif status_clean == "pending" %}
+                              Pending &bull; Delivery Method: {{ order.delivery_method|default:"Standard Express" }}
+                            {% else %}
+                              {{ order.status|title }} &bull; Delivery Method: {{ order.delivery_method|default:"Standard Express" }}
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="tracking-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                      </div>
+                    </a>
+                  {% endif %}
+                {% endwith %}
+
+                <!-- Products Display -->
+                {% if order.items.count > 1 %}
+                  <!-- Multi-items thumbnails layout (as in Card 1) -->
+                  <div class="order-items-thumbnails-row">
+                    {% for item in order.items.all|slice:":2" %}
+                      <div class="order-item-thumb-card" title="{{ item.product_name }}">
+                        {% with image=item.product_variant.images.all.0 %}
+                          {% if image and image.image_url %}
+                            <img
+                              src="{% if 'http' in image.image_url %}{{ image.image_url }}{% elif '/media/' in image.image_url %}{{ image.image_url }}{% else %}/media/{{ image.image_url }}{% endif %}"
+                              alt="{{ item.product_name }}"
+                              class="order-thumb-img"
+                              loading="lazy"
+                            >
+                          {% else %}
+                            <div class="order-thumb-placeholder">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.5 2 12v4c0 .6.4 1 1 1h2"/>
+                                <circle cx="7" cy="17" r="2"/>
+                                <path d="M9 17h6"/>
+                                <circle cx="17" cy="17" r="2"/>
+                              </svg>
+                            </div>
+                          {% endif %}
+                        {% endwith %}
+                        <span class="order-thumb-qty">x{{ item.quantity }}</span>
+                      </div>
+                    {% endfor %}
+
+                    {% if order.items.count > 2 %}
+                      <a href="{% url 'user_order_detail' order.order_number %}" class="order-item-more-card" title="View all {{ order.items.count }} items">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                          <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                          <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                          <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                        </svg>
+                        <span>+{{ order.items.count|add:"-2" }} More</span>
+                      </a>
+                    {% endif %}
+                  </div>
+
+                {% else %}
+                  <!-- Single Item Layout with Details (as in Card 2) -->
+                  {% with item=order.items.first %}
+                    <div class="order-item-single-row">
+                      <div class="order-item-thumb-card" title="{{ item.product_name }}">
+                        {% with image=item.product_variant.images.all.0 %}
+                          {% if image and image.image_url %}
+                            <img
+                              src="{% if 'http' in image.image_url %}{{ image.image_url }}{% elif '/media/' in image.image_url %}{{ image.image_url }}{% else %}/media/{{ image.image_url }}{% endif %}"
+                              alt="{{ item.product_name }}"
+                              class="order-thumb-img"
+                              loading="lazy"
+                            >
+                          {% else %}
+                            <div class="order-thumb-placeholder">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.5 2 12v4c0 .6.4 1 1 1h2"/>
+                                <circle cx="7" cy="17" r="2"/>
+                                <path d="M9 17h6"/>
+                                <circle cx="17" cy="17" r="2"/>
+                              </svg>
+                            </div>
+                          {% endif %}
+                        {% endwith %}
+                        <span class="order-thumb-qty">x{{ item.quantity|default:1 }}</span>
+                      </div>
+
+                      <div class="order-item-single-info">
+                        <h3 class="order-item-title">{{ item.product_name }}</h3>
+                        <p class="order-item-category">
+                          {{ item.product_variant.product.category.name|default:"Collector Series" }}
+                          {% if item.product_variant.color %} &bull; {{ item.product_variant.color }}{% endif %}
+                        </p>
+
+                        {% if order.status|lower == "delivered" %}
+                          <div class="order-item-date-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                              <line x1="16" y1="2" x2="16" y2="6"/>
+                              <line x1="8" y1="2" x2="8" y2="6"/>
+                              <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>Delivered on {{ order.updated_at|date:"M d, Y" }}</span>
+                          </div>
+                        {% else %}
+                          <div class="order-item-date-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                              <line x1="16" y1="2" x2="16" y2="6"/>
+                              <line x1="8" y1="2" x2="8" y2="6"/>
+                              <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>Placed on {{ order.created_at|date:"M d, Y" }}</span>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endwith %}
+                {% endif %}
+
+              </div>
+
+              <!-- Card Action Footer -->
+              <div class="order-card-footer">
+                <a href="{% url 'download_invoice' order.order_number %}" class="order-btn-secondary" title="Download Invoice (PDF)">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>Invoice</span>
+                </a>
+                <a href="{% url 'user_order_detail' order.order_number %}" class="order-btn-primary" title="View Order Details">
+                  <span>View Details</span>
+                  <span style="font-size: 15px; line-height: 1; margin-left: 4px;">&rsaquo;</span>
+                </a>
+              </div>
+
+            </article>
+
+            {% if not forloop.last %}
+              <div class="order-cards-divider"></div>
+            {% endif %}
+
+          {% empty %}
+            {% if search_query %}
+              <!-- Empty State 1: Search returned no results -->
+              <div class="orders-empty-card">
+                <div class="empty-state-icon-box search-empty">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                  </svg>
+                </div>
+                <h2 class="empty-state-title">NO ORDERS FOUND MATCHING YOUR SEARCH</h2>
+                <p class="empty-state-text">
+                  No orders match "<strong>{{ search_query }}</strong>". Please check for typos or clear your search query.
+                </p>
+                <a href="{% url 'user_order_list' %}" class="empty-state-btn">Clear Search Filter</a>
+              </div>
+            {% else %}
+              <!-- Empty State 2: User has not placed any orders yet -->
+              <div class="orders-empty-card">
+                <div class="empty-state-icon-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                </div>
+                <h2 class="empty-state-title">YOU HAVEN'T PLACED ANY ORDERS YET</h2>
+                <p class="empty-state-text">
+                  Your garage is empty! Explore our premier collection of Hot Wheels die-cast cars and track sets to start your collection.
+                </p>
+                <a href="{% url 'user_product_list' %}" class="empty-state-btn">Explore Shop</a>
+              </div>
+            {% endif %}
+          {% endfor %}
+
+        </div>
+
+        <!-- Pagination / Load Older Orders -->
+        {% if page_obj.has_other_pages %}
+          <div class="pagination-wrapper">
+
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" class="load-older-btn">
+                <span>LOAD OLDER ORDERS</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </a>
+            {% endif %}
+
+            <div class="pagination-controls">
+              <!-- Previous Page Arrow -->
+              {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" class="page-arrow" title="Previous page">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+                </a>
+              {% else %}
+                <span class="page-arrow disabled">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+                </span>
+              {% endif %}
+
+              <!-- Page Numbers -->
+              {% for p in page_obj.paginator.page_range %}
+                {% if p == page_obj.number %}
+                  <span class="page-box active">{{ p }}</span>
+                {% elif p >= page_obj.number|add:"-2" and p <= page_obj.number|add:"2" %}
+                  <a href="?page={{ p }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" class="page-box inactive">
+                    {{ p }}
+                  </a>
+                {% endif %}
+              {% endfor %}
+
+              <!-- Next Page Arrow -->
+              {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" class="page-arrow" title="Next page">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </a>
+              {% else %}
+                <span class="page-arrow disabled">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+
+          </div>
+        {% endif %}
+
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Site Footer matching Screenshot -->
+  <footer class="site-footer">
+    <div class="footer-columns">
+      <div class="footer-brand">
+        <a href="{% url 'home' %}" class="brand-logo">
+          <div class="logo-badge">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+              <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+              <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+            </svg>
+          </div>
+          <span class="brand-name">HUB</span>
+        </a>
+        <p class="footer-brand-text">
+          Precision engineering meets ultimate speed. The premier destination for serious die-cast collectors.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Company</h4>
+        <ul class="footer-links-list">
+          <li><a href="#" class="footer-link">About Us</a></li>
+          <li><a href="#" class="footer-link">Contact</a></li>
+          <li><a href="#" class="footer-link">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Support</h4>
+        <ul class="footer-links-list">
+          <li><a href="{% url 'address_list' %}" class="footer-link">Manage Addresses</a></li>
+          <li><a href="{% url 'change_password' %}" class="footer-link">Security Center</a></li>
+          <li><a href="{% url 'edit_profile' %}" class="footer-link">Account Details</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Connect</h4>
+        <div class="social-icons-row">
+          <a href="#" class="social-icon-btn" title="Share" aria-label="Share">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-btn" title="Website" aria-label="Website">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-btn" title="YouTube" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+          </a>
+        </div>
+        <p class="social-text-links">Instagram / Facebook / YouTube</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <div class="footer-copyright">
+        &copy; 2024 HOT WHEELS HUB. ALL RIGHTS RESERVED.
+      </div>
+      <div class="footer-accent-bar"></div>
+    </div>
+  </footer>
+
+  <!-- Currency Formatting helper for Indian Thousands Separation (e.g. 14,500) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const priceEls = document.querySelectorAll('.order-price-val');
+      priceEls.forEach(el => {
+        const val = parseFloat(el.textContent.replace(/,/g, ''));
+        if (!isNaN(val)) {
+          el.textContent = val.toLocaleString('en-IN');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
+

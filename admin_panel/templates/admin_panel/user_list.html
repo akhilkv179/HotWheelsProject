@@ -1,0 +1,1799 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management | Hot Wheels Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Design Tokens */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0b0b0e;
+      --bg-sidebar: #070709;
+      --bg-card: #121217;
+      --bg-row-hover: #181820;
+      --bg-input: #15151c;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-input: rgba(255, 255, 255, 0.08);
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff222e;
+      --accent-orange: #ff4d00;
+      --accent-coral: #f87171;
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --text-header: #c5c7d0;
+      --badge-active-bg: rgba(34, 197, 94, 0.12);
+      --badge-active-border: rgba(34, 197, 94, 0.3);
+      --badge-active-text: #22c55e;
+      --badge-blocked-bg: rgba(239, 68, 68, 0.12);
+      --badge-blocked-border: rgba(239, 68, 68, 0.3);
+      --badge-blocked-text: #ef4444;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Admin Layout: Sidebar + Main Content */
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR
+       ================================================== */
+    .admin-sidebar {
+      width: 250px;
+      min-width: 250px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 20px 24px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand-header {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: linear-gradient(180deg, var(--accent-orange), var(--accent-red));
+      border-radius: 2px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #555765;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      stroke: var(--text-dim);
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background-color: #16161d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+      margin-top: 20px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* ==================================================
+       MAIN CONTENT AREA
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(229, 27, 36, 0.04), transparent 70%);
+    }
+
+    /* Top Navigation Bar */
+    .admin-topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 44px;
+      gap: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      margin-right: auto;
+      padding: 6px;
+    }
+
+    .topbar-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 8px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      position: relative;
+    }
+
+    .topbar-icon-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .topbar-icon-btn svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: 8px;
+    }
+
+    .profile-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1e1f26;
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .profile-role {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      line-height: 1.2;
+    }
+
+    /* Content Viewport */
+    .content-viewport {
+      padding: 40px 44px 60px 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Page Header Section */
+    .page-header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .header-text-block {
+      max-width: 600px;
+    }
+
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: clamp(26px, 3.5vw, 36px);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Search Component */
+    .search-form-wrap {
+      min-width: 320px;
+      max-width: 440px;
+      flex: 1;
+    }
+
+    .search-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 0 14px;
+      height: 46px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .search-input-box:focus-within {
+      border-color: rgba(229, 27, 36, 0.6);
+      background-color: #16161d;
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .search-icon {
+      color: var(--text-dim);
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .search-icon svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .search-field {
+      flex: 1;
+      height: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+    }
+
+    .search-field::placeholder {
+      color: #555766;
+      font-size: 13px;
+    }
+
+    .search-shortcut-hint {
+      color: #4f5160;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      user-select: none;
+    }
+
+    .clear-search-btn {
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: color 0.15s ease;
+    }
+
+    .clear-search-btn:hover {
+      color: var(--accent-red);
+    }
+
+    /* Django Messages Alert */
+    .alert-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-box {
+      background: rgba(229, 27, 36, 0.12);
+      border: 1px solid rgba(229, 27, 36, 0.35);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .alert-box.success {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.35);
+      border-left-color: #22c55e;
+      color: #86efac;
+    }
+
+    .alert-box svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+    }
+
+    .alert-dismiss-btn {
+      background: transparent;
+      border: none;
+      color: inherit;
+      opacity: 0.7;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 0 4px;
+      margin-left: auto;
+    }
+
+    .alert-dismiss-btn:hover {
+      opacity: 1;
+    }
+
+    /* ==================================================
+       USER TABLE
+       ================================================== */
+    .table-container-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-responsive-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .user-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    /* Table Headers */
+    .user-table thead th {
+      padding: 18px 24px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-header);
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .th-customer-id { width: 16%; }
+    .th-collector-name { width: 24%; }
+    .th-email { width: 24%; }
+    .th-phone { width: 16%; }
+    .th-status { width: 12%; }
+    .th-actions { width: 8%; text-align: center; }
+
+    /* Table Rows */
+    .user-table tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+      transition: background-color 0.15s ease;
+    }
+
+    .user-table tbody tr:hover {
+      background-color: var(--bg-row-hover);
+    }
+
+    .user-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .user-table td {
+      padding: 18px 24px;
+      font-size: 13.5px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    /* Customer ID Cell */
+    .cell-customer-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: #797b88;
+      letter-spacing: 0.02em;
+    }
+
+    /* Collector Name Cell with Avatar */
+    .collector-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .collector-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #24252f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .collector-name-text {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 13.5px;
+      letter-spacing: 0.01em;
+    }
+
+    /* Email & Phone Cells */
+    .cell-email {
+      color: #a4a6b2;
+      font-size: 13px;
+    }
+
+    .cell-phone {
+      color: #888a96;
+      font-size: 13px;
+    }
+
+    /* Account Status Badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .status-badge.active {
+      background-color: var(--badge-active-bg);
+      border: 1px solid var(--badge-active-border);
+      color: var(--badge-active-text);
+    }
+
+    .status-badge.blocked {
+      background-color: var(--badge-blocked-bg);
+      border: 1px solid var(--badge-blocked-border);
+      color: var(--badge-blocked-text);
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    /* Action Column & Icons */
+    .td-action {
+      text-align: center;
+    }
+
+    .action-icon-btn {
+      background: transparent;
+      border: none;
+      color: #6c6e7b;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .action-icon-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.06);
+      transform: scale(1.08);
+    }
+
+    .action-icon-btn.is-active-btn:hover {
+      color: var(--accent-red);
+    }
+
+    .action-icon-btn.is-blocked-btn:hover {
+      color: #22c55e;
+    }
+
+    .action-icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Empty Table State */
+    .empty-state-row {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .empty-state-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-dim);
+    }
+
+    .empty-state-content svg {
+      width: 36px;
+      height: 36px;
+      stroke: #3c3e4a;
+    }
+
+    .empty-state-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .empty-state-text {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ==================================================
+       PAGINATION
+       ================================================== */
+    .pagination-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 24px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-nav-arrow {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .page-nav-arrow:hover:not(.disabled) {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .page-nav-arrow.disabled {
+      color: #3f414e;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .page-link-num {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .page-link-num:hover:not(.active) {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Active Page Box - matches Figma coral/peach highlight */
+    .page-link-num.active {
+      background-color: #fca5a5;
+      color: #121217;
+      font-weight: 800;
+      box-shadow: 0 2px 10px rgba(252, 165, 165, 0.3);
+    }
+
+    .page-ellipsis-dots {
+      color: #555766;
+      font-size: 13px;
+      padding: 0 4px;
+      user-select: none;
+    }
+
+    /* ==================================================
+       CONFIRMATION MODAL
+       ================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background-color: #141419;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 32px 28px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-backdrop.open .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-icon-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .modal-icon-badge.danger {
+      background: rgba(229, 27, 36, 0.12);
+      border: 1px solid rgba(229, 27, 36, 0.3);
+      color: var(--accent-red);
+    }
+
+    .modal-icon-badge.success {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .modal-icon-badge svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .modal-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .modal-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    .modal-target-name {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-modal-cancel {
+      height: 44px;
+      background: #1b1c23;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-modal-cancel:hover {
+      background: #23242d;
+      color: #ffffff;
+    }
+
+    .btn-modal-confirm {
+      height: 44px;
+      border-radius: 8px;
+      border: none;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-modal-confirm.danger {
+      background-color: var(--accent-red);
+      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.4);
+    }
+
+    .btn-modal-confirm.danger:hover {
+      background-color: var(--accent-red-hover);
+    }
+
+    .btn-modal-confirm.success {
+      background-color: #16a34a;
+      box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+    }
+
+    .btn-modal-confirm.success:hover {
+      background-color: #22c55e;
+    }
+
+    .btn-modal-confirm:disabled,
+    .btn-modal-confirm[disabled],
+    .btn-modal-confirm[aria-disabled="true"] {
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ==================================================
+       RESPONSIVE BREAKPOINTS
+       ================================================== */
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        position: fixed;
+        left: -260px;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.7);
+      }
+
+      .admin-sidebar.mobile-open {
+        transform: translateX(260px);
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .content-viewport {
+        padding: 28px 24px 50px 24px;
+      }
+
+      .admin-topbar {
+        padding: 0 24px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-header-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-form-wrap {
+        max-width: 100%;
+        min-width: 100%;
+      }
+
+      .content-viewport {
+        padding: 20px 16px 40px 16px;
+      }
+
+      .admin-topbar {
+        padding: 0 16px;
+      }
+
+      .profile-info {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- ==================================================
+         SIDEBAR NAVIGATION
+         ================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+
+        <!-- Brand Header -->
+        <div class="brand-header">
+          <span class="brand-title">ADMIN</span>
+        </div>
+
+        <!-- Navigation Categories -->
+        <nav class="sidebar-nav">
+
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="nav-group">
+            <span class="nav-group-label">CONTENT</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+              <span>Banners</span>
+            </a>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Bottom Logout Link -->
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==================================================
+         MAIN CONTENT
+         ================================================== -->
+    <main class="admin-main">
+
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <!-- Mobile Menu Toggle Button -->
+        <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+
+        <!-- Search Icon -->
+        <button type="button" class="topbar-icon-btn" title="Search" onclick="document.getElementById('searchInput').focus();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+
+        <!-- Notification Bell Icon -->
+        <button type="button" class="topbar-icon-btn" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+
+        <!-- Admin Profile -->
+        <div class="topbar-profile">
+          <div class="profile-avatar-circle">
+            {{ request.user.username|slice:":1"|upper|default:"A" }}
+          </div>
+          <div class="profile-info">
+            <span class="profile-name">{{ request.user.username|default:"Admin User" }}</span>
+            <span class="profile-role">Fleet Manager</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Viewport Content Area -->
+      <div class="content-viewport">
+
+        <!-- Page Title & Search Header Row -->
+        <div class="page-header-row">
+          <div class="header-text-block">
+            <h1 class="page-title">USER MANAGEMENT</h1>
+            <p class="page-subtitle">
+              Manage registered collectors, track account status, and oversee user access across the platform.
+            </p>
+          </div>
+
+          <!-- Existing Backend GET Search Form -->
+          <form method="GET" action="{% url 'user_list' %}" class="search-form-wrap">
+            <div class="search-input-box">
+              <span class="search-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </span>
+              <input
+                type="text"
+                id="searchInput"
+                name="search"
+                class="search-field"
+                placeholder="Search collectors by ID, Name, or Email..."
+                value="{{ search_queary|default:search_query }}"
+                autocomplete="off"
+              >
+              {% if search_queary or search_query %}
+                <a href="{% url 'user_list' %}" class="clear-search-btn" title="Clear search">Clear &times;</a>
+              {% else %}
+                <span class="search-shortcut-hint">/</span>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+
+        <!-- Preserved Django Messages Block -->
+        <div class="alert-container" id="adminAlertContainer">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert-box {% if 'success' in message.tags %}success{% endif %}" role="alert">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>{{ message }}</span>
+                </div>
+                <button type="button" class="alert-dismiss-btn" onclick="this.closest('.alert-box').remove()">&times;</button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- ==================================================
+             USER MANAGEMENT TABLE CARD
+             ================================================== -->
+        <div class="table-container-card">
+          <div class="table-responsive-wrapper">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th class="th-customer-id">CUSTOMER ID</th>
+                  <th class="th-collector-name">COLLECTOR NAME</th>
+                  <th class="th-email">EMAIL ADDRESS</th>
+                  <th class="th-phone">PHONE NUMBER</th>
+                  <th class="th-status">ACCOUNT STATUS</th>
+                  <th class="th-actions">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in page_obj %}
+                  <tr data-user-id="{{ user.id }}">
+                    <!-- Customer ID Column -->
+                    <td class="cell-customer-id">
+                      #{{ user.id|stringformat:"06d" }}
+                    </td>
+
+                    <!-- Collector Name with Avatar -->
+                    <td>
+                      <div class="collector-name-wrap">
+                        <div class="collector-avatar">
+                          {% if user.first_name and user.last_name %}
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                          {% else %}
+                            {{ user.username|slice:":2"|upper }}
+                          {% endif %}
+                        </div>
+                        <span class="collector-name-text">
+                          {{ user.get_full_name|default:user.username }}
+                        </span>
+                      </div>
+                    </td>
+
+                    <!-- Email Address -->
+                    <td class="cell-email">
+                      {{ user.email }}
+                    </td>
+
+                    <!-- Phone Number -->
+                    <td class="cell-phone">
+                      {{ user.phone|default:"—" }}
+                    </td>
+
+                    <!-- Account Status Badge -->
+                    <td class="cell-status">
+                      {% if user.is_active %}
+                        <span class="status-badge active">
+                          <span class="status-dot"></span>ACTIVE
+                        </span>
+                      {% else %}
+                        <span class="status-badge blocked">
+                          <span class="status-dot"></span>BLOCKED
+                        </span>
+                      {% endif %}
+                    </td>
+
+                    <!-- Action Column with Confirmation Trigger -->
+                    <td class="td-action">
+                      {% if user.is_active %}
+                        <button
+                          type="button"
+                          class="action-icon-btn is-active-btn"
+                          title="Block User"
+                          onclick="openConfirmModal('{% url 'toggle_user_status' user.id %}', '{{ user.username|escapejs }}', true, this)"
+                          aria-label="Block {{ user.username }}"
+                        >
+                          <!-- Ban/Slash Circle Icon matching Figma -->
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                          </svg>
+                        </button>
+                      {% else %}
+                        <button
+                          type="button"
+                          class="action-icon-btn is-blocked-btn"
+                          title="Unblock User"
+                          onclick="openConfirmModal('{% url 'toggle_user_status' user.id %}', '{{ user.username|escapejs }}', false, this)"
+                          aria-label="Unblock {{ user.username }}"
+                        >
+                          <!-- Checkmark Circle Icon matching Figma -->
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="9 12 11 14 15 10"/>
+                          </svg>
+                        </button>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="empty-state-row">
+                      <div class="empty-state-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                        <span class="empty-state-title">No collectors found</span>
+                        <span class="empty-state-text">
+                          {% if search_queary or search_query %}
+                            No accounts matched your search for "{{ search_queary|default:search_query }}".
+                          {% else %}
+                            There are currently no registered users in the platform.
+                          {% endif %}
+                        </span>
+                        {% if search_queary or search_query %}
+                          <a href="{% url 'user_list' %}" class="clear-search-btn" style="color: var(--accent-red); margin-top: 6px;">Clear search filter</a>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ==================================================
+               PAGINATION FOOTER (Matches Figma Layout)
+               ================================================== -->
+          {% if page_obj and page_obj.paginator.count > 0 %}
+            <div class="pagination-footer">
+              <nav class="pagination-bar" aria-label="Table Pagination">
+
+                <!-- Previous Arrow Button -->
+                {% if page_obj.has_previous %}
+                  <a href="?page={{ page_obj.previous_page_number }}{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-nav-arrow" aria-label="Previous Page">
+                    &lsaquo;
+                  </a>
+                {% else %}
+                  <span class="page-nav-arrow disabled" aria-disabled="true">&lsaquo;</span>
+                {% endif %}
+
+                <!-- Dynamic Page Numbers -->
+                {% if page_obj.paginator.num_pages <= 7 %}
+                  {% for p in page_obj.paginator.page_range %}
+                    {% if p == page_obj.number %}
+                      <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                    {% else %}
+                      <a href="?page={{ p }}{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ p }}</a>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  {% if page_obj.number <= 4 %}
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p <= 5 %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
+                  {% elif page_obj.number >= page_obj.paginator.num_pages|add:"-3" %}
+                    <a href="?page=1{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">1</a>
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.paginator.num_pages|add:"-4" %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <a href="?page=1{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">1</a>
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.number|add:"-1" and p <= page_obj.number|add:"1" %}
+                        {% if p == page_obj.number %}
+                          <span class="page-link-num active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="page-ellipsis-dots">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-link-num">{{ page_obj.paginator.num_pages }}</a>
+                  {% endif %}
+                {% endif %}
+
+                <!-- Next Arrow Button -->
+                {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}{% if search_queary %}&search={{ search_queary }}{% elif search_query %}&search={{ search_query }}{% endif %}" class="page-nav-arrow" aria-label="Next Page">
+                    &rsaquo;
+                  </a>
+                {% else %}
+                  <span class="page-nav-arrow disabled" aria-disabled="true">&rsaquo;</span>
+                {% endif %}
+
+              </nav>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==================================================
+       STATUS TOGGLE CONFIRMATION MODAL
+       ================================================== -->
+  <div class="modal-backdrop" id="confirmModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-icon-badge" id="modalIconBadge">
+        <svg id="modalIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Dynamically swapped -->
+        </svg>
+      </div>
+
+      <h2 class="modal-title" id="modalTitle">Confirm Action</h2>
+      <p class="modal-desc" id="modalDescription">
+        Are you sure you want to change the status of this user?
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-modal-cancel" id="modalCancelBtn">Cancel</button>
+        <button type="button" class="btn-modal-confirm" id="modalConfirmBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden CSRF Form for Fallback & Token Provision -->
+  <form id="statusToggleFallbackForm" method="POST" action="" style="display: none;">
+    {% csrf_token %}
+  </form>
+
+  <!-- Interactive Client-side Script -->
+  <script>
+    // Confirmation Modal & Toggle Status Logic
+    const backdrop = document.getElementById('confirmModalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDescription');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalIconBadge = document.getElementById('modalIconBadge');
+    const modalIconSvg = document.getElementById('modalIconSvg');
+    const fallbackForm = document.getElementById('statusToggleFallbackForm');
+
+    let currentActionUrl = '';
+    let currentUsername = '';
+    let currentIsActive = false;
+    let currentTriggerBtn = null;
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeJs(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"');
+    }
+
+    function getCsrfToken() {
+      const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+      if (tokenInput && tokenInput.value) return tokenInput.value;
+      const cookie = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='));
+      return cookie ? cookie.split('=')[1] : '';
+    }
+
+    function scheduleAlertDismissal(alertBox, delay = 4000) {
+      setTimeout(function () {
+        if (alertBox && alertBox.isConnected) {
+          alertBox.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          alertBox.style.opacity = '0';
+          alertBox.style.transform = 'translateY(-6px)';
+          setTimeout(function () {
+            if (alertBox && alertBox.isConnected) alertBox.remove();
+          }, 300);
+        }
+      }, delay);
+    }
+
+    // Auto-dismiss initial server messages
+    document.querySelectorAll('.alert-box').forEach(function (alertBox) {
+      scheduleAlertDismissal(alertBox, 4000);
+    });
+
+    function showAlert(message, type = 'success', duration = 4000) {
+      let container = document.getElementById('adminAlertContainer');
+      if (!container) {
+        container = document.querySelector('.alert-container');
+      }
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'adminAlertContainer';
+        container.className = 'alert-container';
+        const mainViewport = document.querySelector('.content-viewport');
+        if (mainViewport) {
+          mainViewport.insertBefore(container, mainViewport.firstChild);
+        } else {
+          document.body.appendChild(container);
+        }
+      }
+
+      const alertBox = document.createElement('div');
+      alertBox.className = `alert-box ${type === 'success' ? 'success' : ''}`;
+      alertBox.setAttribute('role', 'alert');
+
+      const iconSvg = type === 'success'
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+      alertBox.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          ${iconSvg}
+          <span>${escapeHtml(message)}</span>
+        </div>
+        <button type="button" class="alert-dismiss-btn" onclick="this.closest('.alert-box').remove()">&times;</button>
+      `;
+
+      container.appendChild(alertBox);
+
+      if (duration > 0) {
+        scheduleAlertDismissal(alertBox, duration);
+      }
+    }
+
+    function openConfirmModal(url, username, isCurrentlyActive, btn) {
+      currentActionUrl = url;
+      currentUsername = username;
+      currentIsActive = isCurrentlyActive;
+      currentTriggerBtn = btn || null;
+
+      if (isCurrentlyActive) {
+        modalTitle.textContent = 'Block Collector';
+        modalDesc.innerHTML = 'Are you sure you want to block <strong class="modal-target-name">' + escapeHtml(username) + '</strong>? The collector will be immediately restricted from signing in or ordering.';
+        modalConfirmBtn.textContent = 'Block Collector';
+        modalConfirmBtn.className = 'btn-modal-confirm danger';
+        modalIconBadge.className = 'modal-icon-badge danger';
+        modalIconSvg.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>';
+      } else {
+        modalTitle.textContent = 'Unblock Collector';
+        modalDesc.innerHTML = 'Are you sure you want to restore access for <strong class="modal-target-name">' + escapeHtml(username) + '</strong>? The collector will be able to log in and access their profile.';
+        modalConfirmBtn.textContent = 'Unblock Collector';
+        modalConfirmBtn.className = 'btn-modal-confirm success';
+        modalIconBadge.className = 'modal-icon-badge success';
+        modalIconSvg.innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>';
+      }
+
+      modalConfirmBtn.disabled = false;
+      delete modalConfirmBtn.dataset.loading;
+      backdrop.classList.add('open');
+    }
+
+    function closeModal() {
+      backdrop.classList.remove('open');
+      modalConfirmBtn.disabled = false;
+      delete modalConfirmBtn.dataset.loading;
+    }
+
+    if (modalCancelBtn) modalCancelBtn.addEventListener('click', closeModal);
+
+    if (backdrop) {
+      backdrop.addEventListener('click', function(e) {
+        if (e.target === backdrop) closeModal();
+      });
+    }
+
+    // Toggle Status Confirm POST submission
+    if (modalConfirmBtn) {
+      modalConfirmBtn.addEventListener('click', async function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!currentActionUrl || this.disabled || this.dataset.loading === 'true') {
+          return;
+        }
+
+        this.disabled = true;
+        this.dataset.loading = 'true';
+        const origConfirmText = this.textContent;
+        this.textContent = 'Updating...';
+
+        try {
+          const csrfToken = getCsrfToken();
+          const response = await fetch(currentActionUrl, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+
+          if (response.redirected) {
+            window.location.href = response.url;
+            return;
+          }
+
+          const contentType = response.headers.get('content-type') || '';
+          let data = null;
+          if (contentType.includes('application/json')) {
+            try {
+              data = await response.json();
+            } catch (jsonErr) {
+              console.error('Error parsing toggle status JSON:', jsonErr);
+            }
+          }
+
+          if (response.ok && response.status === 200 && data && data.success) {
+            closeModal();
+
+            const newIsActive = Boolean(data.is_active);
+            const userId = data.user_id;
+
+            // Target the row in the table
+            const targetRow = (currentTriggerBtn && currentTriggerBtn.closest('tr')) ||
+                             (userId ? document.querySelector(`tr[data-user-id="${userId}"]`) : null);
+
+            if (targetRow) {
+              // 1. Update Status Badge
+              const statusCell = targetRow.querySelector('.cell-status');
+              if (statusCell) {
+                if (newIsActive) {
+                  statusCell.innerHTML = `
+                    <span class="status-badge active">
+                      <span class="status-dot"></span>ACTIVE
+                    </span>
+                  `;
+                } else {
+                  statusCell.innerHTML = `
+                    <span class="status-badge blocked">
+                      <span class="status-dot"></span>BLOCKED
+                    </span>
+                  `;
+                }
+              }
+
+              // 2. Update Action Button
+              const actionCell = targetRow.querySelector('.td-action');
+              if (actionCell) {
+                if (newIsActive) {
+                  actionCell.innerHTML = `
+                    <button
+                      type="button"
+                      class="action-icon-btn is-active-btn"
+                      title="Block User"
+                      onclick="openConfirmModal('${currentActionUrl}', '${escapeJs(currentUsername)}', true, this)"
+                      aria-label="Block ${escapeHtml(currentUsername)}"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                      </svg>
+                    </button>
+                  `;
+                } else {
+                  actionCell.innerHTML = `
+                    <button
+                      type="button"
+                      class="action-icon-btn is-blocked-btn"
+                      title="Unblock User"
+                      onclick="openConfirmModal('${currentActionUrl}', '${escapeJs(currentUsername)}', false, this)"
+                      aria-label="Unblock ${escapeHtml(currentUsername)}"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="9 12 11 14 15 10"/>
+                      </svg>
+                    </button>
+                  `;
+                }
+              }
+            }
+
+            const successMsg = data.message || (newIsActive ? 'User activated successfully.' : 'User blocked successfully.');
+            showAlert(successMsg, 'success');
+
+          } else if (response.status === 405 || (!contentType.includes('application/json') && response.ok)) {
+            // Fallback to standard form submission if server requested traditional POST
+            if (fallbackForm) {
+              fallbackForm.action = currentActionUrl;
+              fallbackForm.submit();
+              return;
+            }
+            closeModal();
+            const errMsg = data && (data.message || data.error) ? (data.message || data.error) : 'Unable to update user status.';
+            showAlert(errMsg, 'error');
+          } else {
+            closeModal();
+            const errMsg = data && (data.message || data.error) ? (data.message || data.error) : 'Unable to update user status.';
+            showAlert(errMsg, 'error');
+          }
+        } catch (err) {
+          console.error('Toggle status fetch error:', err);
+          // Fallback to standard form POST on fetch error
+          if (fallbackForm) {
+            fallbackForm.action = currentActionUrl;
+            fallbackForm.submit();
+            return;
+          }
+          closeModal();
+          showAlert('Network error. Please try again.', 'error');
+        } finally {
+          this.disabled = false;
+          delete this.dataset.loading;
+          this.textContent = origConfirmText;
+        }
+      });
+    }
+
+    // Keyboard ESC to close modal, "/" to focus search
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && backdrop && backdrop.classList.contains('open')) {
+        closeModal();
+      }
+
+      if (e.key === '/' && document.activeElement !== document.getElementById('searchInput')) {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+        }
+      }
+    });
+
+    // Mobile sidebar toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const adminSidebar = document.getElementById('adminSidebar');
+
+    if (mobileMenuToggle && adminSidebar) {
+      mobileMenuToggle.addEventListener('click', function() {
+        adminSidebar.classList.toggle('mobile-open');
+      });
+    }
+  </script>
+
+</body>
+</html>

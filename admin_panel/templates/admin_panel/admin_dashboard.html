@@ -1,0 +1,2033 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Hot Wheels Hub</title>
+
+  <!-- Premium Fonts: Montserrat for bold headers, Inter for clean UI & data -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Design Tokens */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-body: #0b0b0e;
+      --bg-sidebar: #08080a;
+      --bg-card: #141419;
+      --bg-card-inner: #0e0e13;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-card-hover: rgba(255, 255, 255, 0.12);
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff232d;
+      --accent-red-glow: rgba(229, 27, 36, 0.35);
+      --accent-coral: #f5a596;
+      --accent-gold: #d4a237;
+      --accent-green: #22c55e;
+      --accent-blue: #60a5fa;
+      --accent-lime: #a3e635;
+      --text-white: #ffffff;
+      --text-muted: #8e8f9c;
+      --text-dim: #5c5d6b;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Overall Layout: Fixed Sidebar + Main Scrollable Canvas */
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR
+       ================================================== */
+    .admin-sidebar {
+      width: 250px;
+      min-width: 250px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 18px 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .admin-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .admin-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand-header {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #555765;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      stroke: var(--text-dim);
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background-color: #16161d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* ==================================================
+       MAIN CONTENT CANVAS
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-body);
+      background-image: radial-gradient(ellipse 70% 35% at 50% 0%, rgba(229, 27, 36, 0.03), transparent 70%);
+    }
+
+    /* Top Navigation Bar: ADMINISTRATOR CONSOLE + User Profile */
+    .admin-topbar {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 3.5vw, 48px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    .admin-console-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #636474;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .topbar-icon-btn {
+      background: transparent;
+      border: none;
+      color: #8a8b98;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      transition: color 0.15s, background-color 0.15s;
+      position: relative;
+    }
+
+    .topbar-icon-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .topbar-icon-btn svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    /* Admin Profile Pill */
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .profile-role {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #636474;
+    }
+
+    .profile-avatar-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #15151c;
+      border: 2px solid var(--accent-red);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14px;
+      box-shadow: 0 0 14px rgba(229, 27, 36, 0.25);
+    }
+
+    .profile-online-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+      border: 2px solid var(--bg-sidebar);
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+    }
+
+    /* ==================================================
+       DASHBOARD CONTENT VIEWPORT
+       ================================================== */
+    .dashboard-viewport {
+      padding: 32px clamp(20px, 3.5vw, 48px) 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header Row: Good morning, Hot Wheels Admin. + Date Filter & Export */
+    .dashboard-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .header-greeting-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .greeting-title {
+      font-family: var(--font-heading);
+      font-size: clamp(28px, 2.8vw, 36px);
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .greeting-title span.accent-name {
+      display: block;
+      color: var(--accent-coral);
+    }
+
+    .greeting-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      font-weight: 400;
+    }
+
+    .header-actions-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Date Filter Pill Button */
+    .date-filter-btn {
+      background: #15151b;
+      border: 1px solid var(--border-card);
+      border-radius: 9999px;
+      padding: 10px 18px;
+      color: #d6d7e2;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .date-filter-btn:hover {
+      background: #1a1a23;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .date-filter-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: var(--text-muted);
+    }
+
+    /* Export Pill Button with Dropdown */
+    .export-dropdown-wrap {
+      position: relative;
+    }
+
+    .btn-export {
+      background: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 9999px;
+      padding: 10px 22px;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px var(--accent-red-glow);
+      transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+
+    .btn-export:hover {
+      background-color: var(--accent-red-hover);
+      box-shadow: 0 6px 24px rgba(229, 27, 36, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .btn-export svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .export-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #181820;
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 6px;
+      min-width: 180px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 100;
+    }
+
+    .export-menu.open {
+      display: flex;
+      animation: fadeInDropdown 0.2s ease;
+    }
+
+    @keyframes fadeInDropdown {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .export-option {
+      padding: 9px 14px;
+      color: #d1d2dc;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    .export-option:hover {
+      background-color: rgba(229, 27, 36, 0.14);
+      color: #ffffff;
+    }
+
+    /* ==================================================
+       ROW 1: METRICS 4-CARD GRID
+       ================================================== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .metric-card:hover {
+      border-color: var(--border-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric-title {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7a7b8a;
+    }
+
+    .metric-icon-wrap svg {
+      width: 17px;
+      height: 17px;
+      stroke: #5d5e6d;
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+      font-feature-settings: "tnum";
+    }
+
+    .metric-trend {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--accent-gold);
+    }
+
+    .metric-trend svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--accent-gold);
+    }
+
+    /* ==================================================
+       ROW 2: SALES PERFORMANCE (65%) & REVENUE BREAKDOWN (35%)
+       ================================================== */
+    .dashboard-two-col {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap: 16px;
+    }
+
+    .card-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .panel-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    /* Segmented Control (Week / Month / Year) */
+    .segmented-control {
+      background: #0f0f13;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 7px;
+      padding: 3px;
+      display: flex;
+      gap: 2px;
+    }
+
+    .segment-btn {
+      background: transparent;
+      border: none;
+      color: #7a7b8b;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: color 0.15s, background-color 0.15s;
+    }
+
+    .segment-btn:hover {
+      color: #ffffff;
+    }
+
+    .segment-btn.active {
+      background: #202029;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* SVG Sales Performance Curved Line Chart */
+    .chart-container {
+      width: 100%;
+      height: 200px;
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .chart-grid-line {
+      stroke: rgba(255, 255, 255, 0.04);
+      stroke-width: 1;
+      stroke-dasharray: 4 4;
+    }
+
+    .chart-glow-path {
+      fill: url(#redAreaGradient);
+      opacity: 0.85;
+      transition: d 0.4s ease;
+    }
+
+    .chart-line-path {
+      fill: none;
+      stroke: var(--accent-red);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 10px rgba(229, 27, 36, 0.6));
+      transition: d 0.4s ease;
+    }
+
+    .chart-point {
+      fill: var(--accent-red);
+      stroke: #ffffff;
+      stroke-width: 2.5;
+      cursor: pointer;
+      transition: r 0.15s ease;
+    }
+
+    .chart-point:hover {
+      r: 6;
+      filter: drop-shadow(0 0 12px rgba(229, 27, 36, 0.9));
+    }
+
+    /* Revenue Breakdown List */
+    .breakdown-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .breakdown-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13.5px;
+    }
+
+    .breakdown-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .breakdown-value {
+      font-weight: 600;
+      color: #ffffff;
+      font-feature-settings: "tnum";
+    }
+
+    .breakdown-value.negative {
+      color: #8c8d99;
+    }
+
+    .breakdown-divider {
+      border: none;
+      border-top: 1px dotted rgba(255, 255, 255, 0.15);
+      margin: 18px 0 14px 0;
+    }
+
+    .breakdown-net-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 4px;
+    }
+
+    .net-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .net-value {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--accent-red);
+      font-feature-settings: "tnum";
+    }
+
+    /* ==================================================
+       ROW 3: BEST SELLING PRODUCTS & OPERATIONS / PAYMENTS
+       ================================================== */
+    .products-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .product-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .product-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .product-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .product-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: #171821;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .product-thumb svg {
+      width: 22px;
+      height: 22px;
+      stroke: #666778;
+    }
+
+    .product-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .product-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .product-sold {
+      font-size: 12px;
+      color: #828392;
+    }
+
+    .product-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .product-price {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #ffffff;
+      font-feature-settings: "tnum";
+    }
+
+    .product-badge {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .product-badge.gold {
+      color: var(--accent-gold);
+    }
+
+    .product-badge.blue {
+      color: var(--accent-blue);
+    }
+
+    .product-badge.green {
+      color: var(--accent-lime);
+    }
+
+    /* Stacked Right Column: Operations + Payments */
+    .stacked-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ops-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .ops-box {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ops-box.highlight-returns {
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .ops-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #717282;
+    }
+
+    .ops-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+      font-feature-settings: "tnum";
+    }
+
+    .ops-box.highlight-returns .ops-value {
+      color: #f87171;
+    }
+
+    /* Payments Progress Rows */
+    .payments-title {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7e7f90;
+      margin-bottom: 14px;
+    }
+
+    .payments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .payment-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12.5px;
+    }
+
+    .payment-label-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 140px;
+      flex-shrink: 0;
+      color: #cfd0dc;
+      font-weight: 500;
+    }
+
+    .payment-label-wrap svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 4px;
+      background: #1a1a24;
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    .fill-razorpay {
+      background-color: #eab308;
+      width: 65%;
+    }
+
+    .fill-wallet {
+      background-color: #f87171;
+      width: 25%;
+    }
+
+    .fill-cod {
+      background-color: #9ca3af;
+      width: 10%;
+    }
+
+    .payment-pct {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8c8d99;
+      width: 32px;
+      text-align: right;
+      font-feature-settings: "tnum";
+    }
+
+    /* ==================================================
+       ROW 4: RECENT SALES TABLE (FULL WIDTH)
+       ================================================== */
+    .recent-sales-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 24px 26px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .sales-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .view-all-link {
+      color: #f87171;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s, transform 0.15s;
+    }
+
+    .view-all-link:hover {
+      color: #ff9191;
+      transform: translateX(2px);
+    }
+
+    .view-all-link svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .sales-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .sales-table th {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #636474;
+      padding: 10px 14px 14px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sales-table th:first-child,
+    .sales-table td:first-child {
+      padding-left: 4px;
+    }
+
+    .sales-table th:last-child,
+    .sales-table td:last-child {
+      padding-right: 4px;
+      text-align: right;
+    }
+
+    .sales-table td {
+      padding: 16px 14px;
+      font-size: 13px;
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+    }
+
+    .sales-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .order-id-cell {
+      font-family: var(--font-main);
+      font-weight: 600;
+      color: #c4c5d2;
+      letter-spacing: 0.02em;
+    }
+
+    .customer-cell {
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .date-cell {
+      color: #828392;
+      font-weight: 400;
+    }
+
+    .amount-cell {
+      font-weight: 700;
+      color: #ffffff;
+      font-feature-settings: "tnum";
+    }
+
+    /* Status Badges Matching Screenshot */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-badge.delivered {
+      background: rgba(34, 197, 94, 0.12);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-badge.processing,
+    .status-badge.pending {
+      background: rgba(234, 179, 8, 0.12);
+      color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+
+    .status-badge.shipped {
+      background: rgba(234, 179, 8, 0.12);
+      color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+
+    .status-badge.neutral {
+      background: rgba(156, 163, 175, 0.12);
+      color: #9ca3af;
+      border: 1px solid rgba(156, 163, 175, 0.3);
+    }
+
+    /* Table Pagination */
+    .table-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding-top: 12px;
+    }
+
+    .page-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      background: transparent;
+      border: none;
+      color: #717282;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    .page-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .page-btn.active {
+      background-color: var(--accent-red);
+      color: #ffffff;
+    }
+
+    .page-nav-arrow {
+      color: #555767;
+      font-size: 11px;
+    }
+
+    /* ==================================================
+       MOBILE DRAWER BACKDROP & RESPONSIVENESS
+       ================================================== */
+    .mobile-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 45;
+    }
+
+    .mobile-backdrop.open {
+      display: block;
+    }
+
+    @media (max-width: 1200px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .dashboard-two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .admin-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+      }
+      .admin-sidebar.open {
+        transform: translateX(0);
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-header-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .header-actions-block {
+        justify-content: space-between;
+      }
+      .ops-grid {
+        grid-template-columns: 1fr;
+      }
+      .greeting-title {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- Mobile Drawer Backdrop -->
+    <div class="mobile-backdrop" id="mobileBackdrop"></div>
+
+    <!-- ==================================================
+         SIDEBAR NAVIGATION (EXACT SCREENSHOT LAYOUT)
+         ================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+
+        <!-- Brand Title: ADMIN -->
+        <div class="brand-header">
+          <span class="brand-title">ADMIN</span>
+        </div>
+
+        <nav class="sidebar-nav">
+
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="{% url 'admin_inventory_list' %}" class="nav-item" title="Inventory Management">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="nav-group">
+            <span class="nav-group-label">CONTENT</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+              <span>Banners</span>
+            </a>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Logout Item at Bottom -->
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==================================================
+         MAIN CONTENT AREA
+         ================================================== -->
+    <main class="admin-main">
+
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <span class="admin-console-label">ADMINISTRATOR CONSOLE</span>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Notification Bell -->
+          <button type="button" class="topbar-icon-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+
+          <!-- User Profile -->
+          <div class="topbar-profile">
+            <div class="profile-info">
+              <span class="profile-name">{{ request.user.username|default:"Chief Collector" }}</span>
+              <span class="profile-role">SYSTEM ADMIN</span>
+            </div>
+            <div class="profile-avatar-circle">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span class="profile-online-dot"></span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Viewport Content -->
+      <div class="dashboard-viewport">
+
+        <!-- Page Header Row: Greeting & Controls -->
+        <div class="dashboard-header-row">
+          <div class="header-greeting-block">
+            <h1 class="greeting-title">
+              Good morning,
+              <span class="accent-name">Hot Wheels Admin.</span>
+            </h1>
+            <p class="greeting-subtitle">Detailed financial performance and sales analysis.</p>
+          </div>
+
+          <div class="header-actions-block">
+            <!-- Date Filter Pill -->
+            <button type="button" class="date-filter-btn" id="dateFilterBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span id="currentDateDisplay">August 2026</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+
+            <!-- Export Pill Button with Dropdown (Preserves PDF & Excel Endpoints) -->
+            <div class="export-dropdown-wrap">
+              <button type="button" class="btn-export" id="exportBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Export</span>
+              </button>
+
+              <div class="export-menu" id="exportMenu">
+                <a href="{% url 'export_orders_pdf' %}" class="export-option">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <span>Export as PDF</span>
+                </a>
+                <a href="{% url 'export_orders_excel' %}" class="export-option">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="9" y1="21" x2="9" y2="9"/>
+                  </svg>
+                  <span>Export as Excel</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================================================
+             ROW 1: 4 TOP METRIC CARDS
+             ================================================== -->
+        <section class="metrics-grid">
+
+          <!-- TOTAL REVENUE -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL REVENUE</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                  <polyline points="17 6 23 6 23 12"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value">
+              {% if total_revenue %}
+                ₹{{ total_revenue|floatformat:0 }}
+              {% else %}
+                ₹2,48,650
+              {% endif %}
+            </div>
+            <div class="metric-trend">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+              <span>+12.5% vs last month</span>
+            </div>
+          </div>
+
+          <!-- TOTAL SALES -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL SALES</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value">
+              {% if total_orders and total_orders > 0 %}
+                {{ total_orders }}
+              {% else %}
+                1,248
+              {% endif %}
+            </div>
+            <div class="metric-trend">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+              <span>+8.2% vs last month</span>
+            </div>
+          </div>
+
+          <!-- TOTAL ORDERS -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL ORDERS</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21"/>
+                  <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value">
+              {% if total_orders and total_orders > 0 %}
+                {{ total_orders }}
+              {% else %}
+                186
+              {% endif %}
+            </div>
+            <div class="metric-trend">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+              <span>+6.4% vs last month</span>
+            </div>
+          </div>
+
+          <!-- AVG ORDER VALUE -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">AVG ORDER VALUE</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value" id="avgOrderValueEl">
+              ₹1,240
+            </div>
+            <div class="metric-trend">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+              <span>+4.8% vs last month</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================================================
+             ROW 2: SALES PERFORMANCE (65%) & REVENUE BREAKDOWN (35%)
+             ================================================== -->
+        <section class="dashboard-two-col">
+
+          <!-- Left Card: Sales Performance Wave Chart -->
+          <div class="card-panel">
+            <div class="panel-header-row">
+              <h2 class="panel-title">Sales Performance</h2>
+
+              <!-- Time Selector Pills -->
+              <div class="segmented-control">
+                <button type="button" class="segment-btn" data-range="week">Week</button>
+                <button type="button" class="segment-btn active" data-range="month">Month</button>
+                <button type="button" class="segment-btn" data-range="year">Year</button>
+              </div>
+            </div>
+
+            <!-- SVG Smooth Crimson Wave Chart Matching Reference -->
+            <div class="chart-container">
+              <svg class="chart-svg" viewBox="0 0 700 200" preserveAspectRatio="none">
+                <defs>
+                  <!-- Glowing Red Gradient Fill -->
+                  <linearGradient id="redAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#e51b24" stop-opacity="0.32" />
+                    <stop offset="65%" stop-color="#e51b24" stop-opacity="0.08" />
+                    <stop offset="100%" stop-color="#e51b24" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+
+                <!-- Subtle Horizontal Gridlines -->
+                <line x1="10" y1="40" x2="690" y2="40" class="chart-grid-line" />
+                <line x1="10" y1="95" x2="690" y2="95" class="chart-grid-line" />
+                <line x1="10" y1="150" x2="690" y2="150" class="chart-grid-line" />
+
+                <!-- Filled Wave Area -->
+                <path id="chartAreaPath" class="chart-glow-path"
+                      d="M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42 L 690 200 L 10 200 Z" />
+
+                <!-- Neon Crimson Wave Line -->
+                <path id="chartLinePath" class="chart-line-path"
+                      d="M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42" />
+
+                <!-- Interactive Points -->
+                <circle cx="260" cy="76" r="4" class="chart-point" title="₹1,84,200" />
+                <circle cx="460" cy="40" r="4.5" class="chart-point" title="₹2,48,650 (Peak)" />
+                <circle cx="690" cy="42" r="4" class="chart-point" title="₹2,32,000" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Right Card: Revenue Breakdown -->
+          <div class="card-panel">
+            <div class="panel-header-row">
+              <h2 class="panel-title">Revenue Breakdown</h2>
+            </div>
+
+            <div class="breakdown-list">
+              <div class="breakdown-row">
+                <span class="breakdown-label">Product Sales</span>
+                <span class="breakdown-value">
+                  {% if total_revenue %}
+                    ₹{{ total_revenue|floatformat:0 }}
+                  {% else %}
+                    ₹2,85,000
+                  {% endif %}
+                </span>
+              </div>
+
+              <div class="breakdown-row">
+                <span class="breakdown-label">Discounts</span>
+                <span class="breakdown-value negative">-₹18,500</span>
+              </div>
+
+              <div class="breakdown-row">
+                <span class="breakdown-label">Coupon Discounts</span>
+                <span class="breakdown-value negative">-₹7,200</span>
+              </div>
+
+              <div class="breakdown-row">
+                <span class="breakdown-label">Refunds</span>
+                <span class="breakdown-value negative">-₹10,650</span>
+              </div>
+            </div>
+
+            <hr class="breakdown-divider">
+
+            <div class="breakdown-net-row">
+              <span class="net-label">NET REVENUE</span>
+              <span class="net-value">
+                {% if total_revenue %}
+                  ₹{{ total_revenue|floatformat:0 }}
+                {% else %}
+                  ₹2,48,650
+                {% endif %}
+              </span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================================================
+             ROW 3: BEST SELLING PRODUCTS & OPERATIONS / PAYMENTS
+             ================================================== -->
+        <section class="dashboard-two-col">
+
+          <!-- Left Card: Best Selling Products -->
+          <div class="card-panel">
+            <div class="panel-header-row">
+              <h2 class="panel-title">Best Selling Products</h2>
+            </div>
+
+            <div class="products-list">
+
+              <!-- Product 1: Lamborghini Huracán -->
+              <div class="product-item">
+                <div class="product-left">
+                  <div class="product-thumb">
+                    <!-- Diecast Car Silhouette SVG -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
+                      <circle cx="7" cy="17" r="2"/>
+                      <path d="M9 17h6"/>
+                      <circle cx="17" cy="17" r="2"/>
+                    </svg>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">Lamborghini Hurac&aacute;n</span>
+                    <span class="product-sold">124 Units Sold</span>
+                  </div>
+                </div>
+                <div class="product-right">
+                  <span class="product-price">₹45,600</span>
+                  <span class="product-badge gold">PREMIUM</span>
+                </div>
+              </div>
+
+              <!-- Product 2: Nissan Skyline (F&F) -->
+              <div class="product-item">
+                <div class="product-left">
+                  <div class="product-thumb" style="background: #111a24; border-color: rgba(96, 165, 250, 0.2);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
+                      <circle cx="7" cy="17" r="2"/>
+                      <path d="M9 17h6"/>
+                      <circle cx="17" cy="17" r="2"/>
+                    </svg>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">Nissan Skyline (F&amp;F)</span>
+                    <span class="product-sold">98 Units Sold</span>
+                  </div>
+                </div>
+                <div class="product-right">
+                  <span class="product-price">₹38,200</span>
+                  <span class="product-badge blue">COLLECTORS</span>
+                </div>
+              </div>
+
+              <!-- Product 3: Porsche 911 GT3 -->
+              <div class="product-item">
+                <div class="product-left">
+                  <div class="product-thumb" style="background: #151a14; border-color: rgba(163, 230, 53, 0.2);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
+                      <circle cx="7" cy="17" r="2"/>
+                      <path d="M9 17h6"/>
+                      <circle cx="17" cy="17" r="2"/>
+                    </svg>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">Porsche 911 GT3</span>
+                    <span class="product-sold">86 Units Sold</span>
+                  </div>
+                </div>
+                <div class="product-right">
+                  <span class="product-price">₹32,500</span>
+                  <span class="product-badge green">MAINLINE</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Right Column: Operations (2x2 Grid) + PAYMENTS -->
+          <div class="stacked-col">
+
+            <!-- Operations -->
+            <div class="card-panel">
+              <div class="panel-header-row" style="margin-bottom: 14px;">
+                <h2 class="panel-title">Operations</h2>
+              </div>
+
+              <div class="ops-grid">
+                <div class="ops-box">
+                  <span class="ops-label">DELIVERED</span>
+                  <span class="ops-value">1,120</span>
+                </div>
+                <div class="ops-box">
+                  <span class="ops-label">PENDING</span>
+                  <span class="ops-value">85</span>
+                </div>
+                <div class="ops-box">
+                  <span class="ops-label">SHIPPED</span>
+                  <span class="ops-value">43</span>
+                </div>
+                <div class="ops-box highlight-returns">
+                  <span class="ops-label">RETURNS</span>
+                  <span class="ops-value">17</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PAYMENTS -->
+            <div class="card-panel">
+              <span class="payments-title">PAYMENTS</span>
+
+              <div class="payments-list">
+                <!-- Razorpay -->
+                <div class="payment-row">
+                  <div class="payment-label-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                      <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    <span>Razorpay</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-razorpay"></div>
+                  </div>
+                  <span class="payment-pct">65%</span>
+                </div>
+
+                <!-- Wallet -->
+                <div class="payment-row">
+                  <div class="payment-label-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/>
+                      <path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/>
+                      <circle cx="18" cy="14" r="1"/>
+                    </svg>
+                    <span>Wallet</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-wallet"></div>
+                  </div>
+                  <span class="payment-pct">25%</span>
+                </div>
+
+                <!-- Cash on Delivery -->
+                <div class="payment-row">
+                  <div class="payment-label-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="1" y="3" width="15" height="13"/>
+                      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                      <circle cx="5.5" cy="18.5" r="2.5"/>
+                      <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                    <span>Cash on Delivery</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill fill-cod"></div>
+                  </div>
+                  <span class="payment-pct">10%</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==================================================
+             ROW 4: RECENT SALES TABLE (FULL WIDTH CARD)
+             ================================================== -->
+        <section class="recent-sales-panel">
+          <div class="sales-header-row">
+            <h2 class="panel-title">Recent Sales</h2>
+            <a href="{% url 'admin_order_list' %}" class="view-all-link">
+              <span>View All</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </a>
+          </div>
+
+          <div class="table-container">
+            <table class="sales-table">
+              <thead>
+                <tr>
+                  <th>ORDER ID</th>
+                  <th>CUSTOMER</th>
+                  <th>DATE</th>
+                  <th>AMOUNT</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in recent_orders %}
+                  <tr>
+                    <td class="order-id-cell">#ORD-{{ order.order_number|default:order.id|slice:":8" }}</td>
+                    <td class="customer-cell">{{ order.user.username|default:"Collector" }}</td>
+                    <td class="date-cell">{{ order.created_at|date:"M d, Y" }}</td>
+                    <td class="amount-cell">₹{{ order.total_amount|floatformat:0 }}</td>
+                    <td>
+                      {% if order.status|lower == 'delivered' %}
+                        <span class="status-badge delivered">DELIVERED</span>
+                      {% elif order.status|lower == 'pending' %}
+                        <span class="status-badge pending">PENDING</span>
+                      {% elif order.status|lower == 'processing' %}
+                        <span class="status-badge processing">PROCESSING</span>
+                      {% elif order.status|lower == 'shipped' %}
+                        <span class="status-badge shipped">SHIPPED</span>
+                      {% else %}
+                        <span class="status-badge neutral">{{ order.status|upper|default:"ACTIVE" }}</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% empty %}
+                  <!-- Reference Matching Demo Orders if DB has no orders yet -->
+                  <tr>
+                    <td class="order-id-cell">#ORD-12567</td>
+                    <td class="customer-cell">Rahul Verma</td>
+                    <td class="date-cell">Aug 10, 2026</td>
+                    <td class="amount-cell">₹3,450</td>
+                    <td><span class="status-badge delivered">DELIVERED</span></td>
+                  </tr>
+                  <tr>
+                    <td class="order-id-cell">#ORD-12568</td>
+                    <td class="customer-cell">Ananya Singh</td>
+                    <td class="date-cell">Aug 11, 2026</td>
+                    <td class="amount-cell">₹1,240</td>
+                    <td><span class="status-badge pending">PENDING</span></td>
+                  </tr>
+                  <tr>
+                    <td class="order-id-cell">#ORD-12569</td>
+                    <td class="customer-cell">Vikram Malhotra</td>
+                    <td class="date-cell">Aug 11, 2026</td>
+                    <td class="amount-cell">₹2,890</td>
+                    <td><span class="status-badge shipped">SHIPPED</span></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="table-pagination">
+            <button type="button" class="page-btn page-nav-arrow" aria-label="Previous page">&lt;</button>
+            <button type="button" class="page-btn active">1</button>
+            <button type="button" class="page-btn">2</button>
+            <button type="button" class="page-btn">3</button>
+            <button type="button" class="page-btn page-nav-arrow" aria-label="Next page">&gt;</button>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Interactive JavaScript: Export Dropdown, Mobile Menu & Chart Controls -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Mobile Menu Drawer Toggle
+      const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+      const adminSidebar = document.getElementById('adminSidebar');
+      const mobileBackdrop = document.getElementById('mobileBackdrop');
+
+      if (mobileMenuToggle && adminSidebar && mobileBackdrop) {
+        mobileMenuToggle.addEventListener('click', function() {
+          adminSidebar.classList.toggle('open');
+          mobileBackdrop.classList.toggle('open');
+        });
+
+        mobileBackdrop.addEventListener('click', function() {
+          adminSidebar.classList.remove('open');
+          mobileBackdrop.classList.remove('open');
+        });
+      }
+
+      // 2. Export Button Dropdown
+      const exportBtn = document.getElementById('exportBtn');
+      const exportMenu = document.getElementById('exportMenu');
+
+      if (exportBtn && exportMenu) {
+        exportBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          exportMenu.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!exportMenu.contains(e.target) && !exportBtn.contains(e.target)) {
+            exportMenu.classList.remove('open');
+          }
+        });
+      }
+
+      // 3. Dynamic Calculation for Average Order Value if needed
+      const revText = "{{ total_revenue|default:0 }}";
+      const ordText = "{{ total_orders|default:0 }}";
+      const totalRev = parseFloat(revText.replace(/,/g, '')) || 0;
+      const totalOrd = parseInt(ordText, 10) || 0;
+      const avgEl = document.getElementById('avgOrderValueEl');
+      if (avgEl && totalRev > 0 && totalOrd > 0) {
+        const avg = Math.round(totalRev / totalOrd);
+        avgEl.textContent = '₹' + avg.toLocaleString('en-IN');
+      }
+
+      // 4. Time Range Segmented Control for Chart (Week, Month, Year)
+      const segmentBtns = document.querySelectorAll('.segment-btn');
+      const chartLinePath = document.getElementById('chartLinePath');
+      const chartAreaPath = document.getElementById('chartAreaPath');
+
+      const chartPaths = {
+        month: {
+          line: "M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42",
+          area: "M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42 L 690 200 L 10 200 Z"
+        },
+        week: {
+          line: "M 10 150 C 100 150, 160 80, 240 85 C 320 90, 380 130, 470 50 C 530 20, 610 80, 690 60",
+          area: "M 10 150 C 100 150, 160 80, 240 85 C 320 90, 380 130, 470 50 C 530 20, 610 80, 690 60 L 690 200 L 10 200 Z"
+        },
+        year: {
+          line: "M 10 120 C 120 110, 180 160, 280 120 C 370 80, 440 40, 530 65 C 600 85, 640 30, 690 35",
+          area: "M 10 120 C 120 110, 180 160, 280 120 C 370 80, 440 40, 530 65 C 600 85, 640 30, 690 35 L 690 200 L 10 200 Z"
+        }
+      };
+
+      segmentBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          segmentBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          const range = this.getAttribute('data-range');
+          if (chartPaths[range] && chartLinePath && chartAreaPath) {
+            chartLinePath.setAttribute('d', chartPaths[range].line);
+            chartAreaPath.setAttribute('d', chartPaths[range].area);
+          }
+        });
+      });
+
+      // 5. Pagination Buttons Interactivity
+      const pageBtns = document.querySelectorAll('.table-pagination .page-btn:not(.page-nav-arrow)');
+      pageBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          pageBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

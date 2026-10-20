@@ -1,0 +1,482 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | Hot Wheels HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* Reset & CSS Design Tokens */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0a0a0d;
+      --bg-card: #141418;
+      --bg-input: #0e0e12;
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-input: rgba(255, 255, 255, 0.08);
+      --border-input-focus: #e51b24;
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff222e;
+      --accent-orange: #ff4d00;
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --text-subtle: #50515e;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(ellipse 65% 55% at 50% 45%, rgba(229, 27, 36, 0.06), transparent 70%),
+        radial-gradient(ellipse 80% 80% at 50% 100%, rgba(255, 77, 0, 0.03), transparent 80%);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Centered Login Card Container */
+    .login-wrapper {
+      width: 100%;
+      max-width: 425px;
+      margin: 0 auto;
+    }
+
+    .login-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 42px 34px 34px 34px;
+      box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(255, 255, 255, 0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Top Brand Logo Badge */
+    .brand-badge {
+      width: 60px;
+      height: 52px;
+      background: #181d26;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-badge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1.5px;
+      background: linear-gradient(90deg, #ff4d00, #e51b24);
+    }
+
+    /* Header Titles */
+    .login-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .login-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    /* Alert / Django Messages */
+    .alert-container {
+      width: 100%;
+      margin-bottom: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .alert-box {
+      background: rgba(229, 27, 36, 0.12);
+      border: 1px solid rgba(229, 27, 36, 0.35);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+    }
+
+    .alert-box svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      stroke: var(--accent-red);
+    }
+
+    /* Form Styles */
+    .login-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      text-align: left;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      text-transform: none;
+    }
+
+    .forgot-link {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #f87171;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .forgot-link:hover {
+      color: #ff9b9b;
+      text-decoration: underline;
+    }
+
+    /* Input Field Container with Left & Right Icons */
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--border-input-focus);
+      background-color: #121216;
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.18);
+    }
+
+    .input-icon-left {
+      position: absolute;
+      left: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      pointer-events: none;
+      transition: color 0.2s ease;
+    }
+
+    .input-wrapper:focus-within .input-icon-left {
+      color: #ffffff;
+    }
+
+    .input-icon-left svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 0 16px 0 44px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+    }
+
+    .form-input.has-toggle {
+      padding-right: 44px;
+    }
+
+    .form-input::placeholder {
+      color: #4b5563;
+      font-size: 13.5px;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.15s ease;
+    }
+
+    .password-toggle-btn:hover {
+      color: #ffffff;
+    }
+
+    .password-toggle-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      height: 48px;
+      background-color: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 6px;
+      box-shadow: 0 4px 18px rgba(229, 27, 36, 0.42);
+      transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--accent-red-hover);
+      box-shadow: 0 6px 24px rgba(229, 27, 36, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    /* Card Footer Note */
+    .card-footer-note {
+      margin-top: 28px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 16px;
+      }
+      .login-card {
+        padding: 32px 22px 26px 22px;
+      }
+      .login-title {
+        font-size: 23px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="login-wrapper">
+    <div class="login-card">
+
+      <!-- Brand Logo Badge -->
+      <div class="brand-badge">
+        <svg width="44" height="28" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Hot Wheels Hub">
+          <defs>
+            <linearGradient id="flameGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff4d00"/>
+              <stop offset="100%" stop-color="#e51b24"/>
+            </linearGradient>
+            <linearGradient id="flameGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffb703"/>
+              <stop offset="100%" stop-color="#ff4d00"/>
+            </linearGradient>
+          </defs>
+          <path d="M10 48 C 30 57, 60 57, 110 34 C 90 50, 65 60, 25 60 C 15 60, 5 54, 10 48 Z" fill="url(#flameGrad1)" />
+          <path d="M6 40 C 26 22, 76 14, 114 30 C 86 26, 46 30, 16 46 C 9 48, 4 44, 6 40 Z" fill="url(#flameGrad2)" />
+          <text x="60" y="33" text-anchor="middle" fill="#ffffff" font-family="'Montserrat', sans-serif" font-weight="900" font-style="italic" font-size="14" letter-spacing="-0.5">HOT WHEELS</text>
+          <text x="60" y="47" text-anchor="middle" fill="#ff4d00" font-family="'Montserrat', sans-serif" font-weight="900" font-style="italic" font-size="10.5" letter-spacing="1">HUB</text>
+        </svg>
+      </div>
+
+      <!-- Heading & Description -->
+      <h1 class="login-title">Admin Login</h1>
+      <p class="login-subtitle">Sign in to manage your Hot Wheels store.</p>
+
+      <!-- Django Messages -->
+      {% if messages %}
+        <div class="alert-container">
+          {% for message in messages %}
+            <div class="alert-box" role="alert">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Preserved Backend Login Form -->
+      <form method="POST" class="login-form">
+        {% csrf_token %}
+
+        <!-- Username or Email Field -->
+        <div class="form-group">
+          <label for="username" class="form-label">Email or Username</label>
+          <div class="input-wrapper">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-input"
+              placeholder="Enter your email or username"
+              autocomplete="username"
+              required
+            >
+          </div>
+        </div>
+
+        <!-- Password Field with Toggle and Forgot Password Link -->
+        <div class="form-group">
+          <div class="label-row">
+            <label for="password" class="form-label">Password</label>
+            <a href="{% url 'admin_forgot_password' %}" class="forgot-link">Forgot Password?</a>
+          </div>
+          <div class="input-wrapper">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input has-toggle"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            >
+            <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle password visibility">
+              <!-- Open Eye SVG -->
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <!-- Eye Off SVG (hidden initially) -->
+              <svg id="eyeOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-submit">
+          Login to Admin Panel
+        </button>
+      </form>
+
+      <!-- Secure Portal Badge Note -->
+      <div class="card-footer-note">
+        SECURE ADMIN PORTAL &bull; V.2.0.4
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Pure frontend password visibility toggle
+    (function() {
+      const passwordInput = document.getElementById('password');
+      const toggleBtn = document.getElementById('togglePassword');
+      const eyeIcon = document.getElementById('eyeIcon');
+      const eyeOffIcon = document.getElementById('eyeOffIcon');
+
+      if (toggleBtn && passwordInput && eyeIcon && eyeOffIcon) {
+        toggleBtn.addEventListener('click', function() {
+          const isPassword = passwordInput.getAttribute('type') === 'password';
+          passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+          
+          if (isPassword) {
+            eyeIcon.style.display = 'none';
+            eyeOffIcon.style.display = 'block';
+            toggleBtn.setAttribute('aria-label', 'Hide password');
+          } else {
+            eyeIcon.style.display = 'block';
+            eyeOffIcon.style.display = 'none';
+            toggleBtn.setAttribute('aria-label', 'Show password');
+          }
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>
+</html>

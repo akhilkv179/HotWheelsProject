@@ -1,0 +1,2715 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ product.name }} | Hot Wheels Precision Diecast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==================================================
+       RESET & DESIGN SYSTEM TOKENS
+       ================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0b0b0e;
+      --bg-surface: #121217;
+      --bg-card: #15151c;
+      --bg-card-hover: #191924;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-active: #e51b24;
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff222e;
+      --accent-red-glow: rgba(229, 27, 36, 0.45);
+      --accent-orange: #ff4d00;
+      --accent-gold: #fbbf24;
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #60606e;
+      --badge-stock-green: #22c55e;
+      --badge-stock-amber: #f59e0b;
+      --badge-stock-red: #ef4444;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Flash Messages */
+    .toast-messages {
+      position: fixed;
+      top: 84px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+      pointer-events: none;
+    }
+
+    .toast-message {
+      background: rgba(20, 20, 26, 0.95);
+      backdrop-filter: blur(12px);
+      border-left: 3px solid #60a5fa;
+      border-top: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      color: #f4f4f6;
+      padding: 13px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+      animation: fadeInRight 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .toast-message.success {
+      border-left-color: var(--badge-stock-green);
+    }
+
+    .toast-message.error {
+      border-left-color: var(--accent-red);
+    }
+
+    .toast-message.warning {
+      border-left-color: var(--badge-stock-amber);
+    }
+
+    .toast-message.info {
+      border-left-color: #60a5fa;
+    }
+
+    .toast-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ==================================================
+       NAVBAR
+       ================================================== */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 72px;
+      background: rgba(11, 11, 14, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 4vw, 56px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(20px, 3.5vw, 44px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-white);
+    }
+
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.35);
+    }
+
+    .logo-badge svg {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+    }
+
+    .brand-name {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-name span {
+      color: var(--accent-red);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      padding: 6px 0;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: #ffffff;
+    }
+
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-red);
+      box-shadow: 0 0 8px var(--accent-red);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      transition: color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+      text-decoration: none;
+    }
+
+    .nav-action-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+      transform: translateY(-1px);
+    }
+
+    .nav-action-btn svg {
+      width: 19px;
+      height: 19px;
+      stroke-width: 2;
+    }
+
+    /* Profile Widget */
+    .profile-widget {
+      position: relative;
+    }
+
+    .avatar-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid #2a2a35;
+      background: #171720;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+      text-decoration: none;
+      color: #ffffff;
+    }
+
+    .avatar-btn:hover {
+      border-color: var(--accent-red);
+    }
+
+    .avatar-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-btn svg {
+      width: 17px;
+      height: 17px;
+      stroke: #9ca3af;
+    }
+
+    .profile-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 210px;
+      background: #14141a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      padding: 8px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+    }
+
+    .profile-widget:hover .profile-menu,
+    .profile-widget:focus-within .profile-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .profile-greeting {
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .profile-greeting .user-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+    }
+
+    .profile-greeting .username-display {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 16px;
+      color: #b0b1b9;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .profile-menu-item:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+      color: #ffffff;
+    }
+
+    .profile-menu-item.logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .profile-menu-divider {
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.06);
+      margin: 6px 0;
+    }
+
+    /* ==================================================
+       PRODUCT DETAILS LAYOUT
+       ================================================== */
+    .details-viewport {
+      max-width: 1340px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px clamp(20px, 4vw, 56px) 80px clamp(20px, 4vw, 56px);
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    /* Breadcrumbs & Header Navigation */
+    .breadcrumbs-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Unavailable Product Notice Banner */
+    .unavailable-notice-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #fca5a5;
+      margin-bottom: 20px;
+    }
+
+    .unavailable-notice-banner svg {
+      color: var(--accent-red);
+      flex-shrink: 0;
+    }
+
+    .unavailable-notice-banner strong {
+      display: block;
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .unavailable-notice-banner span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .breadcrumbs-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--text-dim);
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumbs-bar a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .breadcrumbs-bar a:hover {
+      color: #ffffff;
+    }
+
+    .breadcrumbs-bar .chevron {
+      color: var(--text-dim);
+      font-size: 11px;
+    }
+
+    .breadcrumbs-bar .current {
+      color: var(--accent-red);
+      font-weight: 700;
+    }
+
+    /* Two-Column Showcase Grid */
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(380px, 1fr);
+      gap: 44px;
+      align-items: start;
+    }
+
+    /* ==================================================
+       LEFT COLUMN: IMAGE GALLERY & ZOOM
+       ================================================== */
+    .gallery-showcase {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .main-image-container {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      background-color: #0e0e13;
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: crosshair;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .main-product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 16px;
+      transition: transform 0.15s ease-out;
+      pointer-events: none;
+    }
+
+    /* Zoom lens / indicator */
+    .zoom-hint-badge {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      background: rgba(14, 14, 18, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none;
+    }
+
+    .expand-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(14, 14, 18, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+      z-index: 5;
+    }
+
+    .expand-btn:hover {
+      background: var(--accent-red);
+      transform: scale(1.05);
+    }
+
+    /* Thumbnails Strip */
+    .thumbnails-strip {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: #23232e transparent;
+    }
+
+    .thumbnails-strip::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .thumbnails-strip::-webkit-scrollbar-thumb {
+      background: #23232e;
+      border-radius: 4px;
+    }
+
+    .gallery-thumb-btn {
+      width: 82px;
+      height: 72px;
+      border-radius: 10px;
+      background: #0f0f15;
+      border: 1.5px solid var(--border-card);
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 4px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .gallery-thumb-btn:hover {
+      border-color: rgba(229, 27, 36, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .gallery-thumb-btn.active {
+      border-color: var(--accent-red);
+      box-shadow: 0 0 12px rgba(229, 27, 36, 0.4);
+    }
+
+    .gallery-thumb-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    /* ==================================================
+       RIGHT COLUMN: PRODUCT SPECS & PURCHASE
+       ================================================== */
+    .product-meta-showcase {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .header-pill-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .category-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-red);
+      text-decoration: none;
+    }
+
+    .category-tag:hover {
+      text-decoration: underline;
+    }
+
+    .product-title {
+      font-family: var(--font-heading);
+      font-size: clamp(26px, 3.2vw, 36px);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    /* Ratings Summary */
+    .rating-summary-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .stars-cluster {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      color: var(--accent-gold);
+    }
+
+    .stars-cluster svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .rating-score {
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .reviews-count-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .reviews-count-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    /* Price Showcase */
+    .price-box {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .price-values-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .price-sale-huge {
+      font-size: 32px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .price-regular-strike {
+      font-size: 16px;
+      color: var(--text-dim);
+      text-decoration: line-through;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .price-discount-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      white-space: nowrap;
+    }
+
+    .price-discount-tag svg {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    .price-tax-note {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .tax-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .offer-savings-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--badge-stock-green);
+    }
+
+    .discount-ribbon-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .unavailable-pill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    /* Availability Banner */
+    .stock-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .stock-banner.in-stock {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: var(--badge-stock-green);
+    }
+
+    .stock-banner.low-stock {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--badge-stock-amber);
+    }
+
+    .stock-banner.sold-out {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--badge-stock-red);
+    }
+
+    .stock-banner.unavailable {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--badge-stock-red);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      flex-shrink: 0;
+    }
+
+    /* Variant Selector */
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .variants-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .variant-card-btn {
+      position: relative;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-card);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      color: #ffffff;
+      outline: none;
+      min-height: 72px;
+      box-sizing: border-box;
+    }
+
+    .variant-card-btn:hover {
+      border-color: rgba(229, 27, 36, 0.45);
+      background: var(--bg-card-hover);
+    }
+
+    .variant-card-btn.active {
+      border-color: var(--accent-red);
+      background: #191924;
+      box-shadow: 0 0 14px rgba(229, 27, 36, 0.3);
+    }
+
+    .variant-card-btn.out-of-stock {
+      opacity: 0.6;
+      border-style: dashed;
+    }
+
+    .v-card-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .v-color-name {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #ffffff;
+      flex: 1 1 auto;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .v-stock-tag {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      line-height: 1.2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .v-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .v-meta-price {
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    /* Actions Bar */
+    .actions-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .btn-add-cart-main {
+      flex: 1;
+      height: 52px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 6px 20px rgba(229, 27, 36, 0.4);
+      transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-add-cart-main:hover {
+      filter: brightness(1.08);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px rgba(229, 27, 36, 0.6);
+    }
+
+    .btn-add-cart-main.disabled {
+      background: #252530;
+      color: #60606e;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+      filter: none;
+      pointer-events: none;
+    }
+
+    .btn-wishlist-action {
+      height: 52px;
+      padding: 0 20px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-wishlist-action:hover {
+      background-color: #1e1e28;
+      border-color: rgba(229, 27, 36, 0.5);
+      color: var(--accent-red);
+    }
+
+    .btn-wishlist-action.active {
+      color: var(--accent-red);
+      border-color: rgba(229, 27, 36, 0.6);
+      background-color: rgba(229, 27, 36, 0.1);
+    }
+
+    /* Trust Guarantees */
+    .trust-badges-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .trust-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .trust-card svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--accent-red);
+      flex-shrink: 0;
+    }
+
+    .trust-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .trust-text strong {
+      color: #ffffff;
+      display: block;
+    }
+
+    /* ==================================================
+       PRODUCT STORY & HIGHLIGHTS TABS / CARDS
+       ================================================== */
+    .section-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-heading-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 16px;
+      background: var(--accent-red);
+      border-radius: 1px;
+    }
+
+    .description-body {
+      font-size: 14.5px;
+      line-height: 1.7;
+      color: #d1d5db;
+      white-space: pre-line;
+    }
+
+    /* Highlights Grid */
+    .highlights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .highlight-card {
+      background: #111116;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .highlight-icon-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #191924;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-red);
+      flex-shrink: 0;
+    }
+
+    .highlight-info-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .highlight-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .highlight-value {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    /* ==================================================
+       COLLECTOR REVIEWS SECTION
+       ================================================== */
+    .reviews-layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 36px;
+      align-items: start;
+    }
+
+    .rating-summary-card {
+      background: #111116;
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .score-huge {
+      font-family: var(--font-heading);
+      font-size: 48px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .review-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .review-item-card {
+      background: #111116;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .review-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .reviewer-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .verified-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--badge-stock-green);
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .review-date {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .review-comment-body {
+      font-size: 13.5px;
+      color: #c5c7d0;
+      line-height: 1.6;
+    }
+
+    /* ==================================================
+       RELATED PRODUCTS
+       ================================================== */
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .related-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .related-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(229, 27, 36, 0.4);
+    }
+
+    .related-thumb-box {
+      width: 100%;
+      height: 180px;
+      background: #0d0d12;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .related-discount-pill {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      padding: 3px 7px;
+      border-radius: 4px;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .related-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .related-card:hover .related-thumb-box img {
+      transform: scale(1.05);
+    }
+
+    .related-info-box {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .related-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .related-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+
+    .related-price {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .btn-related-link {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-red);
+    }
+
+    /* ==================================================
+       FULLSCREEN LIGHTBOX MODAL
+       ================================================== */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 4, 6, 0.95);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .lightbox-overlay.active {
+      display: flex;
+    }
+
+    .lightbox-content-box {
+      position: relative;
+      max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-img {
+      max-width: 100%;
+      max-height: 78vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    .lightbox-close-btn {
+      position: absolute;
+      top: -44px;
+      right: 0;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 26px;
+      cursor: pointer;
+    }
+
+    .lightbox-arrow-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(20, 20, 28, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .lightbox-arrow-btn:hover {
+      background: var(--accent-red);
+    }
+
+    .lightbox-arrow-btn.prev {
+      left: -60px;
+    }
+
+    .lightbox-arrow-btn.next {
+      right: -60px;
+    }
+
+    .lightbox-counter-label {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ==================================================
+       SITE FOOTER
+       ================================================== */
+    .site-footer {
+      background-color: #070709;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 60px clamp(20px, 4vw, 56px) 30px clamp(20px, 4vw, 56px);
+      margin-top: auto;
+    }
+
+    .footer-inner {
+      max-width: 1340px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .footer-columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.2fr;
+      gap: 40px;
+    }
+
+    .footer-col-title {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 16px;
+    }
+
+    .footer-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 320px;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links-list a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.15s ease;
+    }
+
+    .footer-links-list a:hover {
+      color: #ffffff;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+      .main-image-container {
+        height: 400px;
+      }
+      .reviews-layout {
+        grid-template-columns: 1fr;
+      }
+      .footer-columns {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .trust-badges-grid {
+        grid-template-columns: 1fr;
+      }
+      .actions-cta-row {
+        flex-direction: column;
+      }
+      .btn-add-cart-main,
+      .btn-wishlist-action {
+        width: 100%;
+        justify-content: center;
+      }
+      .lightbox-arrow-btn.prev {
+        left: 10px;
+      }
+      .lightbox-arrow-btn.next {
+        right: 10px;
+      }
+      .footer-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .variants-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+      .v-card-top-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div style="display: none;">{% csrf_token %}</div>
+
+  <!-- Toast Messages Container -->
+  <div class="toast-messages" id="toastContainer">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast-message {% if message.tags %}{{ message.tags }}{% endif %}">
+          <span>{{ message }}</span>
+          <button type="button" class="toast-close-btn" onclick="this.closest('.toast-message').remove()">✕</button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="{% url 'home' %}" class="brand-logo">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+            <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+            <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+          </svg>
+        </div>
+        <span class="brand-name">HOT WHEELS <span>HUB</span></span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="{% url 'home' %}" class="nav-link">HOME</a></li>
+          <li><a href="{% url 'user_product_list' %}" class="nav-link active">SHOP</a></li>
+          <li><a href="{% url 'user_category_list' %}" class="nav-link">COLLECTIONS</a></li>
+          <li><a href="{% url 'home' %}#about" class="nav-link">ABOUT</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="nav-right">
+      <!-- Wishlist Action -->
+      <a href="{% url 'wishlist' %}" class="nav-action-btn" title="My Wishlist" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </a>
+
+      <!-- Cart Action -->
+      <a href="{% url 'cart_list' %}" class="nav-action-btn" title="Shopping Cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </a>
+
+      <!-- User Profile Widget -->
+      <div class="profile-widget">
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}" class="avatar-btn" aria-label="My Profile">
+            {% if user.profile_image %}
+              <img src="{{ user.profile_image.url }}" alt="{{ user.username }}">
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            {% endif %}
+          </a>
+
+          <div class="profile-menu">
+            <div class="profile-greeting">
+              <div class="user-label">Collector Account</div>
+              <div class="username-display">{{ request.user.username }}</div>
+            </div>
+
+            <a href="{% url 'profile' %}" class="profile-menu-item">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>My Profile</span>
+            </a>
+
+            <a href="{% url 'address_list' %}" class="profile-menu-item">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>My Addresses</span>
+            </a>
+
+            <a href="{% url 'wishlist' %}" class="profile-menu-item">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              <span>Wishlist</span>
+            </a>
+
+            <div class="profile-menu-divider"></div>
+
+            <form method="POST" action="{% url 'logout' %}" style="margin: 0;">
+              {% csrf_token %}
+              <button type="submit" class="profile-menu-item logout-item">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Logout</span>
+              </button>
+            </form>
+          </div>
+        {% else %}
+          <a href="{% url 'login' %}" class="avatar-btn" aria-label="Sign In">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="details-viewport">
+
+    <!-- Interactive Breadcrumbs & Navigation -->
+    <div class="breadcrumbs-header-row">
+      <nav class="breadcrumbs-bar" aria-label="Breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          {% if breadcrumb.url %}
+            <a href="{{ breadcrumb.url }}">{{ breadcrumb.name }}</a>
+            <span class="chevron">/</span>
+          {% else %}
+            <span class="current">{{ breadcrumb.name }}</span>
+          {% endif %}
+        {% endfor %}
+      </nav>
+    </div>
+
+    <!-- Unavailable Product Alert Banner -->
+    {% if product_unavailable %}
+      <div class="unavailable-notice-banner" role="alert">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div>
+          <strong>{{ unavailable_message|default:"Product Unavailable" }}</strong>
+          <span>This collectible casting or its category is currently unlisted and not available for purchase.</span>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Two-Column Product Showcase -->
+    <div class="showcase-grid">
+
+      <!-- LEFT: Zoomable Image Gallery -->
+      <section class="gallery-showcase">
+        <!-- Main Large Zoomable Image Box -->
+        <div class="main-image-container" id="zoomContainer">
+          {% if images %}
+            <img
+              src="/media/{{ images.0.image_url }}"
+              alt="{{ product.name }}"
+              class="main-product-image"
+              id="mainProductImage"
+            >
+          {% else %}
+            <div style="color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>No image available</span>
+            </div>
+          {% endif %}
+
+          <!-- Fullscreen Lightbox Trigger Button -->
+          <button type="button" class="expand-btn" id="openLightboxBtn" title="View Fullscreen High-Res Image" aria-label="Fullscreen zoom">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 3 21 3 21 9"/>
+              <polyline points="9 21 3 21 3 15"/>
+              <line x1="21" y1="3" x2="14" y2="10"/>
+              <line x1="3" y1="21" x2="10" y2="14"/>
+            </svg>
+          </button>
+
+          <!-- Hover Zoom Hint -->
+          <div class="zoom-hint-badge">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="11" y1="8" x2="11" y2="14"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+            <span>Hover to Magnify</span>
+          </div>
+        </div>
+
+        <!-- Thumbnails Strip -->
+        {% if images|length > 1 %}
+          <div class="thumbnails-strip" id="thumbnailsStrip">
+            {% for img in images %}
+              <button
+                type="button"
+                class="gallery-thumb-btn {% if forloop.first %}active{% endif %}"
+                data-full-img="/media/{{ img.image_url }}"
+                data-index="{{ forloop.counter0 }}"
+                aria-label="View photo {{ forloop.counter }}"
+              >
+                <img src="/media/{{ img.image_url }}" alt="Thumbnail {{ forloop.counter }}">
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </section>
+
+      <!-- RIGHT: Specifications, Pricing & Cart CTA -->
+      <section class="product-meta-showcase">
+
+        <!-- Category & Series Tag -->
+        <div class="header-pill-row">
+          <a href="{% url 'user_product_list' %}?category={{ product.category.id }}" class="category-tag">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+              <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+            </svg>
+            <span>{{ product.category.name }}</span>
+          </a>
+
+          {% if product_unavailable %}
+            <span class="unavailable-pill-tag">Unavailable</span>
+          {% elif stock_status == 'sold_out' %}
+            <span class="unavailable-pill-tag">Sold Out</span>
+          {% elif product.offer_percentage and product.offer_percentage > 0 %}
+            <span class="discount-ribbon-pill">
+              {{ product.offer_name|default:"Limited Sale" }} &bull; {{ product.offer_percentage|floatformat:0 }}% OFF
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Main Product Title -->
+        <h1 class="product-title">{{ product.name }}</h1>
+
+        <!-- Rating Summary -->
+        <div class="rating-summary-row">
+          <div class="stars-cluster">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          {% if average_rating %}
+            <span class="rating-score">{{ average_rating|floatformat:1 }}</span>
+            <a href="#reviewsSection" class="reviews-count-link">({{ total_reviews }} collector reviews)</a>
+          {% else %}
+            <span class="rating-score" style="color: var(--text-dim);">Unrated</span>
+            <a href="#reviewsSection" class="reviews-count-link">(Be first to review)</a>
+          {% endif %}
+        </div>
+
+        <!-- Price Card -->
+        <div class="price-box">
+          <div class="price-values-wrap">
+            <span class="price-sale-huge" id="displayedPrice">
+              ₹{{ product.sale_price }}
+            </span>
+            {% if product.offer_percentage and product.offer_percentage > 0 %}
+              <span class="price-regular-strike" id="displayedRegularPrice">
+                ₹{{ product.regular_price }}
+              </span>
+              <span class="price-discount-tag" id="discountBadge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="5" x2="5" y2="19"/>
+                  <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
+                  <circle cx="17.5" cy="17.5" r="2.5" fill="currentColor"/>
+                </svg>
+                <span>{{ product.offer_percentage|floatformat:0 }}% OFF</span>
+              </span>
+            {% endif %}
+          </div>
+
+          <div class="price-tax-note">
+            <span class="tax-text">Inclusive of all taxes</span>
+            {% if product.offer_percentage and product.offer_percentage > 0 %}
+              <span class="offer-savings-text">
+                {% if product.offer_name %}{{ product.offer_name }}{% else %}Special Offer Applied{% endif %}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Stock Availability Status -->
+        {% if product_unavailable %}
+          <div id="stockBanner" class="stock-banner unavailable">
+            <span class="pulse-dot"></span>
+            <span id="stockStatusText">
+              Product Unavailable — Currently not available for purchase
+            </span>
+          </div>
+        {% else %}
+          {% with first_variant=variants.0 %}
+          <div id="stockBanner" class="stock-banner {% if stock_status == 'sold_out' or not first_variant or first_variant.stock_quantity <= 0 or first_variant.stock_status == 'out_of_stock' %}sold-out{% elif first_variant.stock_status == 'low_stock' %}low-stock{% else %}in-stock{% endif %}">
+            <span class="pulse-dot"></span>
+            <span id="stockStatusText">{% if stock_status == "sold_out" %}Sold Out — Currently unavailable for purchase{% elif not first_variant or first_variant.stock_quantity <= 0 or first_variant.stock_status == 'out_of_stock' %}Sold Out — This variant is currently unavailable{% elif first_variant.stock_status == "low_stock" %}Low Stock — Only {{ first_variant.stock_quantity }} left for this variant!{% else %}In Stock &amp; Ready to Ship ({{ first_variant.stock_quantity }} units available){% endif %}</span>
+          </div>
+          {% endwith %}
+        {% endif %}
+
+        <!-- Variant Selector -->
+        <div>
+          <div class="section-label">Select Colorway &amp; Scale Variant</div>
+          <div class="variants-grid" id="variantsContainer">
+            {% for variant in variants %}
+              <button
+                type="button"
+                class="variant-card-btn {% if forloop.first %}active{% endif %} {% if variant.stock_quantity <= 0 or variant.stock_status == 'out_of_stock' %}out-of-stock{% endif %}"
+                data-id="{{ variant.id }}"
+                data-color="{{ variant.color }}"
+                data-size="{{ variant.size }}"
+                data-price="{{ variant.price }}"
+                data-stock="{{ variant.stock_quantity }}"
+                data-status="{{ variant.stock_status }}"
+                data-wishlist="{% if variant.wishlist_item_id %}{{ variant.wishlist_item_id }}{% endif %}"
+              >
+                <div class="v-card-top-row">
+                  <span class="v-color-name">{{ variant.color }}</span>
+                  {% if variant.stock_quantity <= 0 or variant.stock_status == 'out_of_stock' %}
+                    <span class="v-stock-tag">Out of Stock</span>
+                  {% endif %}
+                </div>
+                <div class="v-meta-row">
+                  <span>{{ variant.size }}</span>
+                  <span class="v-meta-price">₹{{ variant.price }}</span>
+                </div>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Action CTAs: Add to Cart & Wishlist -->
+        <div class="actions-cta-row">
+          {% if product_unavailable %}
+            <button
+              type="button"
+              class="btn-add-cart-main disabled"
+              id="addToCartBtn"
+              disabled
+              aria-disabled="true"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+              </svg>
+              <span id="addToCartText">PRODUCT UNAVAILABLE</span>
+            </button>
+          {% else %}
+            <!-- Add to Cart Link -->
+            {% with first_variant=variants.0 %}
+              <a
+                id="addToCartBtn"
+                href="{% if first_variant and first_variant.stock_quantity > 0 and first_variant.stock_status != 'out_of_stock' %}{% url 'add_to_cart' first_variant.id %}{% else %}javascript:void(0);{% endif %}"
+                class="btn-add-cart-main {% if not first_variant or first_variant.stock_quantity <= 0 or first_variant.stock_status == 'out_of_stock' %}disabled{% endif %}"
+                {% if not first_variant or first_variant.stock_quantity <= 0 or first_variant.stock_status == 'out_of_stock' %}aria-disabled="true"{% endif %}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="9" cy="21" r="1"/>
+                  <circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <span id="addToCartText">
+                  {% if first_variant and first_variant.stock_quantity > 0 and first_variant.stock_status != 'out_of_stock' %}
+                    ADD TO CART
+                  {% else %}
+                    OUT OF STOCK
+                  {% endif %}
+                </span>
+              </a>
+
+              <!-- Wishlist Heart Button -->
+              {% if request.user.is_authenticated %}
+                <a
+                  id="wishlistBtn"
+                  href="{% if first_variant %}{% url 'wishlist_add' first_variant.id %}{% else %}#{% endif %}"
+                  class="btn-wishlist-action {% if first_variant.wishlist_item_id %}active{% endif %}"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="{% if first_variant.wishlist_item_id %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span id="wishlistText">
+                    {% if first_variant.wishlist_item_id %}Saved to Wishlist{% else %}Add to Wishlist{% endif %}
+                  </span>
+                </a>
+              {% else %}
+                <a
+                  id="wishlistBtn"
+                  href="{% url 'login' %}"
+                  class="btn-wishlist-action"
+                  title="Sign in to save"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span>Add to Wishlist</span>
+                </a>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="trust-badges-grid">
+          <div class="trust-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <div class="trust-text">
+              <strong>100% Genuine Casting</strong>
+              Official Hot Wheels licensed release.
+            </div>
+          </div>
+
+          <div class="trust-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            <div class="trust-text">
+              <strong>Collector Packaging</strong>
+              Blister protection box with bubble wrap.
+            </div>
+          </div>
+
+          <div class="trust-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <div class="trust-text">
+              <strong>Mint Condition Guarantee</strong>
+              Factory fresh unpunched cards.
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Collector Highlights & Technical Specifications -->
+    <section class="section-card">
+      <div class="section-heading-bar">
+        <h2 class="section-title">Collector Highlights &amp; Specs</h2>
+      </div>
+
+      <div class="highlights-grid">
+        <div class="highlight-card">
+          <div class="highlight-icon-circle">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+          </div>
+          <div class="highlight-info-wrap">
+            <span class="highlight-label">Casting Category</span>
+            <span class="highlight-value">{{ product.category.name|default:"Official Collection" }}</span>
+          </div>
+        </div>
+
+        <div class="highlight-card">
+          <div class="highlight-icon-circle">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="highlight-info-wrap">
+            <span class="highlight-label">Available Editions</span>
+            <span class="highlight-value">{{ variants|length }} Colorway{{ variants|length|pluralize }}</span>
+          </div>
+        </div>
+
+        <div class="highlight-card">
+          <div class="highlight-icon-circle">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+          <div class="highlight-info-wrap">
+            <span class="highlight-label">Collector Rating</span>
+            <span class="highlight-value">
+              {% if average_rating %}
+                {{ average_rating|floatformat:1 }} / 5.0 ({{ total_reviews }} review{{ total_reviews|pluralize }})
+              {% else %}
+                Collector Unrated
+              {% endif %}
+            </span>
+          </div>
+        </div>
+
+        <div class="highlight-card">
+          <div class="highlight-icon-circle">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div class="highlight-info-wrap">
+            <span class="highlight-label">Inventory Status</span>
+            <span class="highlight-value">
+              {% if product_unavailable %}
+                Unavailable
+              {% elif stock_status == 'sold_out' %}
+                Sold Out
+              {% elif stock_status == 'low_stock' %}
+                Low Stock ({{ total_stock }} units left)
+              {% else %}
+                In Stock ({{ total_stock }} units)
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Description & Story -->
+    <section class="section-card">
+      <div class="section-heading-bar">
+        <h2 class="section-title">Collector Description</h2>
+      </div>
+      <div class="description-body">{{ product.description }}</div>
+    </section>
+
+    <!-- Customer Ratings & Reviews -->
+    <section class="section-card" id="reviewsSection">
+      <div class="section-heading-bar">
+        <h2 class="section-title">Verified Collector Reviews</h2>
+        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+          {{ total_reviews }} total reviews
+        </span>
+      </div>
+
+      <div class="reviews-layout">
+        <!-- Average Score Card -->
+        <div class="rating-summary-card">
+          <span class="score-huge">{{ average_rating|floatformat:1|default:"0.0" }}</span>
+          <div class="stars-cluster" style="font-size: 20px;">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.4;">
+            Based on genuine verified collector feedback.
+          </p>
+        </div>
+
+        <!-- Reviews List -->
+        <div class="review-items-list">
+          {% for review in reviews %}
+            <article class="review-item-card">
+              <div class="review-header-row">
+                <div class="reviewer-name">
+                  <span>{{ review.order_item.order.user.first_name|default:review.order_item.order.user.username }}</span>
+                  <span class="verified-badge">Verified Buyer</span>
+                </div>
+                <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+              </div>
+
+              <!-- Rating Stars -->
+              <div class="stars-cluster">
+                {% for i in "12345" %}
+                  <svg viewBox="0 0 24 24" style="{% if forloop.counter <= review.rating %}color: var(--accent-gold);{% else %}color: #33333f;{% endif %}">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                {% endfor %}
+              </div>
+
+              <p class="review-comment-body">{{ review.comment }}</p>
+            </article>
+          {% empty %}
+            <div style="padding: 36px 20px; text-align: center; color: var(--text-dim); background: #111116; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.08);">
+              No reviews yet for this casting. Be the first collector to leave feedback after order delivery!
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- Related Products -->
+    {% if related_products %}
+      <section class="section-card">
+        <div class="section-heading-bar">
+          <h2 class="section-title">Related Castings In {{ product.category.name }}</h2>
+        </div>
+
+        <div class="related-grid">
+          {% for rel in related_products %}
+            <a href="{% url 'user_product_details' rel.id %}" class="related-card">
+              <div class="related-thumb-box">
+                {% with rel_v=rel.variants.all.0 %}
+                  {% if rel_v and rel_v.images.all %}
+                    <img src="/media/{{ rel_v.images.all.0.image_url }}" alt="{{ rel.name }}" loading="lazy">
+                  {% else %}
+                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 11px;">
+                      Diecast Model
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
+                {% if rel.offers.all %}
+                  {% with rel_offer=rel.offers.all.0 %}
+                    {% if rel_offer.is_active and rel_offer.discount_value > 0 %}
+                      <span class="related-discount-pill">{{ rel_offer.discount_value|floatformat:0 }}% OFF</span>
+                    {% endif %}
+                  {% endwith %}
+                {% endif %}
+              </div>
+              <div class="related-info-box">
+                <span style="font-size: 10px; font-weight: 800; color: var(--accent-red); text-transform: uppercase;">
+                  {{ rel.category.name }}
+                </span>
+                <h3 class="related-title">{{ rel.name }}</h3>
+                <div class="related-price-row">
+                  <span class="related-price">₹{{ rel.regular_price }}</span>
+                  <span class="btn-related-link">View &rarr;</span>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+
+  </main>
+
+  <!-- ==================================================
+       FULLSCREEN HIGH-RES LIGHTBOX MODAL
+       ================================================== -->
+  <div class="lightbox-overlay" id="lightboxModal">
+    <div class="lightbox-content-box">
+      <button type="button" class="lightbox-close-btn" id="closeLightboxBtn" aria-label="Close fullscreen view">✕</button>
+      
+      {% if images|length > 1 %}
+        <button type="button" class="lightbox-arrow-btn prev" id="prevLightboxBtn" aria-label="Previous image">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+      {% endif %}
+
+      <img src="" alt="Fullscreen Diecast Image" class="lightbox-img" id="lightboxImg">
+
+      {% if images|length > 1 %}
+        <button type="button" class="lightbox-arrow-btn next" id="nextLightboxBtn" aria-label="Next image">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      {% endif %}
+
+      <span class="lightbox-counter-label" id="lightboxCounter"></span>
+    </div>
+  </div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-columns">
+        <div>
+          <a href="{% url 'home' %}" class="brand-logo" style="margin-bottom: 14px;">
+            <div class="logo-badge">
+              <svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/><path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/><path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/></svg>
+            </div>
+            <span class="brand-name">HOT WHEELS <span>HUB</span></span>
+          </a>
+          <p class="footer-text">
+            Precision 1:64 automotive diecast replicas, collector series, and track engineering.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Navigation</h4>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'home' %}">Home Hub</a></li>
+            <li><a href="{% url 'user_product_list' %}">Shop Catalog</a></li>
+            <li><a href="{% url 'wishlist' %}">My Wishlist</a></li>
+            <li><a href="{% url 'cart_list' %}">Shopping Cart</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Collector Care</h4>
+          <ul class="footer-links-list">
+            <li><a href="#">Authenticity Certificate</a></li>
+            <li><a href="#">Cardboard &amp; Blister Care</a></li>
+            <li><a href="#">Track Packing Logistics</a></li>
+            <li><a href="#">Returns &amp; Replacements</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Hot Wheels Nation</h4>
+          <p class="footer-text" style="margin-bottom: 12px;">
+            Join over 50,000 collectors racing across global track sets.
+          </p>
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent-red); letter-spacing: 0.08em; text-transform: uppercase;">
+            #ITSTNOTSAMEWITHOUTTHEFLAME
+          </span>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; {% now "Y" %} HOT WHEELS HUB. All rights reserved.</span>
+        <span>ENGINEERED FOR COLLECTORS WORLDWIDE</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Variants Embedded JSON -->
+  <script id="variantsData" type="application/json">
+  [
+    {% for v in variants %}
+    {
+      "id": {{ v.id }},
+      "color": "{{ v.color|escapejs }}",
+      "size": "{{ v.size|escapejs }}",
+      "price": "{{ v.price }}",
+      "stock_quantity": {{ v.stock_quantity }},
+      "stock_status": "{{ v.stock_status }}",
+      "wishlist_item_id": {% if v.wishlist_item_id %}{{ v.wishlist_item_id }}{% else %}null{% endif %},
+      "addToCartUrl": "{% url 'add_to_cart' v.id %}",
+      "wishlistAddUrl": "{% url 'wishlist_add' v.id %}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+  </script>
+
+  <!-- Interactive Gallery, Zoom & Variant Management Script -->
+  <script>
+    (function () {
+      // ----------------------------------------------------
+      // 1. Zoomable Image Gallery & Lightbox
+      // ----------------------------------------------------
+      const imageList = [
+        {% for img in images %}
+          "/media/{{ img.image_url }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ];
+
+      let currentImageIndex = 0;
+      const mainImage = document.getElementById("mainProductImage");
+      const zoomContainer = document.getElementById("zoomContainer");
+      const thumbnails = document.querySelectorAll(".gallery-thumb-btn");
+
+      // Thumbnail clicks
+      thumbnails.forEach((thumb) => {
+        thumb.addEventListener("click", function () {
+          thumbnails.forEach((t) => t.classList.remove("active"));
+          this.classList.add("active");
+          const targetSrc = this.getAttribute("data-full-img");
+          const idx = parseInt(this.getAttribute("data-index"), 10);
+          if (mainImage) mainImage.src = targetSrc;
+          currentImageIndex = idx;
+        });
+      });
+
+      // Hover Zoom on Desktop
+      if (zoomContainer && mainImage) {
+        zoomContainer.addEventListener("mousemove", function (e) {
+          if (window.innerWidth <= 800) return;
+          const rect = zoomContainer.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
+          mainImage.style.transformOrigin = `${x}% ${y}%`;
+          mainImage.style.transform = "scale(1.9)";
+        });
+
+        zoomContainer.addEventListener("mouseleave", function () {
+          mainImage.style.transformOrigin = "center center";
+          mainImage.style.transform = "scale(1)";
+        });
+      }
+
+      // Lightbox Modal
+      const lightboxModal = document.getElementById("lightboxModal");
+      const lightboxImg = document.getElementById("lightboxImg");
+      const lightboxCounter = document.getElementById("lightboxCounter");
+      const openLightboxBtn = document.getElementById("openLightboxBtn");
+      const closeLightboxBtn = document.getElementById("closeLightboxBtn");
+      const prevLightboxBtn = document.getElementById("prevLightboxBtn");
+      const nextLightboxBtn = document.getElementById("nextLightboxBtn");
+
+      function updateLightbox() {
+        if (!imageList.length) return;
+        lightboxImg.src = imageList[currentImageIndex];
+        if (lightboxCounter) {
+          lightboxCounter.textContent = `Asset ${currentImageIndex + 1} of ${imageList.length}`;
+        }
+      }
+
+      function openLightbox(idx) {
+        if (!imageList.length) return;
+        currentImageIndex = idx;
+        updateLightbox();
+        lightboxModal.classList.add("active");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeLightbox() {
+        lightboxModal.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+
+      if (openLightboxBtn) {
+        openLightboxBtn.addEventListener("click", () => openLightbox(currentImageIndex));
+      }
+
+      if (closeLightboxBtn) {
+        closeLightboxBtn.addEventListener("click", closeLightbox);
+      }
+
+      if (prevLightboxBtn) {
+        prevLightboxBtn.addEventListener("click", () => {
+          currentImageIndex = (currentImageIndex - 1 + imageList.length) % imageList.length;
+          updateLightbox();
+        });
+      }
+
+      if (nextLightboxBtn) {
+        nextLightboxBtn.addEventListener("click", () => {
+          currentImageIndex = (currentImageIndex + 1) % imageList.length;
+          updateLightbox();
+        });
+      }
+
+      // Close on backdrop click or Escape
+      if (lightboxModal) {
+        lightboxModal.addEventListener("click", function (e) {
+          if (e.target === lightboxModal) closeLightbox();
+        });
+      }
+
+      window.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && lightboxModal && lightboxModal.classList.contains("active")) {
+          closeLightbox();
+        }
+      });
+
+      // ----------------------------------------------------
+      // 2. Interactive Variant Switching
+      // ----------------------------------------------------
+      const isProductUnavailable = {{ product_unavailable|yesno:"true,false" }};
+      const variantsDataEl = document.getElementById("variantsData");
+      let variantsList = [];
+      try {
+        variantsList = JSON.parse(variantsDataEl.textContent);
+      } catch (err) {
+        console.error("Variants JSON parse error:", err);
+      }
+
+      const variantBtns = document.querySelectorAll(".variant-card-btn");
+      const displayedPrice = document.getElementById("displayedPrice");
+      const displayedRegularPrice = document.getElementById("displayedRegularPrice");
+      const stockBanner = document.getElementById("stockBanner");
+      const stockStatusText = document.getElementById("stockStatusText");
+      const addToCartBtn = document.getElementById("addToCartBtn");
+      const addToCartText = document.getElementById("addToCartText");
+      const wishlistBtn = document.getElementById("wishlistBtn");
+      const wishlistText = document.getElementById("wishlistText");
+      const isUserAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+      const offerPercentage = {% if product.offer_percentage and product.offer_percentage > 0 %}{{ product.offer_percentage }}{% else %}null{% endif %};
+
+      let selectedVariant = variantsList.length > 0 ? variantsList[0] : null;
+
+      variantBtns.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          variantBtns.forEach((b) => b.classList.remove("active"));
+          this.classList.add("active");
+
+          const variantId = parseInt(this.getAttribute("data-id"), 10);
+          const variant = variantsList.find((v) => v.id === variantId);
+          if (!variant) return;
+          selectedVariant = variant;
+
+          // Update price display
+          if (displayedPrice) {
+            if (offerPercentage && offerPercentage > 0) {
+              const regPrice = parseFloat(variant.price);
+              if (!isNaN(regPrice)) {
+                const discountAmt = (regPrice * offerPercentage) / 100;
+                const salePrice = (regPrice - discountAmt).toFixed(2);
+                displayedPrice.textContent = `₹${salePrice}`;
+                if (displayedRegularPrice) {
+                  displayedRegularPrice.textContent = `₹${regPrice.toFixed(2)}`;
+                }
+              } else {
+                displayedPrice.textContent = `₹${variant.price}`;
+              }
+            } else {
+              displayedPrice.textContent = `₹${variant.price}`;
+            }
+          }
+
+          // If product is marked unavailable overall
+          if (isProductUnavailable) {
+            if (stockBanner && stockStatusText) {
+              stockBanner.className = "stock-banner unavailable";
+              stockStatusText.textContent = "Product Unavailable — Currently not available for purchase";
+            }
+            if (addToCartBtn && addToCartText) {
+              addToCartBtn.classList.add("disabled");
+              addToCartBtn.setAttribute("href", "javascript:void(0);");
+              addToCartBtn.setAttribute("aria-disabled", "true");
+              addToCartText.textContent = "PRODUCT UNAVAILABLE";
+            }
+            return;
+          }
+
+          // Determine stock status for selected variant
+          const isOutOfStock = (variant.stock_quantity <= 0 || variant.stock_status === "out_of_stock");
+          const isLowStock = (!isOutOfStock && variant.stock_status === "low_stock");
+
+          // Update Stock Status Banner
+          if (stockBanner && stockStatusText) {
+            stockBanner.className = "stock-banner";
+            if (isOutOfStock) {
+              stockBanner.classList.add("sold-out");
+              stockStatusText.textContent = "Sold Out — This variant is currently unavailable";
+            } else if (isLowStock) {
+              stockBanner.classList.add("low-stock");
+              stockStatusText.textContent = `Low Stock — Only ${variant.stock_quantity} left for this variant!`;
+            } else {
+              stockBanner.classList.add("in-stock");
+              stockStatusText.textContent = `In Stock & Ready to Ship (${variant.stock_quantity} units available)`;
+            }
+          }
+
+          // Update Add to Cart Button
+          if (addToCartBtn && addToCartText) {
+            if (isOutOfStock) {
+              addToCartBtn.classList.add("disabled");
+              addToCartBtn.setAttribute("href", "javascript:void(0);");
+              addToCartBtn.setAttribute("aria-disabled", "true");
+              addToCartText.textContent = "OUT OF STOCK";
+            } else {
+              addToCartBtn.classList.remove("disabled");
+              addToCartBtn.setAttribute("href", variant.addToCartUrl);
+              addToCartBtn.removeAttribute("aria-disabled");
+              addToCartText.textContent = "ADD TO CART";
+            }
+          }
+
+          // Update Wishlist Button
+          if (wishlistBtn && wishlistText && isUserAuthenticated) {
+            wishlistBtn.setAttribute("href", variant.wishlistAddUrl);
+            if (variant.wishlist_item_id) {
+              wishlistBtn.classList.add("active");
+              wishlistText.textContent = "Saved to Wishlist";
+              const svg = wishlistBtn.querySelector("svg");
+              if (svg) svg.setAttribute("fill", "currentColor");
+            } else {
+              wishlistBtn.classList.remove("active");
+              wishlistText.textContent = "Add to Wishlist";
+              const svg = wishlistBtn.querySelector("svg");
+              if (svg) svg.setAttribute("fill", "none");
+            }
+          }
+        });
+      });
+
+      function getCsrfToken() {
+        const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (tokenInput && tokenInput.value) return tokenInput.value;
+        const cookie = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='));
+        return cookie ? cookie.split('=')[1] : '';
+      }
+
+      function scheduleToastDismissal(toast, delay = 4000) {
+        if (!toast) return;
+        setTimeout(function () {
+          if (!toast || !toast.parentElement) return;
+          toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(20px)';
+          setTimeout(function () {
+            toast.remove();
+          }, 400);
+        }, delay);
+      }
+
+      // Schedule dismissal for any server-rendered initial messages
+      document.querySelectorAll(".toast-messages .toast-message").forEach(function (toast) {
+        scheduleToastDismissal(toast);
+      });
+
+      function showToast(message, type = 'success') {
+        let container = document.getElementById('toastContainer');
+        if (!container) {
+          container = document.querySelector('.toast-messages');
+        }
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'toastContainer';
+          container.className = 'toast-messages';
+          document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast-message ${type}`;
+        toast.innerHTML = `<span>${message}</span><button type="button" class="toast-close-btn" onclick="this.closest('.toast-message').remove()">✕</button>`;
+        container.appendChild(toast);
+        scheduleToastDismissal(toast, 4000);
+      }
+
+      // Add to Cart AJAX Handler (POST with Accept: application/json)
+      if (addToCartBtn) {
+        addToCartBtn.addEventListener("click", async function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (this.classList.contains("disabled") || this.getAttribute("aria-disabled") === "true") {
+            return false;
+          }
+
+          if (!isUserAuthenticated) {
+            window.location.href = "{% url 'login' %}?next=" + encodeURIComponent(window.location.pathname);
+            return false;
+          }
+
+          const url = this.getAttribute("href");
+          if (!url || url === "javascript:void(0);" || url === "#" || this.dataset.loading === "true") {
+            return false;
+          }
+
+          this.dataset.loading = "true";
+          const origText = addToCartText ? addToCartText.textContent : "ADD TO CART";
+          if (addToCartText) addToCartText.textContent = "ADDING...";
+
+          try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (jsonErr) {
+                console.error("JSON parse error:", jsonErr);
+              }
+            }
+
+            if (response.ok && response.status === 200 && (!data || data.success !== false)) {
+              const msg = data && data.message ? data.message : "Product added to cart.";
+              showToast(msg, "success");
+              if (addToCartText) addToCartText.textContent = "ADDED TO CART";
+              setTimeout(() => {
+                if (addToCartText && this.dataset.loading !== "true") {
+                  addToCartText.textContent = "ADD TO CART";
+                }
+              }, 1500);
+
+              // Server deletes the variant from wishlist when added to cart
+              if (wishlistBtn && wishlistText) {
+                wishlistBtn.classList.remove("active");
+                wishlistText.textContent = "Add to Wishlist";
+                const svg = wishlistBtn.querySelector("svg");
+                if (svg) svg.setAttribute("fill", "none");
+                if (selectedVariant) {
+                  selectedVariant.wishlist_item_id = null;
+                }
+              }
+            } else {
+              // 409 Conflict (e.g. out of stock or max quantity) or 400 Bad Request
+              const errMsg = data && (data.message || data.error)
+                ? (data.message || data.error)
+                : "Unable to add product to cart.";
+              showToast(errMsg, "error");
+
+              if (data && data.message && (data.message.toLowerCase().includes("out of stock") || data.message.toLowerCase().includes("unavailable"))) {
+                this.classList.add("disabled");
+                this.setAttribute("aria-disabled", "true");
+                this.setAttribute("href", "javascript:void(0);");
+                if (addToCartText) addToCartText.textContent = "OUT OF STOCK";
+              } else if (addToCartText) {
+                addToCartText.textContent = origText;
+              }
+            }
+          } catch (err) {
+            console.error("Add to cart error:", err);
+            showToast("Network error. Please try again.", "error");
+            if (addToCartText) addToCartText.textContent = origText;
+          } finally {
+            delete this.dataset.loading;
+          }
+        });
+      }
+
+      // Wishlist Heart Button AJAX Handler (POST with Accept: application/json)
+      if (wishlistBtn) {
+        wishlistBtn.addEventListener("click", async function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (!isUserAuthenticated) {
+            window.location.href = "{% url 'login' %}?next=" + encodeURIComponent(window.location.pathname);
+            return;
+          }
+
+          const url = this.getAttribute("href");
+          if (!url || url === "#" || this.dataset.loading === "true") return;
+
+          this.dataset.loading = "true";
+          const svg = this.querySelector("svg");
+
+          try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            let data = null;
+            if (contentType.includes("application/json")) {
+              try {
+                data = await response.json();
+              } catch (jsonErr) {}
+            }
+
+            if (response.status === 201 || (response.ok && data && data.action === "added")) {
+              this.classList.add("active");
+              if (wishlistText) wishlistText.textContent = "Saved to Wishlist";
+              if (svg) svg.setAttribute("fill", "currentColor");
+              const msg = data && data.message ? data.message : "Product added to wishlist.";
+              showToast(msg, "success");
+
+              if (selectedVariant) {
+                selectedVariant.wishlist_item_id = data && data.wishlist_item_id ? data.wishlist_item_id : true;
+              }
+            } else if (response.status === 200 || (response.ok && data && data.action === "removed")) {
+              this.classList.remove("active");
+              if (wishlistText) wishlistText.textContent = "Add to Wishlist";
+              if (svg) svg.setAttribute("fill", "none");
+              showToast("Product removed from wishlist.", "success");
+
+              if (selectedVariant) {
+                selectedVariant.wishlist_item_id = null;
+              }
+            } else {
+              const errMsg = data && (data.message || data.error)
+                ? (data.message || data.error)
+                : "Unable to update wishlist.";
+              showToast(errMsg, "error");
+            }
+          } catch (err) {
+            console.error("Wishlist toggle error:", err);
+            showToast("Network error. Please try again.", "error");
+          } finally {
+            delete this.dataset.loading;
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

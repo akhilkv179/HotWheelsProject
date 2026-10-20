@@ -1,0 +1,2571 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Product | Hot Wheels Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
+  <style>
+    /* ==================================================
+       RESET & DESIGN TOKENS
+       ================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0b0b0e;
+      --bg-sidebar: #070709;
+      --bg-card: #121217;
+      --bg-card-hover: #16161d;
+      --bg-row-hover: #181820;
+      --bg-input: #15151c;
+      --bg-modal: #14141a;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-input: rgba(255, 255, 255, 0.09);
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff222e;
+      --accent-orange: #ff4d00;
+      --accent-coral: #f87171;
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --text-header: #c5c7d0;
+      --badge-active-bg: rgba(34, 197, 94, 0.12);
+      --badge-active-border: rgba(34, 197, 94, 0.28);
+      --badge-active-text: #22c55e;
+      --badge-gold-bg: rgba(245, 158, 11, 0.12);
+      --badge-gold-border: rgba(245, 158, 11, 0.3);
+      --badge-gold-text: #fbbf24;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR
+       ================================================== */
+    .admin-sidebar {
+      width: 250px;
+      min-width: 250px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 20px 24px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand-header {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: linear-gradient(180deg, var(--accent-orange), var(--accent-red));
+      border-radius: 2px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #555765;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      stroke: var(--text-dim);
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background-color: #16161d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+      margin-top: 20px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* ==================================================
+       MAIN CONTENT
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(229, 27, 36, 0.04), transparent 70%);
+    }
+
+    /* Topbar */
+    .admin-topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 44px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .topbar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .topbar-badge .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+      box-shadow: 0 0 8px rgba(229, 27, 36, 0.8);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1e1f26;
+      border: 1.5px solid rgba(229, 27, 36, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .profile-role {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      line-height: 1.2;
+    }
+
+    /* Content Viewport */
+    .content-viewport {
+      padding: 36px 44px 70px 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .breadcrumbs a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .breadcrumbs a:hover {
+      color: #ffffff;
+    }
+
+    .breadcrumbs span.current {
+      color: var(--accent-red);
+    }
+
+    /* Page Header */
+    .page-header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: clamp(24px, 3.2vw, 34px);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-cancel {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 44px;
+      padding: 0 20px;
+      background-color: #171720;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-cancel:hover {
+      background-color: #20202d;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-save-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      padding: 0 26px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(229, 27, 36, 0.45);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+
+    .btn-save-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(229, 27, 36, 0.65);
+      filter: brightness(1.08);
+    }
+
+    .btn-save-primary svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2.5;
+    }
+
+    /* Alerts */
+    .alert-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-box {
+      background: rgba(229, 27, 36, 0.12);
+      border: 1px solid rgba(229, 27, 36, 0.35);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .alert-box.success {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.35);
+      border-left-color: #22c55e;
+      color: #86efac;
+    }
+
+    .alert-content-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-dismiss {
+      background: transparent;
+      border: none;
+      color: inherit;
+      opacity: 0.7;
+      font-size: 16px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .alert-dismiss:hover {
+      opacity: 1;
+    }
+
+    /* Grid Layout */
+    .form-grid-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.85fr) minmax(360px, 1.15fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .form-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Cards */
+    .admin-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-header-block {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 18px;
+    }
+
+    .card-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background-color: var(--accent-red);
+      border-radius: 1px;
+    }
+
+    .card-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Form Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-header);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .required-star {
+      color: var(--accent-red);
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 9px;
+      padding: 12px 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      border-color: rgba(229, 27, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+      background-color: #191922;
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: #4b4e60;
+    }
+
+    .form-textarea {
+      min-height: 130px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .form-select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+    }
+
+    .form-select option {
+      background-color: #15151c;
+      color: #ffffff;
+    }
+
+    .field-hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* ==================================================
+       FORM SECTIONS STACK & VARIANT CARDS
+       ================================================== */
+    .form-sections-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      width: 100%;
+    }
+
+    .form-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Variants Stack Container */
+    .variants-stack-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      width: 100%;
+    }
+
+    .variant-card {
+      background: #14141c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .variant-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .variant-card.has-error {
+      border-color: rgba(239, 68, 68, 0.7);
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
+    }
+
+    .variant-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .variant-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .variant-number-badge {
+      background: linear-gradient(135deg, #e51b24, #ff4d00);
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(229, 27, 36, 0.35);
+    }
+
+    .variant-color-title {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .btn-remove-variant {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 6px;
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-remove-variant:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #ffffff;
+    }
+
+    .btn-remove-variant:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .variant-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .variant-specs-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .variant-specs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Variant Dedicated Images Section */
+    .variant-images-box {
+      background: #0d0d12;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .variant-images-box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .variant-images-box-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-header);
+    }
+
+    .badge-slots-status {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2.5px 8px;
+      border-radius: 4px;
+      background: rgba(229, 27, 36, 0.14);
+      color: #f87171;
+      border: 1px solid rgba(229, 27, 36, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-slots-status.complete {
+      background: rgba(34, 197, 94, 0.12);
+      color: #22c55e;
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-choose-all-slots {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #1c1d27;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-choose-all-slots:hover {
+      background: #252636;
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    /* Slots 3-Column Grid */
+    .variant-slots-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .variant-slots-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .image-slot-card {
+      background: #171722;
+      border: 1.5px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 200px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .image-slot-card:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .image-slot-card.has-image {
+      border-style: solid;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .image-slot-card.is-primary-slot {
+      border-color: rgba(229, 27, 36, 0.55);
+    }
+
+    .slot-tag {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 4;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(10, 10, 15, 0.88);
+      color: #9ca3af;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(4px);
+    }
+
+    .slot-tag.primary {
+      background: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 2px 8px rgba(229, 27, 36, 0.45);
+    }
+
+    .slot-drop-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 12px;
+      cursor: pointer;
+      gap: 8px;
+      text-align: center;
+      transition: background-color 0.15s ease;
+    }
+
+    .slot-drop-area:hover,
+    .slot-drop-area.dragover {
+      background-color: rgba(229, 27, 36, 0.05);
+    }
+
+    .slot-upload-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #121218;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-red);
+    }
+
+    .slot-label-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .slot-hint-text {
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+
+    .slot-preview-area {
+      position: relative;
+      width: 100%;
+      padding-top: 75%; /* 4:3 Aspect Ratio */
+      background: #09090c;
+      overflow: hidden;
+    }
+
+    .slot-preview-area img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .slot-overlay-remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(229, 27, 36, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 6;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      transition: all 0.15s ease;
+    }
+
+    .slot-overlay-remove-btn:hover {
+      background: #ff222e;
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(229, 27, 36, 0.65);
+    }
+
+    .slot-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 8px 10px;
+      background: #111116;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-slot-act {
+      flex: 1;
+      height: 28px;
+      background: #1d1e28;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 5px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-slot-act:hover {
+      background: #272838;
+      color: #ffffff;
+    }
+
+    .btn-slot-act.remove {
+      flex: 1;
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.25);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .btn-slot-act.remove:hover {
+      background: rgba(239, 68, 68, 0.22);
+      color: #ffffff;
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .btn-slot-act.replace {
+      flex: 1;
+      color: #60a5fa;
+      border-color: rgba(96, 165, 250, 0.25);
+    }
+
+    .btn-slot-act.replace:hover {
+      background: rgba(96, 165, 250, 0.15);
+      color: #ffffff;
+    }
+
+    .btn-slot-act.set-primary {
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .btn-slot-act.set-primary:hover {
+      background: rgba(245, 158, 11, 0.15);
+      color: #ffffff;
+    }
+
+    .slot-primary-active-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #22c55e;
+      flex: 1;
+      text-align: center;
+    }
+
+    /* Add Variant Buttons */
+    .btn-add-variant {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background-color: #1d1e28;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 7px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-add-variant:hover {
+      background-color: #272836;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .add-variant-footer {
+      display: flex;
+      justify-content: center;
+      padding-top: 6px;
+    }
+
+    .btn-add-variant-large {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      background: rgba(229, 27, 36, 0.05);
+      border: 1.5px dashed rgba(229, 27, 36, 0.35);
+      border-radius: 9px;
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-add-variant-large:hover {
+      background: rgba(229, 27, 36, 0.12);
+      border-color: var(--accent-red);
+      transform: translateY(-1px);
+    }
+
+    /* Checklist Grid */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .checklist-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .checklist-item svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--accent-red);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Form Bottom Actions */
+    .form-bottom-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 14px;
+      padding-top: 10px;
+      padding-bottom: 30px;
+    }
+
+    /* ==================================================
+       CROPPER MODAL
+       ================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 4, 6, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .cropper-modal-window {
+      background-color: var(--bg-modal);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 820px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+    }
+
+    .cropper-modal-header {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .cropper-modal-title {
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cropper-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .cropper-close-btn:hover {
+      color: #ffffff;
+    }
+
+    .cropper-modal-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+
+    .crop-canvas-wrapper {
+      width: 100%;
+      height: 400px;
+      background-color: #08080b;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .crop-canvas-wrapper img {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+    }
+
+    .cropper-toolbar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .cropper-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cropper-tool-btn {
+      height: 36px;
+      padding: 0 12px;
+      background-color: #1c1d27;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 7px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .cropper-tool-btn:hover {
+      background-color: #272836;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .cropper-tool-btn.active {
+      background-color: var(--accent-red);
+      border-color: var(--accent-red);
+      color: #ffffff;
+    }
+
+    .cropper-modal-footer {
+      padding: 18px 24px;
+      border-top: 1px solid var(--border-subtle);
+      background-color: rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-apply-crop {
+      height: 42px;
+      padding: 0 24px;
+      background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.4);
+    }
+
+    .btn-apply-crop:hover {
+      filter: brightness(1.08);
+    }
+
+    /* Responsive */
+    @media (max-width: 1080px) {
+      .form-grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .admin-sidebar {
+        position: fixed;
+        left: -260px;
+        transform: translateX(0);
+        z-index: 100;
+      }
+
+      .admin-sidebar.open {
+        transform: translateX(260px);
+      }
+
+      .mobile-menu-btn {
+        display: block;
+      }
+
+      .admin-topbar,
+      .content-viewport {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .form-row-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="admin-layout">
+
+    <!-- 1. SIDEBAR -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+        <div class="brand-header">
+          <span class="brand-title">HOT WHEELS</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN CONTENT -->
+    <main class="admin-main">
+
+      <!-- TOPBAR -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="topbar-badge">
+            <span class="badge-dot"></span>
+            <span>ADMINISTRATOR CONSOLE</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="topbar-profile">
+            <div class="profile-avatar-circle">AD</div>
+            <div class="profile-info">
+              <span class="profile-name">Chief Collector</span>
+              <span class="profile-role">SYSTEM ADMIN</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT VIEWPORT -->
+      <div class="content-viewport">
+
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumbs">
+          <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+          <span>/</span>
+          <a href="{% url 'admin_product_list' %}">Products</a>
+          <span>/</span>
+          <span class="current">Add New Product</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header-row">
+          <div>
+            <h1 class="page-title">New Product Catalog Entry</h1>
+            <p class="page-subtitle">Configure specifications, stock variants, and client-cropped high-resolution media assets.</p>
+          </div>
+
+          <div class="header-actions">
+            <a href="{% url 'admin_product_list' %}" class="btn-cancel">
+              Cancel
+            </a>
+            <button type="submit" form="productAddForm" class="btn-save-primary" id="submitBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              <span>Save Product</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Alerts -->
+        {% if messages %}
+          <div class="alert-container">
+            {% for message in messages %}
+              <div class="alert-box {% if message.tags %}{{ message.tags }}{% endif %}">
+                <div class="alert-content-wrap">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>{{ message }}</span>
+                </div>
+                <button type="button" class="alert-dismiss" onclick="this.closest('.alert-box').remove()">✕</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Client validation error container -->
+        <div id="clientErrorContainer" class="alert-container" style="display: none;">
+          <div class="alert-box" id="clientErrorBox">
+            <div class="alert-content-wrap">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span id="clientErrorMessage"></span>
+            </div>
+            <button type="button" class="alert-dismiss" onclick="document.getElementById('clientErrorContainer').style.display = 'none';">✕</button>
+          </div>
+        </div>
+
+        <!-- MAIN FORM -->
+        <form
+          method="POST"
+          id="productAddForm"
+          enctype="multipart/form-data"
+          novalidate
+        >
+          {% csrf_token %}
+
+          <div class="form-sections-stack">
+
+            <!-- SECTION 1: Product Information -->
+            <section class="admin-card">
+              <div class="card-header-block">
+                <div class="card-title-wrap">
+                  <h2 class="card-title">Product Information</h2>
+                  <span class="card-desc">Master catalog naming, category classification, and base retail pricing.</span>
+                </div>
+              </div>
+
+              <div class="form-grid-2col">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                  <label class="form-label" for="productName">
+                    Product Title <span class="required-star">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="productName"
+                    name="name"
+                    class="form-input"
+                    placeholder="e.g. 1971 Datsun 240Z RLC Exclusive"
+                    required
+                  >
+                  <span class="field-hint">Include casting name, year, and series designation.</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="categorySelect">
+                    Category <span class="required-star">*</span>
+                  </label>
+                  <select id="categorySelect" name="category" class="form-select" required>
+                    <option value="">Select Catalog Category...</option>
+                    {% for cat in categories %}
+                      <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="basePrice">
+                      Regular Price ($) <span class="required-star">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      id="basePrice"
+                      name="regular_price"
+                      class="form-input"
+                      step="0.01"
+                      min="0.01"
+                      placeholder="e.g. 29.99"
+                      required
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="lowStockThreshold">
+                      Low Stock Threshold <span class="required-star">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      id="lowStockThreshold"
+                      name="low_stock_threshold"
+                      class="form-input"
+                      min="0"
+                      value="10"
+                      placeholder="e.g. 10"
+                      required
+                    >
+                  </div>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                  <label class="form-label" for="productDescription">
+                    Collector Notes &amp; Description <span class="required-star">*</span>
+                  </label>
+                  <textarea
+                    id="productDescription"
+                    name="description"
+                    class="form-textarea"
+                    placeholder="Provide details on casting specs, wheel types (Real Riders), tampos, blister condition, and collector authenticity..."
+                    required
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION 2: Product Variants & Dedicated Images -->
+            <section class="admin-card">
+              <div class="card-header-block">
+                <div class="card-title-wrap">
+                  <h2 class="card-title">Product Variants &amp; Dedicated Images</h2>
+                  <span class="card-desc">Each variant must have its own Color, Size, Price, Stock, and exactly 3 images. Image 1 is the primary cover for that variant.</span>
+                </div>
+                <button type="button" class="btn-add-variant" id="addVariantBtn">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span>Add Variant</span>
+                </button>
+              </div>
+
+              <!-- Container for all Variant Cards -->
+              <div class="variants-stack-container" id="variantsContainer">
+                <!-- Variant cards populated dynamically by JavaScript -->
+              </div>
+
+              <!-- Bottom Add Variant Button -->
+              <div class="add-variant-footer">
+                <button type="button" class="btn-add-variant-large" id="addVariantBtnBottom">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span>Add Another Product Variant</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- SECTION 3: Catalog Standards -->
+            <section class="admin-card checklist-card">
+              <div class="card-header-block">
+                <div class="card-title-wrap">
+                  <h2 class="card-title">Catalog Quality Checklist</h2>
+                  <span class="card-desc">Standards for multi-variant collector catalog listings.</span>
+                </div>
+              </div>
+
+              <div class="checklist-grid">
+                <div class="checklist-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>Exactly 3 Images per Variant:</strong> Each variant requires front profile, angle 3/4 view, and packaging / chassis photos.</span>
+                </div>
+                <div class="checklist-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>Variant Primary Cover:</strong> Image 1 in each variant card serves as that variant's primary cover photo.</span>
+                </div>
+                <div class="checklist-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>Independent Assets:</strong> Uploading images for Blue does not affect Red. Every variant has its own isolated set of 3 images.</span>
+                </div>
+                <div class="checklist-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>Crop &amp; Refine:</strong> Use the interactive crop editor on any asset before catalog publication.</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Bottom Save Action Bar -->
+            <div class="form-bottom-actions">
+              <a href="{% url 'admin_product_list' %}" class="btn-cancel">
+                Cancel
+              </a>
+              <button type="submit" form="productAddForm" class="btn-save-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                <span>Save Product</span>
+              </button>
+            </div>
+
+          </div>
+        </form>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================================================
+       INTERACTIVE CROPPER MODAL
+       ================================================== -->
+  <div class="modal-overlay" id="cropperModal">
+    <div class="cropper-modal-window">
+      <div class="cropper-modal-header">
+        <h3 class="cropper-modal-title">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+            <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+          </svg>
+          <span>Crop &amp; Refine Asset</span>
+        </h3>
+        <button type="button" class="cropper-close-btn" id="closeCropperModalBtn" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="cropper-modal-body">
+        <div class="crop-canvas-wrapper">
+          <img id="cropperTargetImage" src="" alt="To Crop">
+        </div>
+
+        <!-- Controls Toolbar -->
+        <div class="cropper-toolbar-row">
+          <!-- Aspect Ratios -->
+          <div class="cropper-btn-group">
+            <button type="button" class="cropper-tool-btn active" data-aspect="1">1:1 Square</button>
+            <button type="button" class="cropper-tool-btn" data-aspect="1.3333">4:3 Standard</button>
+            <button type="button" class="cropper-tool-btn" data-aspect="1.7777">16:9 Wide</button>
+            <button type="button" class="cropper-tool-btn" data-aspect="NaN">Free</button>
+          </div>
+
+          <!-- Transformations -->
+          <div class="cropper-btn-group">
+            <button type="button" class="cropper-tool-btn" id="rotateLeftBtn" title="Rotate -90°">
+              ↺ 90°
+            </button>
+            <button type="button" class="cropper-tool-btn" id="rotateRightBtn" title="Rotate +90°">
+              ↻ 90°
+            </button>
+            <button type="button" class="cropper-tool-btn" id="zoomInBtn" title="Zoom In">
+              + Zoom
+            </button>
+            <button type="button" class="cropper-tool-btn" id="zoomOutBtn" title="Zoom Out">
+              - Zoom
+            </button>
+            <button type="button" class="cropper-tool-btn" id="resetCropBtn" title="Reset">
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cropper-modal-footer">
+        <button type="button" class="btn-cancel" id="cancelCropBtn">Cancel</button>
+        <button type="button" class="btn-apply-crop" id="applyCropBtn">Apply &amp; Save Crop</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cropper.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+  <script>
+    (function () {
+      // ----------------------------------------------------------------
+      // State Management for Variants and Images
+      // ----------------------------------------------------------------
+      let variants = [];
+      let cropperInstance = null;
+      let activeCropTarget = null; // { vId, slotIdx }
+
+      const variantsContainer = document.getElementById("variantsContainer");
+      const addVariantBtn = document.getElementById("addVariantBtn");
+      const addVariantBtnBottom = document.getElementById("addVariantBtnBottom");
+      const productForm = document.getElementById("productAddForm");
+      const clientErrorContainer = document.getElementById("clientErrorContainer");
+      const clientErrorMessage = document.getElementById("clientErrorMessage");
+      const cropperModal = document.getElementById("cropperModal");
+      const cropperTargetImage = document.getElementById("cropperTargetImage");
+
+      function showError(msg) {
+        clientErrorMessage.textContent = msg;
+        clientErrorContainer.style.display = "flex";
+        clientErrorContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      function hideError() {
+        clientErrorContainer.style.display = "none";
+      }
+
+      function escapeHtml(text) {
+        if (!text) return "";
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      // ----------------------------------------------------------------
+      // Create Variant Card
+      // ----------------------------------------------------------------
+      function createVariantCard(initialData) {
+        const vId = "v_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
+        const basePriceVal = document.getElementById("basePrice").value || "29.99";
+
+        const variantObj = {
+          id: vId,
+          slots: [null, null, null], // Exactly 3 slots
+        };
+        variants.push(variantObj);
+
+        const vIndex = variants.length - 1;
+        const card = document.createElement("div");
+        card.className = "variant-card";
+        card.id = vId;
+        card.setAttribute("data-variant-id", vId);
+
+        const defaultColor = initialData && initialData.color ? initialData.color : (vIndex === 0 ? "Spectraflame Blue" : "Chrome Red");
+        const defaultSize = initialData && initialData.size ? initialData.size : "1:64 Scale";
+        const defaultPrice = initialData && initialData.price ? initialData.price : basePriceVal;
+        const defaultStock = initialData && initialData.stock ? initialData.stock : "25";
+
+        card.innerHTML = `
+          <!-- Real hidden file input populated on submit -->
+          <input type="file" name="variant_images_${vIndex}" multiple class="variant-hidden-file-input" style="display: none;">
+
+          <!-- Card Header -->
+          <div class="variant-card-header">
+            <div class="variant-title-wrap">
+              <span class="variant-number-badge">VARIANT ${vIndex + 1}</span>
+              <span class="variant-color-title">${escapeHtml(defaultColor)}</span>
+            </div>
+            <button type="button" class="btn-remove-variant" title="Remove Variant" onclick="removeVariantCard('${vId}')">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              <span>Remove Variant</span>
+            </button>
+          </div>
+
+          <!-- Variant Specs Grid -->
+          <div class="variant-specs-grid">
+            <div class="form-group">
+              <label class="form-label">Colour / Finish <span class="required-star">*</span></label>
+              <input
+                type="text"
+                name="variant_color[]"
+                class="form-input v-color-input"
+                placeholder="e.g. Spectraflame Blue"
+                value="${escapeHtml(defaultColor)}"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Scale / Size <span class="required-star">*</span></label>
+              <input
+                type="text"
+                name="variant_size[]"
+                class="form-input"
+                placeholder="e.g. 1:64 Scale"
+                value="${escapeHtml(defaultSize)}"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Price ($) <span class="required-star">*</span></label>
+              <input
+                type="number"
+                name="variant_price[]"
+                class="form-input v-price-input"
+                step="0.01"
+                min="0.01"
+                placeholder="29.99"
+                value="${escapeHtml(defaultPrice)}"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Stock Units <span class="required-star">*</span></label>
+              <input
+                type="number"
+                name="variant_stock[]"
+                class="form-input"
+                min="0"
+                placeholder="25"
+                value="${escapeHtml(defaultStock)}"
+                required
+              >
+            </div>
+          </div>
+
+          <!-- Variant Dedicated Images Section -->
+          <div class="variant-images-box">
+            <div class="variant-images-box-header">
+              <div class="variant-images-box-title">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>Variant Images</span>
+                <span class="badge-slots-status" id="badge_${vId}">0 / 3 Images</span>
+              </div>
+              <div class="variant-images-box-actions">
+                <button type="button" class="btn-choose-all-slots" onclick="triggerBatchUpload('${vId}')">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Select 3 Images</span>
+                </button>
+                <input type="file" multiple accept="image/jpeg,image/png,image/webp" id="batch_${vId}" style="display: none;" onchange="handleBatchFileSelect('${vId}', this)">
+              </div>
+            </div>
+
+            <!-- Exactly 3 Image Slots -->
+            <div class="variant-slots-row">
+              <!-- Slot 0: Image 1 (Primary) -->
+              <div class="image-slot-card is-primary-slot" id="slot_${vId}_0" data-slot="0">
+                <span class="slot-tag primary">★ Primary</span>
+                <div class="slot-drop-area" onclick="triggerSingleSlot('${vId}', 0)">
+                  <div class="slot-upload-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                  </div>
+                  <span class="slot-label-text">Image 1</span>
+                  <span class="slot-hint-text">Primary Cover Photo</span>
+                </div>
+                <div class="slot-preview-area" style="display: none;">
+                  <img src="" alt="Variant Image 1">
+                  <button type="button" class="slot-overlay-remove-btn" onclick="removeSlot('${vId}', 0)" title="Remove image to change it">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="slot-actions-row" style="display: none;">
+                  <button type="button" class="btn-slot-act crop" onclick="openCrop('${vId}', 0)" title="Crop Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                      <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                    </svg>
+                    <span>Crop</span>
+                  </button>
+                  <button type="button" class="btn-slot-act replace" onclick="triggerSingleSlot('${vId}', 0)" title="Change / Replace Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    <span>Change</span>
+                  </button>
+                  <button type="button" class="btn-slot-act remove" onclick="removeSlot('${vId}', 0)" title="Remove Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Remove</span>
+                  </button>
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="file_${vId}_0" style="display: none;" onchange="handleSingleSlotFile('${vId}', 0, this)">
+              </div>
+
+              <!-- Slot 1: Image 2 -->
+              <div class="image-slot-card" id="slot_${vId}_1" data-slot="1">
+                <span class="slot-tag">Image 2</span>
+                <div class="slot-drop-area" onclick="triggerSingleSlot('${vId}', 1)">
+                  <div class="slot-upload-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                  </div>
+                  <span class="slot-label-text">Image 2</span>
+                  <span class="slot-hint-text">Angle / Profile</span>
+                </div>
+                <div class="slot-preview-area" style="display: none;">
+                  <img src="" alt="Variant Image 2">
+                  <button type="button" class="slot-overlay-remove-btn" onclick="removeSlot('${vId}', 1)" title="Remove image to change it">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="slot-actions-row" style="display: none;">
+                  <button type="button" class="btn-slot-act crop" onclick="openCrop('${vId}', 1)" title="Crop Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                      <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                    </svg>
+                    <span>Crop</span>
+                  </button>
+                  <button type="button" class="btn-slot-act replace" onclick="triggerSingleSlot('${vId}', 1)" title="Change / Replace Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    <span>Change</span>
+                  </button>
+                  <button type="button" class="btn-slot-act remove" onclick="removeSlot('${vId}', 1)" title="Remove Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Remove</span>
+                  </button>
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="file_${vId}_1" style="display: none;" onchange="handleSingleSlotFile('${vId}', 1, this)">
+              </div>
+
+              <!-- Slot 2: Image 3 -->
+              <div class="image-slot-card" id="slot_${vId}_2" data-slot="2">
+                <span class="slot-tag">Image 3</span>
+                <div class="slot-drop-area" onclick="triggerSingleSlot('${vId}', 2)">
+                  <div class="slot-upload-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                  </div>
+                  <span class="slot-label-text">Image 3</span>
+                  <span class="slot-hint-text">Packaging / Chassis</span>
+                </div>
+                <div class="slot-preview-area" style="display: none;">
+                  <img src="" alt="Variant Image 3">
+                  <button type="button" class="slot-overlay-remove-btn" onclick="removeSlot('${vId}', 2)" title="Remove image to change it">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="slot-actions-row" style="display: none;">
+                  <button type="button" class="btn-slot-act crop" onclick="openCrop('${vId}', 2)" title="Crop Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2v14a2 2 0 0 0 2 2h14"/>
+                      <path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                    </svg>
+                    <span>Crop</span>
+                  </button>
+                  <button type="button" class="btn-slot-act replace" onclick="triggerSingleSlot('${vId}', 2)" title="Change / Replace Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    <span>Change</span>
+                  </button>
+                  <button type="button" class="btn-slot-act remove" onclick="removeSlot('${vId}', 2)" title="Remove Image">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Remove</span>
+                  </button>
+                </div>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="file_${vId}_2" style="display: none;" onchange="handleSingleSlotFile('${vId}', 2, this)">
+              </div>
+            </div>
+          </div>
+        `;
+
+        variantsContainer.appendChild(card);
+
+        // Update color title dynamically
+        const colorInput = card.querySelector(".v-color-input");
+        const colorTitle = card.querySelector(".variant-color-title");
+        colorInput.addEventListener("input", function () {
+          const currentIdx = Array.from(variantsContainer.querySelectorAll(".variant-card")).indexOf(card);
+          colorTitle.textContent = this.value.trim() || `Variant ${currentIdx + 1}`;
+        });
+
+        // Drag & drop on each slot
+        for (let s = 0; s < 3; s++) {
+          setupSlotDragAndDrop(vId, s);
+        }
+
+        reindexVariants();
+      }
+
+      function setupSlotDragAndDrop(vId, slotIdx) {
+        const slotCard = document.getElementById(`slot_${vId}_${slotIdx}`);
+        if (!slotCard) return;
+
+        const dropArea = slotCard.querySelector(".slot-drop-area");
+        dropArea.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropArea.classList.add("dragover");
+        });
+        dropArea.addEventListener("dragleave", () => {
+          dropArea.classList.remove("dragover");
+        });
+        dropArea.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dropArea.classList.remove("dragover");
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            setSlotFile(vId, slotIdx, e.dataTransfer.files[0]);
+          }
+        });
+      }
+
+      // ----------------------------------------------------------------
+      // Re-index Variants (Sequential 0, 1, 2...)
+      // ----------------------------------------------------------------
+      function reindexVariants() {
+        const cards = variantsContainer.querySelectorAll(".variant-card");
+        cards.forEach((card, idx) => {
+          // Re-label badge
+          const badge = card.querySelector(".variant-number-badge");
+          if (badge) badge.textContent = `VARIANT ${idx + 1}`;
+
+          // Re-label hidden file input name to variant_images_0, variant_images_1, etc.
+          const hiddenInput = card.querySelector(".variant-hidden-file-input");
+          if (hiddenInput) {
+            hiddenInput.name = `variant_images_${idx}`;
+          }
+
+          // Disable remove if only 1 variant exists
+          const removeBtn = card.querySelector(".btn-remove-variant");
+          if (removeBtn) {
+            removeBtn.disabled = (cards.length <= 1);
+          }
+        });
+      }
+
+      window.removeVariantCard = function (vId) {
+        if (variants.length <= 1) {
+          showError("At least one product variant is required.");
+          return;
+        }
+
+        const idx = variants.findIndex((v) => v.id === vId);
+        if (idx !== -1) {
+          variants[idx].slots.forEach((s) => {
+            if (s && s.previewUrl) URL.revokeObjectURL(s.previewUrl);
+          });
+          variants.splice(idx, 1);
+        }
+
+        const card = document.getElementById(vId);
+        if (card) card.remove();
+        reindexVariants();
+      };
+
+      // ----------------------------------------------------------------
+      // Slot Upload & Image Management
+      // ----------------------------------------------------------------
+      window.triggerSingleSlot = function (vId, slotIdx) {
+        const input = document.getElementById(`file_${vId}_${slotIdx}`);
+        if (input) input.click();
+      };
+
+      window.handleSingleSlotFile = function (vId, slotIdx, input) {
+        if (!input.files || input.files.length === 0) return;
+        const file = input.files[0];
+        input.value = "";
+        setSlotFile(vId, slotIdx, file);
+      };
+
+      window.triggerBatchUpload = function (vId) {
+        const input = document.getElementById(`batch_${vId}`);
+        if (input) input.click();
+      };
+
+      window.handleBatchFileSelect = function (vId, input) {
+        if (!input.files || input.files.length === 0) return;
+        const files = Array.from(input.files).slice(0, 3); // Maximum 3
+        input.value = "";
+
+        files.forEach((file, i) => {
+          if (i < 3) {
+            setSlotFile(vId, i, file);
+          }
+        });
+      };
+
+      function setSlotFile(vId, slotIdx, file) {
+        hideError();
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        const maxSize = 5 * 1024 * 1024;
+
+        if (!allowedTypes.includes(file.type)) {
+          showError(`"${file.name}" has an unsupported format. Only JPG, PNG, and WEBP are allowed.`);
+          return;
+        }
+        if (file.size > maxSize) {
+          showError(`"${file.name}" exceeds the 5 MB file size limit.`);
+          return;
+        }
+
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant) return;
+
+        if (variant.slots[slotIdx] && variant.slots[slotIdx].previewUrl) {
+          URL.revokeObjectURL(variant.slots[slotIdx].previewUrl);
+        }
+
+        const previewUrl = URL.createObjectURL(file);
+        variant.slots[slotIdx] = {
+          file: file,
+          previewUrl: previewUrl,
+          croppedBlob: null,
+        };
+
+        updateSlotUI(vId, slotIdx);
+        updateVariantBadge(vId);
+      }
+
+      function updateSlotUI(vId, slotIdx) {
+        const slotCard = document.getElementById(`slot_${vId}_${slotIdx}`);
+        if (!slotCard) return;
+
+        const variant = variants.find((v) => v.id === vId);
+        const data = variant ? variant.slots[slotIdx] : null;
+
+        const dropArea = slotCard.querySelector(".slot-drop-area");
+        const previewArea = slotCard.querySelector(".slot-preview-area");
+        const actionsRow = slotCard.querySelector(".slot-actions-row");
+        const img = previewArea.querySelector("img");
+
+        if (data) {
+          img.src = data.previewUrl;
+          dropArea.style.display = "none";
+          previewArea.style.display = "block";
+          actionsRow.style.display = "flex";
+          slotCard.classList.add("has-image");
+        } else {
+          img.src = "";
+          dropArea.style.display = "flex";
+          previewArea.style.display = "none";
+          actionsRow.style.display = "none";
+          slotCard.classList.remove("has-image");
+        }
+      }
+
+      function updateVariantBadge(vId) {
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant) return;
+        const count = variant.slots.filter((s) => s !== null).length;
+        const badge = document.getElementById(`badge_${vId}`);
+        if (badge) {
+          badge.textContent = `${count} / 3 Images`;
+          if (count === 3) {
+            badge.className = "badge-slots-status complete";
+          } else {
+            badge.className = "badge-slots-status";
+          }
+        }
+      }
+
+      window.removeSlot = function (vId, slotIdx) {
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant || !variant.slots[slotIdx]) return;
+
+        if (variant.slots[slotIdx].previewUrl) {
+          URL.revokeObjectURL(variant.slots[slotIdx].previewUrl);
+        }
+        variant.slots[slotIdx] = null;
+        updateSlotUI(vId, slotIdx);
+        updateVariantBadge(vId);
+      };
+
+      // ----------------------------------------------------------------
+      // Interactive Cropper Workflow
+      // ----------------------------------------------------------------
+      window.openCrop = function (vId, slotIdx) {
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant || !variant.slots[slotIdx]) return;
+
+        activeCropTarget = { vId, slotIdx };
+        cropperTargetImage.src = variant.slots[slotIdx].previewUrl;
+        cropperModal.classList.add("active");
+
+        if (cropperInstance) {
+          cropperInstance.destroy();
+        }
+        cropperInstance = new Cropper(cropperTargetImage, {
+          aspectRatio: 1,
+          viewMode: 2,
+          autoCropArea: 0.9,
+          responsive: true,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+        });
+      };
+
+      function closeCropModal() {
+        cropperModal.classList.remove("active");
+        if (cropperInstance) {
+          cropperInstance.destroy();
+          cropperInstance = null;
+        }
+        activeCropTarget = null;
+      }
+
+      document.getElementById("closeCropperModalBtn").addEventListener("click", closeCropModal);
+      document.getElementById("cancelCropBtn").addEventListener("click", closeCropModal);
+
+      // Cropper toolbar controls
+      document.querySelectorAll("[data-aspect]").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          document.querySelectorAll("[data-aspect]").forEach((b) => b.classList.remove("active"));
+          this.classList.add("active");
+          const val = parseFloat(this.getAttribute("data-aspect"));
+          if (cropperInstance) {
+            cropperInstance.setAspectRatio(isNaN(val) ? NaN : val);
+          }
+        });
+      });
+
+      document.getElementById("rotateLeftBtn").addEventListener("click", () => cropperInstance && cropperInstance.rotate(-90));
+      document.getElementById("rotateRightBtn").addEventListener("click", () => cropperInstance && cropperInstance.rotate(90));
+      document.getElementById("zoomInBtn").addEventListener("click", () => cropperInstance && cropperInstance.zoom(0.1));
+      document.getElementById("zoomOutBtn").addEventListener("click", () => cropperInstance && cropperInstance.zoom(-0.1));
+      document.getElementById("resetCropBtn").addEventListener("click", () => cropperInstance && cropperInstance.reset());
+
+      document.getElementById("applyCropBtn").addEventListener("click", function () {
+        if (!cropperInstance || !activeCropTarget) return;
+
+        const { vId, slotIdx } = activeCropTarget;
+        const variant = variants.find((v) => v.id === vId);
+        if (!variant || !variant.slots[slotIdx]) return;
+
+        const canvas = cropperInstance.getCroppedCanvas({
+          maxWidth: 1920,
+          maxHeight: 1920,
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: "high",
+        });
+
+        canvas.toBlob(
+          function (blob) {
+            if (!blob) return;
+
+            URL.revokeObjectURL(variant.slots[slotIdx].previewUrl);
+            const newUrl = URL.createObjectURL(blob);
+            variant.slots[slotIdx].croppedBlob = blob;
+            variant.slots[slotIdx].previewUrl = newUrl;
+
+            updateSlotUI(vId, slotIdx);
+            closeCropModal();
+          },
+          "image/jpeg",
+          0.92
+        );
+      });
+
+      // ----------------------------------------------------------------
+      // Add Variant Button Bindings
+      // ----------------------------------------------------------------
+      addVariantBtn.addEventListener("click", () => createVariantCard());
+      addVariantBtnBottom.addEventListener("click", () => createVariantCard());
+
+      // Auto-propagate base price changes to empty variant price inputs
+      document.getElementById("basePrice").addEventListener("input", function (e) {
+        const val = e.target.value;
+        const prices = variantsContainer.querySelectorAll(".v-price-input");
+        prices.forEach((p) => {
+          if (!p.value) p.value = val;
+        });
+      });
+
+      // ----------------------------------------------------------------
+      // Form Submission Validation & File Assembly
+      // ----------------------------------------------------------------
+      productForm.addEventListener("submit", function (e) {
+        hideError();
+
+        // 1. Validate Product Information
+        const name = document.getElementById("productName").value.trim();
+        const category = document.getElementById("categorySelect").value.trim();
+        const price = parseFloat(document.getElementById("basePrice").value);
+        const threshold = parseInt(document.getElementById("lowStockThreshold").value, 10);
+        const desc = document.getElementById("productDescription").value.trim();
+
+        if (!name) {
+          e.preventDefault();
+          showError("Product title is required.");
+          return;
+        }
+
+        if (!category) {
+          e.preventDefault();
+          showError("Please select a catalog category.");
+          return;
+        }
+
+        if (isNaN(price) || price <= 0) {
+          e.preventDefault();
+          showError("Please enter a valid regular price greater than zero.");
+          return;
+        }
+
+        if (isNaN(threshold) || threshold < 0) {
+          e.preventDefault();
+          showError("Low stock threshold cannot be negative.");
+          return;
+        }
+
+        if (!desc) {
+          e.preventDefault();
+          showError("Product description and collector notes are required.");
+          return;
+        }
+
+        // 2. Validate Variants
+        const cards = variantsContainer.querySelectorAll(".variant-card");
+        if (cards.length === 0) {
+          e.preventDefault();
+          showError("Please add at least one product variant.");
+          return;
+        }
+
+        for (let idx = 0; idx < cards.length; idx++) {
+          const card = cards[idx];
+          const colorInput = card.querySelector("[name='variant_color[]']");
+          const sizeInput = card.querySelector("[name='variant_size[]']");
+          const priceInput = card.querySelector("[name='variant_price[]']");
+          const stockInput = card.querySelector("[name='variant_stock[]']");
+
+          const colorVal = colorInput.value.trim();
+          const sizeVal = sizeInput.value.trim();
+          const priceVal = parseFloat(priceInput.value);
+          const stockVal = parseInt(stockInput.value, 10);
+
+          if (!colorVal) {
+            e.preventDefault();
+            showError(`Variant ${idx + 1} colour is required.`);
+            colorInput.focus();
+            return;
+          }
+          if (!sizeVal) {
+            e.preventDefault();
+            showError(`Variant ${idx + 1} size is required.`);
+            sizeInput.focus();
+            return;
+          }
+          if (isNaN(priceVal) || priceVal <= 0) {
+            e.preventDefault();
+            showError(`Variant ${idx + 1} price must be greater than zero.`);
+            priceInput.focus();
+            return;
+          }
+          if (isNaN(stockVal) || stockVal < 0) {
+            e.preventDefault();
+            showError(`Variant ${idx + 1} stock units cannot be negative.`);
+            stockInput.focus();
+            return;
+          }
+
+          // Check that this variant has EXACTLY 3 images
+          const vId = card.getAttribute("data-variant-id");
+          const variantObj = variants.find((v) => v.id === vId);
+
+          const has3 = variantObj && variantObj.slots[0] && variantObj.slots[1] && variantObj.slots[2];
+          if (!has3) {
+            e.preventDefault();
+            card.classList.add("has-error");
+            showError(`Variant ${idx + 1} must have exactly 3 images.`);
+            card.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+          } else {
+            card.classList.remove("has-error");
+          }
+
+          // Assemble DataTransfer for this variant (exactly 3 files)
+          const dt = new DataTransfer();
+          for (let s = 0; s < 3; s++) {
+            const slotData = variantObj.slots[s];
+            const blob = slotData.croppedBlob || slotData.file;
+            const originalName = slotData.file.name || `image_${s + 1}.jpg`;
+            const ext = slotData.croppedBlob ? ".jpg" : (originalName.match(/\.[^/.]+$/) || [".jpg"])[0];
+            const base = originalName.replace(/\.[^/.]+$/, "");
+            const filename = `${base}_slot${s + 1}${ext}`;
+
+            const fileObj = new File([blob], filename, {
+              type: blob.type || "image/jpeg",
+              lastModified: Date.now(),
+            });
+            dt.items.add(fileObj);
+          }
+
+          const hiddenInput = card.querySelector(".variant-hidden-file-input");
+          hiddenInput.name = `variant_images_${idx}`;
+          hiddenInput.files = dt.files;
+        }
+
+        // Submit state
+        const submitBtn = document.getElementById("submitBtn");
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<span>Saving Product...</span>`;
+        }
+      });
+
+      // Mobile Drawer Toggle
+      const menuBtn = document.getElementById("mobileMenuToggle");
+      const sidebar = document.getElementById("adminSidebar");
+      if (menuBtn && sidebar) {
+        menuBtn.addEventListener("click", () => {
+          sidebar.classList.toggle("open");
+        });
+      }
+
+      // Initialize with default first variant
+      createVariantCard({
+        color: "Spectraflame Blue",
+        size: "1:64 Scale",
+        price: "29.99",
+        stock: "25"
+      });
+    })();
+  </script>
+</body>
+</html>
