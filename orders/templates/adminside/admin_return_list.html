@@ -1012,7 +1012,7 @@
       stroke: #3f3f46;
     }
 
-    /* Table Footer */
+    /* Table Footer & Pagination */
     .table-footer {
       display: flex;
       align-items: center;
@@ -1025,11 +1025,98 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #6b7280;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .table-footer-info {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .footer-count-val {
       color: #ffffff;
       font-weight: 800;
+    }
+
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+      height: 32px;
+      min-width: 32px;
+      padding: 0 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      user-select: none;
+      box-sizing: border-box;
+      white-space: nowrap;
+    }
+
+    .pagination-btn.active {
+      background: var(--accent-red);
+      color: #ffffff;
+      box-shadow: 0 2px 10px var(--accent-red-glow);
+      cursor: default;
+      border: 1px solid var(--accent-red);
+    }
+
+    .pagination-btn.inactive {
+      background: #18181f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #9ca3af;
+    }
+
+    .pagination-btn.inactive:hover {
+      background: #24242e;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .pagination-btn.nav-edge {
+      background: #18181f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #9ca3af;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .pagination-btn.nav-edge:hover:not(.disabled) {
+      background: #24242e;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .pagination-btn.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: #131317;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      color: #52525b;
+    }
+
+    .pagination-ellipsis {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 4px;
+      color: #6b7280;
+      font-weight: 700;
+      user-select: none;
     }
 
     /* ==================================================
@@ -1915,6 +2002,18 @@
       .claim-header-right {
         display: none;
       }
+      .table-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+      }
+      .pagination-bar {
+        justify-content: center;
+      }
+      .nav-btn-text {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -2160,7 +2259,7 @@
         <div class="stats-kpi-grid">
           <div class="kpi-card">
             <span class="kpi-label">TOTAL RETURNS</span>
-            <span class="kpi-value" id="kpiTotalCount">{{ returns|length }}</span>
+            <span class="kpi-value" id="kpiTotalCount">{{ paginator.count|default:returns|length }}</span>
             <span class="kpi-sub">All return records</span>
           </div>
 
@@ -2437,14 +2536,117 @@
             </table>
           </div>
 
-          <!-- Table Footer -->
+          <!-- Table Footer & Pagination -->
           <div class="table-footer">
-            <div>
-              SHOWING <span id="visibleRowCount" class="footer-count-val">{{ returns|length }}</span> OF <span class="footer-count-val">{{ returns|length }}</span> RETURN REQUESTS
+            <div class="table-footer-info">
+              SHOWING <span id="visibleRowCount" class="footer-count-val">{{ page_obj|length }}</span> OF <span class="footer-count-val">{{ page_obj.paginator.count|default:returns|length }}</span> RETURN REQUESTS
+              {% if page_obj and page_obj.paginator.num_pages > 1 %}
+                <span style="margin-left: 6px; color: #6b7280; font-weight: 600;">(PAGE {{ page_obj.number }} OF {{ page_obj.paginator.num_pages }})</span>
+              {% endif %}
             </div>
-            <div>
-              <span>HOT WHEELS RETURN OPERATIONS</span>
-            </div>
+
+            {% if page_obj and page_obj.paginator.num_pages > 0 %}
+              <nav class="pagination-bar" aria-label="Return Requests Pagination">
+                <!-- First Page -->
+                {% if page_obj.has_previous %}
+                  <a href="?page=1{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn nav-edge" aria-label="First Page" title="First Page">
+                    &laquo;<span class="nav-btn-text" style="margin-left: 4px;">First</span>
+                  </a>
+                {% else %}
+                  <span class="pagination-btn nav-edge disabled" aria-disabled="true" title="First Page">
+                    &laquo;<span class="nav-btn-text" style="margin-left: 4px;">First</span>
+                  </span>
+                {% endif %}
+
+                <!-- Previous Page -->
+                {% if page_obj.has_previous %}
+                  <a href="?page={{ page_obj.previous_page_number }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn nav-edge" aria-label="Previous Page" title="Previous Page">
+                    &lsaquo;<span class="nav-btn-text" style="margin-left: 4px;">Prev</span>
+                  </a>
+                {% else %}
+                  <span class="pagination-btn nav-edge disabled" aria-disabled="true" title="Previous Page">
+                    &lsaquo;<span class="nav-btn-text" style="margin-left: 4px;">Prev</span>
+                  </span>
+                {% endif %}
+
+                <!-- Numbered Pages -->
+                {% if page_obj.paginator.num_pages <= 7 %}
+                  {% for p in page_obj.paginator.page_range %}
+                    {% if p == page_obj.number %}
+                      <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                    {% else %}
+                      <a href="?page={{ p }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ p }}</a>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  {% if page_obj.number <= 4 %}
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p <= 5 %}
+                        {% if p == page_obj.number %}
+                          <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="pagination-ellipsis">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ page_obj.paginator.num_pages }}</a>
+                  {% elif page_obj.number >= page_obj.paginator.num_pages|add:"-3" %}
+                    <a href="?page=1{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">1</a>
+                    <span class="pagination-ellipsis">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.paginator.num_pages|add:"-4" %}
+                        {% if p == page_obj.number %}
+                          <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <a href="?page=1{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">1</a>
+                    <span class="pagination-ellipsis">&hellip;</span>
+                    {% for p in page_obj.paginator.page_range %}
+                      {% if p >= page_obj.number|add:"-1" and p <= page_obj.number|add:"1" %}
+                        {% if p == page_obj.number %}
+                          <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                        {% else %}
+                          <a href="?page={{ p }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ p }}</a>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="pagination-ellipsis">&hellip;</span>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn inactive">{{ page_obj.paginator.num_pages }}</a>
+                  {% endif %}
+                {% endif %}
+
+                <!-- Next Page -->
+                {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn nav-edge" aria-label="Next Page" title="Next Page">
+                    <span class="nav-btn-text" style="margin-right: 4px;">Next</span>&rsaquo;
+                  </a>
+                {% else %}
+                  <span class="pagination-btn nav-edge disabled" aria-disabled="true" title="Next Page">
+                    <span class="nav-btn-text" style="margin-right: 4px;">Next</span>&rsaquo;
+                  </span>
+                {% endif %}
+
+                <!-- Last Page -->
+                {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.paginator.num_pages }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val|urlencode }}{% endif %}{% endfor %}" class="pagination-btn nav-edge" aria-label="Last Page" title="Last Page">
+                    <span class="nav-btn-text" style="margin-right: 4px;">Last</span>&raquo;
+                  </a>
+                {% else %}
+                  <span class="pagination-btn nav-edge disabled" aria-disabled="true" title="Last Page">
+                    <span class="nav-btn-text" style="margin-right: 4px;">Last</span>&raquo;
+                  </span>
+                {% endif %}
+              </nav>
+            {% else %}
+              <div>
+                <span>HOT WHEELS RETURN OPERATIONS</span>
+              </div>
+            {% endif %}
           </div>
         </section>
 

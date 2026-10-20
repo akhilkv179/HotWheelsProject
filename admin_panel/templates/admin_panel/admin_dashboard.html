@@ -1087,10 +1087,11 @@
       border: 1px solid rgba(34, 197, 94, 0.3);
     }
 
-    .status-badge.processing {
-      background: rgba(239, 68, 68, 0.12);
-      color: #ef4444;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+    .status-badge.processing,
+    .status-badge.pending {
+      background: rgba(234, 179, 8, 0.12);
+      color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.3);
     }
 
     .status-badge.shipped {
@@ -1774,7 +1775,7 @@
                   <span class="ops-value">1,120</span>
                 </div>
                 <div class="ops-box">
-                  <span class="ops-label">PROCESSING</span>
+                  <span class="ops-label">PENDING</span>
                   <span class="ops-value">85</span>
                 </div>
                 <div class="ops-box">
@@ -1883,8 +1884,10 @@
                     <td>
                       {% if order.status|lower == 'delivered' %}
                         <span class="status-badge delivered">DELIVERED</span>
-                      {% elif order.status|lower == 'processing' or order.status|lower == 'pending' %}
-                        <span class="status-badge processing">{{ order.status|upper }}</span>
+                      {% elif order.status|lower == 'pending' %}
+                        <span class="status-badge pending">PENDING</span>
+                      {% elif order.status|lower == 'processing' %}
+                        <span class="status-badge processing">PROCESSING</span>
                       {% elif order.status|lower == 'shipped' %}
                         <span class="status-badge shipped">SHIPPED</span>
                       {% else %}
@@ -1906,7 +1909,7 @@
                     <td class="customer-cell">Ananya Singh</td>
                     <td class="date-cell">Aug 11, 2026</td>
                     <td class="amount-cell">₹1,240</td>
-                    <td><span class="status-badge processing">PROCESSING</span></td>
+                    <td><span class="status-badge pending">PENDING</span></td>
                   </tr>
                   <tr>
                     <td class="order-id-cell">#ORD-12569</td>

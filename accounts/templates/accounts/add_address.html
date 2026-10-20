@@ -259,6 +259,45 @@
       stroke: #22c55e !important;
     }
 
+    .alert-close-btn {
+      background: transparent;
+      border: none;
+      color: currentColor;
+      font-size: 18px;
+      line-height: 1;
+      margin-left: auto;
+      cursor: pointer;
+      opacity: 0.7;
+      padding: 0 4px;
+      transition: opacity 0.15s ease;
+    }
+
+    .alert-close-btn:hover {
+      opacity: 1;
+    }
+
+    .form-input.is-invalid {
+      border-color: var(--accent-red) !important;
+      background-color: #171720 !important;
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.25) !important;
+    }
+
+    .field-error-text {
+      color: var(--accent-red);
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-save:disabled, .btn-save.btn-loading {
+      opacity: 0.65;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
     /* Form Container */
     .address-form {
       display: flex;
@@ -796,9 +835,9 @@
       <div class="title-accent-line"></div>
     </div>
 
-    <!-- Django Messages -->
-    {% if messages %}
-      <div class="alert-container">
+    <!-- Django Messages Container -->
+    <div class="alert-container" id="alertContainer">
+      {% if messages %}
         {% for message in messages %}
           <div class="alert-box {% if 'success' in message.tags %}success{% endif %}">
             {% if 'success' in message.tags %}
@@ -814,10 +853,11 @@
               </svg>
             {% endif %}
             <span>{{ message }}</span>
+            <button type="button" class="alert-close-btn" aria-label="Close alert" onclick="this.parentElement.remove();">&times;</button>
           </div>
         {% endfor %}
-      </div>
-    {% endif %}
+      {% endif %}
+    </div>
 
     <!-- Address Form with CSRF and exact backend input names -->
     <form method="POST" action="{% url 'add_address' %}" class="address-form">
@@ -1111,5 +1151,234 @@
     </div>
   </footer>
 
+  <!-- Address form submission and redirection handling script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('.address-form');
+      if (!form) return;
+
+      const submitBtn = form.querySelector('.btn-save');
+      const cancelBtn = form.querySelector('.btn-cancel');
+      const alertContainer = document.getElementById('alertContainer');
+      const formInputs = form.querySelectorAll('.form-input, input[name="address_type"], input[name="is_default"]');
+
+      const checkoutUrl = "{% url 'checkout' %}";
+      const addressListUrl = "{% url 'address_list' %}";
+
+      // Determine the destination based on where the user started adding an address
+      function resolveTargetRedirectUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const nextParam = urlParams.get('next');
+
+        // 1. If explicit next query parameter is provided and is a safe relative URL
+        if (nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')) {
+          return nextParam;
+        }
+
+        // 2. Inspect document.referrer if available and from the same origin
+        if (document.referrer) {
+          try {
+            const refUrl = new URL(document.referrer);
+            if (refUrl.origin === window.location.origin) {
+              const refPath = refUrl.pathname;
+              if (refPath.includes('/checkout')) {
+                return checkoutUrl;
+              }
+              if (refPath.includes('/addresses')) {
+                return addressListUrl;
+              }
+            }
+          } catch (e) {
+            console.warn('Could not parse document.referrer:', e);
+          }
+        }
+
+        // 3. Default fallback: address management default destination is the Address page
+        return addressListUrl;
+      }
+
+      const targetRedirectUrl = resolveTargetRedirectUrl();
+
+      // If user came from a specific page (e.g. checkout), update the Cancel button accordingly
+      if (cancelBtn) {
+        cancelBtn.setAttribute('href', targetRedirectUrl);
+      }
+
+      function clearErrors() {
+        if (alertContainer) {
+          alertContainer.innerHTML = '';
+        }
+        form.querySelectorAll('.is-invalid').forEach(function(el) {
+          el.classList.remove('is-invalid');
+        });
+        form.querySelectorAll('.field-error-text').forEach(function(el) {
+          el.remove();
+        });
+      }
+
+      function showTopAlert(message, type = 'error') {
+        if (!alertContainer) return;
+        alertContainer.innerHTML = '';
+
+        const alertBox = document.createElement('div');
+        alertBox.className = `alert-box ${type === 'success' ? 'success' : ''}`;
+
+        const iconSvg = type === 'success'
+          ? `<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+        alertBox.innerHTML = `
+          ${iconSvg}
+          <span>${message}</span>
+          <button type="button" class="alert-close-btn" aria-label="Close alert" onclick="this.parentElement.remove();">&times;</button>
+        `;
+        alertContainer.appendChild(alertBox);
+        alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function setSubmitting(isSubmitting) {
+        if (!submitBtn) return;
+        submitBtn.disabled = isSubmitting;
+        if (isSubmitting) {
+          submitBtn.classList.add('btn-loading');
+          submitBtn.dataset.originalText = submitBtn.textContent;
+          submitBtn.textContent = 'SAVING ADDRESS...';
+        } else {
+          submitBtn.classList.remove('btn-loading');
+          if (submitBtn.dataset.originalText) {
+            submitBtn.textContent = submitBtn.dataset.originalText;
+          }
+        }
+      }
+
+      // Auto-clear invalid state on input change
+      formInputs.forEach(function(input) {
+        function clearInputError() {
+          if (input.classList.contains('is-invalid')) {
+            input.classList.remove('is-invalid');
+            const group = input.closest('.form-group');
+            if (group) {
+              const errText = group.querySelector('.field-error-text');
+              if (errText) errText.remove();
+            }
+          }
+        }
+        input.addEventListener('input', clearInputError);
+        input.addEventListener('change', clearInputError);
+      });
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (submitBtn && submitBtn.disabled) return;
+
+        clearErrors();
+        setSubmitting(true);
+
+        const formData = new FormData(form);
+        const actionUrl = form.getAttribute('action') || window.location.href;
+
+        try {
+          const csrfToken = (function() {
+            const tokenInput = form.querySelector('[name=csrfmiddlewaretoken]');
+            if (tokenInput && tokenInput.value) return tokenInput.value;
+            const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return cookie ? cookie.split('=')[1] : '';
+          })();
+
+          const response = await fetch(actionUrl, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrfToken
+            }
+          });
+
+          let data = null;
+          try {
+            data = await response.json();
+          } catch (jsonErr) {
+            console.error('Error parsing response JSON:', jsonErr);
+          }
+
+          if (response.ok && data && data.success) {
+            const successMsg = data.message || 'Address added successfully.';
+            showTopAlert(successMsg, 'success');
+
+            // Persist the message for the destination page
+            try {
+              sessionStorage.setItem('address_flash_success', successMsg);
+            } catch (storageErr) {
+              console.warn('Could not save to sessionStorage:', storageErr);
+            }
+
+            // Also attach fallback parameter so the destination page can always display the success alert
+            let finalRedirectUrl = targetRedirectUrl;
+            try {
+              const urlObj = new URL(targetRedirectUrl, window.location.origin);
+              urlObj.searchParams.set('address_success', '1');
+              finalRedirectUrl = urlObj.pathname + urlObj.search;
+            } catch (urlErr) {
+              finalRedirectUrl = targetRedirectUrl + (targetRedirectUrl.includes('?') ? '&' : '?') + 'address_success=1';
+            }
+
+            // Redirect smoothly to the correct source page (Checkout or Address page)
+            setTimeout(function() {
+              window.location.href = finalRedirectUrl;
+            }, 450);
+            return;
+          }
+
+          // Validation failure or error response
+          let firstInvalidField = null;
+
+          if (data && data.errors && typeof data.errors === 'object') {
+            for (const [fieldName, errorList] of Object.entries(data.errors)) {
+              if (Array.isArray(errorList) && errorList.length > 0) {
+                const errObj = errorList[0];
+                const errMsg = (errObj && errObj.message) ? errObj.message : String(errObj);
+
+                const inputEl = form.querySelector(`[name="${fieldName}"]`);
+                if (inputEl) {
+                  inputEl.classList.add('is-invalid');
+                  if (!firstInvalidField) {
+                    firstInvalidField = inputEl;
+                  }
+
+                  const group = inputEl.closest('.form-group');
+                  if (group) {
+                    const existingErr = group.querySelector('.field-error-text');
+                    if (existingErr) existingErr.remove();
+
+                    const errSpan = document.createElement('span');
+                    errSpan.className = 'field-error-text';
+                    errSpan.textContent = errMsg;
+                    group.appendChild(errSpan);
+                  }
+                }
+              }
+            }
+          }
+
+          const topMessage = (data && data.message)
+            ? data.message
+            : 'Please correct the errors below.';
+          showTopAlert(topMessage, 'error');
+
+          if (firstInvalidField) {
+            firstInvalidField.focus();
+          }
+
+          setSubmitting(false);
+
+        } catch (err) {
+          console.error('Address creation error:', err);
+          showTopAlert('Network error. Please check your connection and try again.', 'error');
+          setSubmitting(false);
+        }
+      });
+    });
+  </script>
 </body>
 </html>

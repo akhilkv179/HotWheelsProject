@@ -235,6 +235,23 @@
       stroke: #22c55e !important;
     }
 
+    .alert-close-btn {
+      background: transparent;
+      border: none;
+      color: currentColor;
+      font-size: 18px;
+      line-height: 1;
+      margin-left: auto;
+      cursor: pointer;
+      opacity: 0.7;
+      padding: 0 4px;
+      transition: opacity 0.15s ease;
+    }
+
+    .alert-close-btn:hover {
+      opacity: 1;
+    }
+
     /* Header Title Row */
     .checkout-header-row {
       display: flex;
@@ -1391,9 +1408,9 @@
   <!-- Main Viewport -->
   <main class="checkout-viewport">
 
-    <!-- Django Messages Alerts -->
-    {% if messages %}
-      <div class="alert-container">
+    <!-- Django Messages Alerts Container -->
+    <div class="alert-container" id="alertContainer">
+      {% if messages %}
         {% for message in messages %}
           <div class="alert-box {% if 'success' in message.tags %}success{% endif %}">
             {% if 'success' in message.tags %}
@@ -1409,10 +1426,11 @@
               </svg>
             {% endif %}
             <span>{{ message }}</span>
+            <button type="button" class="alert-close-btn" aria-label="Close alert" onclick="this.parentElement.remove();">&times;</button>
           </div>
         {% endfor %}
-      </div>
-    {% endif %}
+      {% endif %}
+    </div>
 
     <!-- Page Title & Security Badge Header Row -->
     <div class="checkout-header-row">
@@ -1460,7 +1478,7 @@
               </div>
 
               <div class="panel-actions-wrap">
-                <a href="{% url 'add_address' %}" class="btn-add-address" title="Add Address">+ ADD ADDRESS</a>
+                <a href="{% url 'add_address' %}?next={% url 'checkout' %}" class="btn-add-address" title="Add Address">+ ADD ADDRESS</a>
                 {% if addresses and selected_address %}
                   <a href="{% url 'edit_address' selected_address.id %}" class="link-edit-address" id="headerEditAddressBtn" title="Edit Selected Address">Edit</a>
                 {% elif addresses %}
@@ -1517,7 +1535,7 @@
               {% empty %}
                 <div class="no-address-alert">
                   <p>No delivery addresses found.</p>
-                  <a href="{% url 'add_address' %}" class="btn-add-address">+ Add New Address</a>
+                  <a href="{% url 'add_address' %}?next={% url 'checkout' %}" class="btn-add-address">+ Add New Address</a>
                 </div>
               {% endfor %}
             </div>
@@ -1856,6 +1874,49 @@
   <!-- Interactive JavaScript for Address Selection, Payment Mode, & Number Formatting -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // 0. Check and display persisted address success message from sessionStorage / URL
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasUrlFlag = urlParams.get('address_success') === '1';
+        let flashMsg = null;
+        try {
+          flashMsg = sessionStorage.getItem('address_flash_success');
+          if (flashMsg) {
+            sessionStorage.removeItem('address_flash_success');
+          }
+        } catch (e) {}
+
+        if (!flashMsg && hasUrlFlag) {
+          flashMsg = 'Address added successfully.';
+        }
+
+        if (hasUrlFlag) {
+          urlParams.delete('address_success');
+          const cleanQuery = urlParams.toString() ? '?' + urlParams.toString() : '';
+          window.history.replaceState({}, '', window.location.pathname + cleanQuery);
+        }
+
+        if (flashMsg) {
+          const alertContainer = document.getElementById('alertContainer');
+          if (alertContainer) {
+            const alertBox = document.createElement('div');
+            alertBox.className = 'alert-box success';
+            alertBox.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <span>${flashMsg}</span>
+              <button type="button" class="alert-close-btn" aria-label="Close alert" onclick="this.parentElement.remove();">&times;</button>
+            `;
+            alertContainer.prepend(alertBox);
+            alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      } catch (err) {
+        console.warn('Error displaying flash alert on checkout:', err);
+      }
+
       // 1. Address Cards Click Selection & Header Edit Button Sync
       const addressCards = document.querySelectorAll('.address-card-choice');
       const headerEditBtn = document.getElementById('headerEditAddressBtn');

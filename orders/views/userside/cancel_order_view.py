@@ -112,8 +112,8 @@ def cancel_order(request, order_number, item_id):
         if not remaining_items.exists():
             # Mark the order as cancelled when no active items remain.
             order.status = "cancelled"
-            order.shipping_amount = Decimal("0.00")
-            order.total_amount = Decimal("0.00")
+            # order.shipping_amount = Decimal("0.00")
+            # order.total_amount = Decimal("0.00")
 
             OrderStatusHistory.objects.create(
                 order=order,

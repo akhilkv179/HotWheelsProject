@@ -362,6 +362,12 @@
       color: var(--badge-confirmed-text);
     }
 
+    .order-status-badge.pending {
+      background-color: rgba(245, 158, 11, 0.16);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
     .order-placed-date {
       font-size: 13.5px;
       color: #8b8f9e;
@@ -1548,6 +1554,8 @@
               <span class="order-status-badge cancelled">CANCELLED</span>
             {% elif status_clean == "confirmed" %}
               <span class="order-status-badge confirmed">CONFIRMED</span>
+            {% elif status_clean == "pending" %}
+              <span class="order-status-badge pending">PENDING</span>
             {% else %}
               <span class="order-status-badge">{{ order.status|upper }}</span>
             {% endif %}

@@ -1223,9 +1223,13 @@
                           <span class="status-badge confirmed">
                             <span class="dot"></span> CONFIRMED
                           </span>
+                        {% elif status_clean == "pending" %}
+                          <span class="status-badge pending">
+                            <span class="dot"></span> PENDING
+                          </span>
                         {% else %}
-                          <span class="status-badge processing">
-                            <span class="dot"></span> PROCESSING
+                          <span class="status-badge pending">
+                            <span class="dot"></span> {{ order.status|upper }}
                           </span>
                         {% endif %}
                       {% endwith %}

@@ -235,7 +235,8 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
 
-    .order-status-badge.processing {
+    .order-status-badge.processing,
+    .order-status-badge.pending {
       background-color: var(--status-processing-bg);
       border-color: var(--status-processing-border);
       color: var(--status-processing-text);
@@ -1373,12 +1374,6 @@
                     {% else %}
                       <span class="item-status-pill">Not Returned</span>
                     {% endif %}
-                    <span class="item-edit-icon" onclick="openStatusModal()" title="Manage Order Status">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 20h9"/>
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                      </svg>
-                    </span>
                   </div>
                 </td>
 
@@ -1500,24 +1495,6 @@
          BOTTOM ACTIONS BAR
          ================================================== -->
     <div class="action-buttons-bar">
-      {% if order.status != "delivered" and order.status != "cancelled" %}
-        <button
-          type="button"
-          class="btn-action btn-cancel-order"
-          onclick="openCancelModal()"
-        >
-          CANCEL ORDER
-        </button>
-      {% else %}
-        <button
-          type="button"
-          class="btn-action btn-cancel-order disabled"
-          title="Order is {{ order.status }}"
-        >
-          ORDER {{ order.status|upper }}
-        </button>
-      {% endif %}
-
       <button
         type="button"
         class="btn-action btn-print-invoice"

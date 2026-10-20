@@ -567,12 +567,81 @@
       text-align: right;
     }
 
+    .cart-item-subtotal-label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
     .cart-item-price-val {
       font-family: var(--font-heading);
       font-size: 22px;
       font-weight: 800;
       color: #ffffff;
       letter-spacing: -0.02em;
+    }
+
+    /* Unit Price & Discount Styles */
+    .cart-item-price-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+      margin-bottom: 12px;
+    }
+
+    .cart-unit-price-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .cart-unit-price-current {
+      font-family: var(--font-heading);
+      font-size: 17.5px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .cart-regular-price-strike {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      text-decoration: line-through;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .cart-discount-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(135deg, #f97316 0%, var(--accent-red) 100%);
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2.5px 8px;
+      border-radius: 5px;
+      box-shadow: 0 2px 8px rgba(229, 27, 36, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .discount-badge-icon {
+      width: 11px;
+      height: 11px;
+      stroke-width: 2.5;
+      flex-shrink: 0;
     }
 
     /* Subtle Faint Separator Below Cart Section */
@@ -1170,6 +1239,9 @@
         padding-top: 12px;
         margin-top: 8px;
       }
+      .cart-action-col .cart-item-price-wrap {
+        text-align: left;
+      }
       .telemetry-card {
         padding: 24px 20px;
       }
@@ -1279,6 +1351,9 @@
                 data-quantity="{{ item.quantity }}"
                 data-stock="{{ item.product_variant.stock_quantity }}"
                 data-unit-price="{{ item.unit_price }}"
+                data-regular-price="{{ item.regular_price }}"
+                data-discount-percentage="{{ item.discount_percentage }}"
+                data-subtotal="{{ item.subtotal }}"
                 data-available="{% if item.is_available and item.product_variant.stock_quantity > 0 and item.quantity <= item.product_variant.stock_quantity and item.product_variant.is_active and item.product_variant.product.is_active and not item.product_variant.product.is_deleted and item.product_variant.product.category.is_active %}true{% else %}false{% endif %}"
               >
 
@@ -1300,7 +1375,7 @@
                   {% endwith %}
                 </div>
 
-                <!-- 2. Middle Details (Category Tag, Title, Color/Size Specs, Qty Capsule) -->
+                <!-- 2. Middle Details (Category Tag, Title, Color/Size Specs, Price & Offer, Qty Capsule) -->
                 <div class="cart-info-col">
                   <div class="cart-info-top">
                     <!-- Category Badge -->
@@ -1319,6 +1394,23 @@
                     <p class="cart-item-variant-spec">
                       {{ item.product_variant.color }}{% if item.product_variant.size %} / {{ item.product_variant.size }}{% endif %}
                     </p>
+
+                    <!-- Unit Price & Discount Section -->
+                    <div class="cart-item-price-row">
+                      <span class="cart-unit-price-label">Price:</span>
+                      <span class="cart-unit-price-current">&#8377;<span class="format-number unit-price-val">{{ item.unit_price|floatformat:2 }}</span></span>
+                      {% if item.discount_percentage and item.discount_percentage > 0 %}
+                        <del class="cart-regular-price-strike">&#8377;<span class="format-number regular-price-val">{{ item.regular_price|floatformat:2 }}</span></del>
+                        <span class="cart-discount-badge">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="discount-badge-icon">
+                            <line x1="19" y1="5" x2="5" y2="19"/>
+                            <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
+                            <circle cx="17.5" cy="17.5" r="2.5" fill="currentColor"/>
+                          </svg>
+                          <span>{{ item.discount_percentage|floatformat:0 }}% OFF</span>
+                        </span>
+                      {% endif %}
+                    </div>
 
                     {% if not item.is_available or item.product_variant.stock_quantity <= 0 %}
                       <span class="badge-unavailable-pill">
@@ -1359,7 +1451,7 @@
                   </div>
                 </div>
 
-                <!-- 3. Right Action & Price (Trash Can + Price) -->
+                <!-- 3. Right Action & Price (Trash Can + Subtotal Price) -->
                 <div class="cart-action-col">
                   <!-- Remove / Trash Button -->
                   <a
@@ -1378,7 +1470,8 @@
 
                   <!-- Item Subtotal Price -->
                   <div class="cart-item-price-wrap">
-                    <span class="cart-item-price-val">&#8377;<span class="format-number">{{ item.subtotal|floatformat:0 }}</span></span>
+                    <span class="cart-item-subtotal-label">Subtotal</span>
+                    <span class="cart-item-price-val">&#8377;<span class="format-number subtotal-val">{{ item.subtotal|floatformat:2 }}</span></span>
                   </div>
                 </div>
 
@@ -1464,7 +1557,7 @@
           <!-- Total Row -->
           <div class="telemetry-total-row">
             <span class="telemetry-total-label">Total</span>
-            <span class="telemetry-total-amount">&#8377;<span class="format-number">{{ total_price|floatformat:0 }}</span></span>
+            <span class="telemetry-total-amount">&#8377;<span class="format-number">{{ total_price|floatformat:2 }}</span></span>
           </div>
 
           <!-- Out of Stock / Empty Cart Warning Banner -->
@@ -1684,12 +1777,19 @@
   <!-- Number formatting and coupon helper script -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      // Format prices with thousand separators (e.g. 2,499)
+      // Helper function to format prices with Indian currency format and 2 decimal places
+      function formatPrice(val) {
+        const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/,/g, '').trim());
+        if (isNaN(num)) return '0.00';
+        return new Intl.NumberFormat('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }).format(num);
+      }
+
+      // Format all price elements on initial load
       document.querySelectorAll(".format-number").forEach(function (el) {
-        const val = parseFloat(el.textContent.replace(/,/g, '').trim());
-        if (!isNaN(val)) {
-          el.textContent = new Intl.NumberFormat('en-IN').format(val);
-        }
+        el.textContent = formatPrice(el.textContent);
       });
 
       // Coupon interactive feedback
@@ -1739,6 +1839,7 @@
         }, 4000);
       }
 
+      // Update cart totals client-side using final unit_price and available items
       function updateCartTotals() {
         let newTotal = 0;
         let count = 0;
@@ -1754,7 +1855,7 @@
 
         const totalEl = document.querySelector('.telemetry-total-amount .format-number');
         if (totalEl) {
-          totalEl.textContent = new Intl.NumberFormat('en-IN').format(Math.round(newTotal));
+          totalEl.textContent = formatPrice(newTotal);
         }
 
         const subtitleEl = document.querySelector('.garage-subtitle-row span:last-child');
@@ -1764,6 +1865,58 @@
 
         if (typeof window.evaluateCartStock === 'function') {
           window.evaluateCartStock();
+        }
+      }
+
+      // Synchronize cart items and total with backend cart_list response
+      async function syncWithBackendCart() {
+        try {
+          const res = await fetch("{% url 'cart_list' %}", {
+            headers: {
+              "Accept": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data || !data.items) return;
+
+          data.items.forEach(function(backendItem) {
+            const card = document.querySelector(`.cart-product-card[data-item-id="${backendItem.id}"]`);
+            if (!card) return;
+
+            card.setAttribute('data-quantity', backendItem.quantity);
+            card.setAttribute('data-unit-price', backendItem.unit_price);
+            card.setAttribute('data-regular-price', backendItem.regular_price);
+            card.setAttribute('data-discount-percentage', backendItem.discount_percentage);
+            card.setAttribute('data-subtotal', backendItem.subtotal);
+            card.setAttribute('data-available', backendItem.is_available ? 'true' : 'false');
+
+            const qtyNum = card.querySelector('.qty-number');
+            if (qtyNum) qtyNum.textContent = backendItem.quantity;
+
+            const unitPriceEl = card.querySelector('.unit-price-val');
+            if (unitPriceEl) unitPriceEl.textContent = formatPrice(backendItem.unit_price);
+
+            const regPriceEl = card.querySelector('.regular-price-val');
+            if (regPriceEl) regPriceEl.textContent = formatPrice(backendItem.regular_price);
+
+            const subtotalEl = card.querySelector('.subtotal-val');
+            if (subtotalEl) subtotalEl.textContent = formatPrice(backendItem.subtotal);
+          });
+
+          if (data.total_price !== undefined) {
+            const totalEl = document.querySelector('.telemetry-total-amount .format-number');
+            if (totalEl) {
+              totalEl.textContent = formatPrice(data.total_price);
+            }
+          }
+
+          if (typeof window.evaluateCartStock === 'function') {
+            window.evaluateCartStock();
+          }
+        } catch (err) {
+          console.warn("Could not sync with backend cart:", err);
         }
       }
 
@@ -1780,7 +1933,7 @@
           this.dataset.loading = "true";
           const card = this.closest(".cart-product-card");
           const qtyNumberEl = card ? card.querySelector(".qty-number") : null;
-          const priceValEl = card ? card.querySelector(".cart-item-price-val .format-number") : null;
+          const subtotalEl = card ? (card.querySelector(".subtotal-val") || card.querySelector(".cart-item-price-val .format-number")) : null;
           const unitPrice = card ? parseFloat(card.getAttribute("data-unit-price") || "0") : 0;
 
           try {
@@ -1819,9 +1972,10 @@
                   card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
                   card.style.opacity = "0";
                   card.style.transform = "scale(0.95)";
-                  setTimeout(function() {
+                  setTimeout(async function() {
                     card.remove();
                     updateCartTotals();
+                    await syncWithBackendCart();
                     if (document.querySelectorAll(".cart-product-card").length === 0) {
                       window.location.reload();
                     }
@@ -1831,10 +1985,11 @@
                 showToast(data.message || "Cart updated.", "success");
                 if (qtyNumberEl) qtyNumberEl.textContent = data.quantity;
                 if (card) card.setAttribute("data-quantity", data.quantity);
-                if (priceValEl && unitPrice > 0) {
-                  priceValEl.textContent = new Intl.NumberFormat('en-IN').format(Math.round(data.quantity * unitPrice));
+                if (subtotalEl && unitPrice > 0) {
+                  subtotalEl.textContent = formatPrice(data.quantity * unitPrice);
                 }
                 updateCartTotals();
+                await syncWithBackendCart();
               }
             } else {
               // 409 / 400 error
@@ -1899,9 +2054,10 @@
                 card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
                 card.style.opacity = "0";
                 card.style.transform = "scale(0.95)";
-                setTimeout(function() {
+                setTimeout(async function() {
                   card.remove();
                   updateCartTotals();
+                  await syncWithBackendCart();
                   if (document.querySelectorAll(".cart-product-card").length === 0) {
                     window.location.reload();
                   }

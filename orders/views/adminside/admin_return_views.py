@@ -1,6 +1,7 @@
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
@@ -24,7 +25,7 @@ def wants_json(request):
     return "application/json" in request.headers.get("Accept", "")
 
 
-# Display all customer return requests for administrator review.
+# Display all customer return requests with pagination.
 @staff_member_required(login_url="/d/admin_login/")
 def admin_return_list(request):
     # Allow only GET requests to view return requests.
@@ -44,7 +45,13 @@ def admin_return_list(request):
         "order_item__product_variant",
     ).order_by("-requested_at")
 
-    # Return return-request information as JSON when requested.
+    # Show 5 return requests on each page.
+    paginator = Paginator(returns, 5)
+
+    # Get the requested page, defaulting to page 1 for invalid page values.
+    page_obj = paginator.get_page(request.GET.get("page", 1))
+
+    # Return the current page's return requests as JSON when requested.
     if wants_json(request):
         return JsonResponse(
             {
@@ -71,21 +78,37 @@ def admin_return_list(request):
                             else None
                         ),
                     }
-                    for return_request in returns
+                    for return_request in page_obj
                 ],
                 "return_statuses": RETURN_STATUSES,
-                "total_returns": returns.count(),
+                "total_returns": paginator.count,
+                "current_page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+                "next_page": (
+                    page_obj.next_page_number()
+                    if page_obj.has_next()
+                    else None
+                ),
+                "previous_page": (
+                    page_obj.previous_page_number()
+                    if page_obj.has_previous()
+                    else None
+                ),
             },
             status=200,
         )
 
-    # Render the normal HTML return-request list.
+    # Render the current page of return requests in the HTML template.
     return render(
         request,
         "adminside/admin_return_list.html",
         {
-            "returns": returns,
+            "returns": page_obj,
             "return_statuses": RETURN_STATUSES,
+            "page_obj": page_obj,
+            "paginator": paginator,
         },
         status=200,
     )

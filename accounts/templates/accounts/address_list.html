@@ -249,6 +249,23 @@
       stroke: #22c55e !important;
     }
 
+    .alert-close-btn {
+      background: transparent;
+      border: none;
+      color: currentColor;
+      font-size: 18px;
+      line-height: 1;
+      margin-left: auto;
+      cursor: pointer;
+      opacity: 0.7;
+      padding: 0 4px;
+      transition: opacity 0.15s ease;
+    }
+
+    .alert-close-btn:hover {
+      opacity: 1;
+    }
+
     /* 2-Column Addresses Layout */
     .addresses-layout {
       display: grid;
@@ -968,6 +985,13 @@
       transform: translateY(-1px);
     }
 
+    .btn-danger:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      pointer-events: none;
+    }
+
     /* Footer matching Figma reference */
     .site-footer {
       background-color: #060608;
@@ -1190,9 +1214,9 @@
       </p>
     </div>
 
-    <!-- Django Messages -->
-    {% if messages %}
-      <div class="alert-container">
+    <!-- Django Messages Container -->
+    <div class="alert-container" id="alertContainer">
+      {% if messages %}
         {% for message in messages %}
           <div class="alert-box {% if 'success' in message.tags %}success{% endif %}">
             {% if 'success' in message.tags %}
@@ -1208,10 +1232,11 @@
               </svg>
             {% endif %}
             <span>{{ message }}</span>
+            <button type="button" class="alert-close-btn" aria-label="Close alert" onclick="this.parentElement.remove();">&times;</button>
           </div>
         {% endfor %}
-      </div>
-    {% endif %}
+      {% endif %}
+    </div>
 
     <!-- 2-Column Layout matching Figma -->
     <div class="addresses-layout">
@@ -1257,7 +1282,7 @@
           </li>
 
           <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'user_order_list' %}" class="sidebar-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
@@ -1339,7 +1364,7 @@
           <h2 class="section-title">Saved Addresses</h2>
 
           <!-- + ADD NEW ADDRESS Button using existing URL -->
-          <a href="{% url 'add_address' %}" class="btn-add-address">
+          <a href="{% url 'add_address' %}?next={% url 'address_list' %}" class="btn-add-address">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1460,7 +1485,7 @@
             <p class="empty-desc">
               You haven't saved any delivery destinations yet. Add your primary shipping address to enjoy rapid, one-click checkouts on exclusive die-cast drops.
             </p>
-            <a href="{% url 'add_address' %}" class="btn-add-first-address">
+            <a href="{% url 'add_address' %}?next={% url 'address_list' %}" class="btn-add-first-address">
               + Add Your First Address
             </a>
           </div>
@@ -1586,7 +1611,7 @@
       activeDeleteFormId = 'deleteForm' + addressId;
       const targetNameEl = document.getElementById('modalTargetAddressName');
       if (targetNameEl) {
-        targetNameEl.textContent = addressName || '';
+        targetNameEl.textContent = addressName ? ' (' + addressName + ')' : '';
       }
       const modal = document.getElementById('deleteConfirmModal');
       if (modal) {
@@ -1602,18 +1627,130 @@
       activeDeleteFormId = null;
     }
 
+    function showTopAlert(message, type = 'success') {
+      const alertContainer = document.getElementById('alertContainer');
+      if (!alertContainer) return;
+      alertContainer.innerHTML = '';
+
+      const alertBox = document.createElement('div');
+      alertBox.className = `alert-box ${type === 'success' ? 'success' : ''}`;
+      const iconSvg = type === 'success'
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+      alertBox.innerHTML = `
+        ${iconSvg}
+        <span>${message}</span>
+        <button type="button" class="alert-close-btn" aria-label="Close alert" onclick="this.parentElement.remove();">&times;</button>
+      `;
+      alertContainer.prepend(alertBox);
+      alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+      // 0. Check and display persisted address success message from sessionStorage / URL
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasAddFlag = urlParams.get('address_success') === '1';
+        const hasDelFlag = urlParams.get('address_deleted') === '1';
+        let flashMsg = null;
+        try {
+          flashMsg = sessionStorage.getItem('address_flash_success');
+          if (flashMsg) {
+            sessionStorage.removeItem('address_flash_success');
+          }
+        } catch (e) {}
+
+        if (!flashMsg) {
+          if (hasAddFlag) flashMsg = 'Address added successfully.';
+          if (hasDelFlag) flashMsg = 'Address deleted successfully.';
+        }
+
+        if (hasAddFlag || hasDelFlag) {
+          urlParams.delete('address_success');
+          urlParams.delete('address_deleted');
+          const cleanQuery = urlParams.toString() ? '?' + urlParams.toString() : '';
+          window.history.replaceState({}, '', window.location.pathname + cleanQuery);
+        }
+
+        if (flashMsg) {
+          showTopAlert(flashMsg, 'success');
+        }
+      } catch (err) {
+        console.warn('Error displaying flash alert on address list:', err);
+      }
+
+      // 1. Prevent native form submission on delete forms (must use AJAX)
+      document.querySelectorAll('form[id^="deleteForm"]').forEach(function(f) {
+        f.addEventListener('submit', function(e) {
+          e.preventDefault();
+        });
+      });
+
+      // 2. Delete confirmation button click handling via AJAX fetch
       const confirmBtn = document.getElementById('confirmDeleteBtn');
       const modal = document.getElementById('deleteConfirmModal');
       const dialog = document.getElementById('deleteModalDialog');
 
       if (confirmBtn) {
-        confirmBtn.addEventListener('click', function() {
-          if (activeDeleteFormId) {
-            const form = document.getElementById(activeDeleteFormId);
-            if (form) {
-              form.submit();
+        confirmBtn.addEventListener('click', async function() {
+          if (!activeDeleteFormId) return;
+          const form = document.getElementById(activeDeleteFormId);
+          if (!form) return;
+
+          if (confirmBtn.disabled) return;
+          confirmBtn.disabled = true;
+          const origText = confirmBtn.textContent;
+          confirmBtn.textContent = 'Deleting...';
+
+          try {
+            const csrfToken = (function() {
+              const tokenInput = form.querySelector('[name=csrfmiddlewaretoken]');
+              if (tokenInput && tokenInput.value) return tokenInput.value;
+              const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+              return cookie ? cookie.split('=')[1] : '';
+            })();
+
+            const actionUrl = form.getAttribute('action');
+            const response = await fetch(actionUrl, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+              }
+            });
+
+            let data = null;
+            try {
+              data = await response.json();
+            } catch (jsonErr) {
+              console.error('Error parsing response JSON:', jsonErr);
             }
+
+            if (response.ok && data && data.success) {
+              const successMsg = data.message || 'Address deleted successfully.';
+              try {
+                sessionStorage.setItem('address_flash_success', successMsg);
+              } catch (storageErr) {}
+
+              closeDeleteModal();
+              // Smoothly return to the Address page
+              window.location.href = "{% url 'address_list' %}?address_deleted=1";
+              return;
+            }
+
+            closeDeleteModal();
+            const errorMsg = (data && data.message) ? data.message : 'Failed to delete address.';
+            showTopAlert(errorMsg, 'error');
+
+          } catch (netErr) {
+            console.error('Address delete error:', netErr);
+            closeDeleteModal();
+            showTopAlert('Network error. Please check your connection and try again.', 'error');
+          } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = origText;
           }
         });
       }
@@ -1634,5 +1771,4 @@
     });
   </script>
 </body>
-</html>
 </html>

@@ -1602,8 +1602,10 @@
                               Delivered successfully on {{ order.updated_at|date:"M d, Y" }}
                             {% elif status_clean == "shipped" %}
                               In Transit &bull; Estimated Delivery: {{ order.created_at|date:"M d, Y" }}
+                            {% elif status_clean == "pending" %}
+                              Pending &bull; Delivery Method: {{ order.delivery_method|default:"Standard Express" }}
                             {% else %}
-                              Processing &bull; Delivery Method: {{ order.delivery_method|default:"Standard Express" }}
+                              {{ order.status|title }} &bull; Delivery Method: {{ order.delivery_method|default:"Standard Express" }}
                             {% endif %}
                           </div>
                         </div>

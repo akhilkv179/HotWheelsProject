@@ -1,4 +1,3 @@
-
 from io import BytesIO
 from xml.sax.saxutils import escape
 
@@ -129,33 +128,29 @@ def download_invoice(request, order_number):
             Spacer(1, 15),
         ])
 
-    # Prepare the invoice table with its column headings.
+    # Prepare the invoice table with five column headings.
     rows = [[
         "Product",
         "Qty",
         "Unit Price",
         "Discount",
         "Total",
-        "Item Status",
     ]]
 
     # Add each ordered product to the invoice table.
     for item in order.items.all():
-        item_status = item.get_item_status_display()
-
         rows.append([
             Paragraph(escape(item.product_name), cell_style),
             str(item.quantity),
             f"Rs. {item.unit_price:.2f}",
             f"Rs. {item.discount_amount:.2f}",
             f"Rs. {item.total_price:.2f}",
-            Paragraph(escape(item_status), cell_style),
         ])
 
-    # Format the invoice table for the PDF.
+    # Format the five-column invoice table.
     table = Table(
         rows,
-        colWidths=[135, 30, 75, 65, 75, 80],
+        colWidths=[180, 40, 90, 80, 80],
         repeatRows=1,
     )
 

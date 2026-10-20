@@ -1201,7 +1201,7 @@
           </li>
 
           <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'user_order_list' %}" class="sidebar-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
@@ -1383,7 +1383,7 @@
             {% endfor %}
           {% else %}
             <div class="no-address-text">
-              No saved addresses found. <a href="{% url 'add_address' %}" style="color: var(--accent-red); font-weight: 700; text-decoration: none; margin-left: 4px;">+ Add an address</a>
+              No saved addresses found. <a href="{% url 'add_address' %}?next={% url 'address_list' %}" style="color: var(--accent-red); font-weight: 700; text-decoration: none; margin-left: 4px;">+ Add an address</a>
             </div>
           {% endif %}
         </div>
@@ -1424,6 +1424,7 @@
       <div>
         <h4 class="footer-column-title">Support</h4>
         <ul class="footer-links-list">
+          <li><a href="{% url 'user_order_list' %}" class="footer-link">My Orders</a></li>
           <li><a href="{% url 'address_list' %}" class="footer-link">Manage Addresses</a></li>
           <li><a href="{% url 'change_password' %}" class="footer-link">Security Center</a></li>
           <li><a href="{% url 'edit_profile' %}" class="footer-link">Account Details</a></li>
@@ -1544,6 +1545,52 @@
           closeModal();
         }
       });
+
+      // Check and display persisted address success message from sessionStorage / URL
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasUrlFlag = urlParams.get('address_success') === '1';
+        let flashMsg = null;
+        try {
+          flashMsg = sessionStorage.getItem('address_flash_success');
+          if (flashMsg) {
+            sessionStorage.removeItem('address_flash_success');
+          }
+        } catch (e) {}
+
+        if (!flashMsg && hasUrlFlag) {
+          flashMsg = 'Address added successfully.';
+        }
+
+        if (hasUrlFlag) {
+          urlParams.delete('address_success');
+          const cleanQuery = urlParams.toString() ? '?' + urlParams.toString() : '';
+          window.history.replaceState({}, '', window.location.pathname + cleanQuery);
+        }
+
+        if (flashMsg) {
+          const alertContainer = document.getElementById('profileMessagesAlertContainer');
+          if (alertContainer) {
+            const alertBox = document.createElement('div');
+            alertBox.className = 'alert-box success';
+            alertBox.setAttribute('style', 'background: rgba(34, 197, 94, 0.16) !important; border: 1px solid rgba(34, 197, 94, 0.4) !important; border-left: 3px solid #22c55e !important; color: #86efac !important;');
+            alertBox.innerHTML = `
+              <div class="alert-content-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>${flashMsg}</span>
+              </div>
+              <button type="button" class="alert-close-btn" aria-label="Dismiss alert" onclick="this.closest('.alert-box').remove();">&times;</button>
+            `;
+            alertContainer.prepend(alertBox);
+            alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      } catch (err) {
+        console.warn('Error displaying flash alert on profile:', err);
+      }
 
       // Dismiss profile messages alert
       const alertContainer = document.getElementById('profileMessagesAlertContainer');

@@ -14,7 +14,7 @@ ORDER_STATUSES = [
     "pending",
     "confirmed",
     "shipped",
-    "out_for_delivery",
+    "out for delivery",
     "delivered",
     "cancelled",
 ]
@@ -228,7 +228,7 @@ def admin_update_order_status(request, order_number):
     allowed_transitions = {
         "pending": ["confirmed", "cancelled"],
         "confirmed": ["shipped", "cancelled"],
-        "shipped": ["out_for_delivery"],
+        "shipped": ["out for delivery"],
         "out_for_delivery": ["delivered"],
         "delivered": [],
         "cancelled": [],
