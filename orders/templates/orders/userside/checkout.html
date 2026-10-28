@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 
+  <!-- Razorpay Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
   <style>
     /* CSS Reset & Design Tokens */
     *, *::before, *::after {
@@ -617,6 +620,33 @@
       margin-left: 8px;
     }
 
+    .wallet-balance-badge {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #34d399;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      border-radius: 4px;
+      padding: 1.5px 7px;
+      margin-left: 8px;
+    }
+
+    .payment-online-badge {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #60a5fa;
+      background: rgba(96, 165, 250, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.28);
+      border-radius: 4px;
+      padding: 1.5px 7px;
+      margin-left: 8px;
+    }
+
     .payment-option-left {
       display: flex;
       align-items: center;
@@ -828,6 +858,251 @@
       font-weight: 700;
       color: #ffffff;
       margin-top: 1px;
+    }
+
+    /* ==========================================================================
+       CHECKOUT COUPON COMPONENT (Matches Hot Wheels Design System)
+       ========================================================================== */
+    .checkout-coupon-section {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 18px 0 6px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .coupon-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .coupon-section-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-coral);
+    }
+
+    .btn-browse-coupons-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent-coral);
+      text-decoration: none;
+      transition: color 0.15s ease, opacity 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-browse-coupons-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .coupon-tag-mini-icon {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+
+    .coupon-input-group {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .coupon-input-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .coupon-tag-icon {
+      position: absolute;
+      left: 12px;
+      width: 15px;
+      height: 15px;
+      color: #71717a;
+      pointer-events: none;
+    }
+
+    .checkout-coupon-input {
+      width: 100%;
+      background: #18191e;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px 10px 34px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .checkout-coupon-input::placeholder {
+      color: #52525b;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .checkout-coupon-input:focus {
+      border-color: var(--accent-coral);
+      background: #1e1f26;
+      box-shadow: 0 0 0 2px rgba(245, 165, 150, 0.15);
+    }
+
+    .checkout-coupon-input.has-error {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .btn-apply-coupon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+      background: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, opacity 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-apply-coupon:hover:not(:disabled) {
+      background: #ff2a34;
+    }
+
+    .btn-apply-coupon:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-apply-coupon:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Applied Coupon Card */
+    .applied-coupon-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      gap: 10px;
+    }
+
+    .applied-coupon-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .applied-coupon-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .applied-coupon-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .applied-coupon-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .applied-coupon-code {
+      font-size: 13px;
+      font-weight: 800;
+      color: #22c55e;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+    }
+
+    .applied-coupon-status {
+      font-size: 11px;
+      color: #86efac;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-remove-coupon {
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-remove-coupon:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: #ef4444;
+      color: #ffffff;
+    }
+
+    .btn-remove-coupon:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .coupon-feedback-msg {
+      font-size: 12px;
+      line-height: 1.35;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .coupon-feedback-msg.success {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.28);
+      color: #4ade80;
+    }
+
+    .coupon-feedback-msg.error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.28);
+      color: #f87171;
     }
 
     /* Cost Breakdown Lines */
@@ -1341,6 +1616,188 @@
       stroke: #71717a;
       flex-shrink: 0;
     }
+
+    /* ==========================================================================
+       PAYMENT FAILED / RETRY MODAL
+       ========================================================================== */
+    .order-payment-failed-modal-card {
+      width: 100%;
+      max-width: 500px;
+      background-color: #141418;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid #ef4444;
+      border-radius: 20px;
+      padding: 36px 32px 30px 32px;
+      position: relative;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.85), 0 0 50px rgba(239, 68, 68, 0.22);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: modalCardPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .modal-failed-badge-wrap {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .failed-badge-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px dashed rgba(239, 68, 68, 0.4);
+      animation: rotateRing 12s linear infinite;
+    }
+
+    .failed-badge-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.1) 100%);
+      border: 2px solid #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ef4444;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+    }
+
+    .failed-badge-icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .failed-modal-title {
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .failed-modal-desc {
+      font-size: 13px;
+      color: #9ca3af;
+      line-height: 1.5;
+      margin-bottom: 18px;
+      max-width: 420px;
+    }
+
+    .modal-timer-box {
+      width: 100%;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .timer-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #fca5a5;
+    }
+
+    .timer-digits {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      text-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+    }
+
+    .timer-subtext {
+      font-size: 11.5px;
+      color: #9ca3af;
+    }
+
+    .modal-row-value.badge-failed {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .modal-row-value.badge-failed .dot-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #ef4444;
+    }
+
+    .modal-alert-error {
+      width: 100%;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fca5a5;
+      font-size: 12.5px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .btn-retry-payment-modal {
+      width: 100%;
+      background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
+      color: #ffffff;
+      border: none;
+      padding: 14px 22px;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(229, 27, 36, 0.4);
+      transition: background 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn-retry-payment-modal:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(229, 27, 36, 0.55);
+    }
+
+    .btn-retry-payment-modal:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      background: #374151;
+      box-shadow: none;
+    }
+
+    .btn-retry-payment-modal svg {
+      width: 16px;
+      height: 16px;
+    }
   </style>
 </head>
 <body>
@@ -1363,7 +1820,7 @@
         <li><a href="{% url 'home' %}" class="nav-link">HOME</a></li>
         <li><a href="{% url 'user_product_list' %}" class="nav-link">SHOP</a></li>
         <li><a href="{% url 'user_category_list' %}" class="nav-link">COLLECTIONS</a></li>
-        <li><a href="#" class="nav-link">ABOUT</a></li>
+        <li><a href="{% url 'home' %}#about" class="nav-link">ABOUT</a></li>
       </ul>
     </div>
 
@@ -1580,19 +2037,19 @@
                 </div>
               </label>
 
-              <!-- Option 2: Razorpay (Disabled) -->
-              <label class="payment-option-card disabled" data-method="razorpay" aria-disabled="true">
+              <!-- Option 2: Razorpay -->
+              <label class="payment-option-card" data-method="razorpay">
                 <div class="payment-option-left">
                   <div class="payment-radio-circle">
                     <div class="payment-radio-inner-dot"></div>
                   </div>
-                  <input type="radio" name="payment_method" value="razorpay" disabled>
+                  <input type="radio" name="payment_method" value="razorpay">
                   <div class="payment-text-group">
                     <div style="display: flex; align-items: center;">
                       <span class="payment-title">Razorpay</span>
-                      <span class="payment-disabled-badge">Disabled</span>
+                      <span class="payment-online-badge">Instant</span>
                     </div>
-                    <span class="payment-desc">UPI, Credit/Debit Card, NetBanking, Wallet</span>
+                    <span class="payment-desc">UPI, Credit/Debit Card, NetBanking, Wallets</span>
                   </div>
                 </div>
                 <div class="payment-right-icon">
@@ -1602,19 +2059,27 @@
                 </div>
               </label>
 
-              <!-- Option 3: Wallet (Disabled) -->
-              <label class="payment-option-card disabled" data-method="wallet" aria-disabled="true">
+              <!-- Option 3: Wallet -->
+              <label class="payment-option-card" data-method="wallet">
                 <div class="payment-option-left">
                   <div class="payment-radio-circle">
                     <div class="payment-radio-inner-dot"></div>
                   </div>
-                  <input type="radio" name="payment_method" value="wallet" disabled>
+                  <input type="radio" name="payment_method" value="wallet">
                   <div class="payment-text-group">
                     <div style="display: flex; align-items: center;">
                       <span class="payment-title">Wallet</span>
-                      <span class="payment-disabled-badge">Disabled</span>
+                      {% if user.wallet and user.wallet.is_active %}
+                        <span class="wallet-balance-badge">Balance: ₹{{ user.wallet.balance|floatformat:2 }}</span>
+                      {% endif %}
                     </div>
-                    <span class="payment-desc">Pay with your Hot Wheels collector wallet</span>
+                    <span class="payment-desc">
+                      {% if user.wallet and user.wallet.is_active %}
+                        Pay using your Hot Wheels collector wallet balance
+                      {% else %}
+                        Pay with your Hot Wheels collector wallet
+                      {% endif %}
+                    </span>
                   </div>
                 </div>
                 <div class="payment-right-icon">
@@ -1696,18 +2161,91 @@
                 {% endfor %}
               </div>
 
+              <!-- Coupon Section -->
+              <div class="checkout-coupon-section" id="checkoutCouponSection">
+                <div class="coupon-section-header">
+                  <label class="coupon-section-label" for="checkoutCouponInput">PROMO / COUPON CODE</label>
+                  <a href="{% url 'user_coupon_list' %}" class="btn-browse-coupons-link" id="browseCouponsLink" title="View available reward coupons in your garage">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="coupon-tag-mini-icon">
+                      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                      <path d="M13 5v2"/>
+                      <path d="M13 17v2"/>
+                      <path d="M13 11v2"/>
+                    </svg>
+                    <span>View Available Coupons &rarr;</span>
+                  </a>
+                </div>
+                
+                <div class="coupon-input-group" id="couponInputGroup">
+                  <div class="coupon-input-wrapper">
+                    <svg class="coupon-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                      <line x1="7" y1="7" x2="7.01" y2="7"/>
+                    </svg>
+                    <input
+                      type="text"
+                      id="checkoutCouponInput"
+                      name="coupon_code"
+                      class="checkout-coupon-input"
+                      placeholder="Enter coupon code"
+                      autocomplete="off"
+                      spellcheck="false"
+                    >
+                  </div>
+                  <input type="hidden" name="coupon_action" id="couponActionInput" value="">
+                  <button type="button" class="btn-apply-coupon" id="btnApplyCoupon">
+                    <span>APPLY</span>
+                  </button>
+                </div>
+
+                <!-- Applied Coupon Badge (Hidden initially) -->
+                <div class="applied-coupon-card" id="appliedCouponCard" style="display: none;">
+                  <div class="applied-coupon-left">
+                    <div class="applied-coupon-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </div>
+                    <div class="applied-coupon-details">
+                      <span class="applied-coupon-code" id="appliedCouponCodeBadge"></span>
+                      <span class="applied-coupon-status" id="appliedCouponStatusText">Coupon applied</span>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-remove-coupon" id="btnRemoveCoupon" title="Remove coupon">
+                    <span>REMOVE</span>
+                  </button>
+                </div>
+
+                <!-- Coupon Message Feedback Alert -->
+                <div class="coupon-feedback-msg" id="couponFeedbackMsg" style="display: none;"></div>
+              </div>
+
               <!-- Cost Breakdown Lines -->
               <div class="summary-breakdown-table">
                 <div class="summary-breakdown-row">
-                  <span class="breakdown-label">Subtotal</span>
+                  <span class="breakdown-label">Original Subtotal</span>
                   <span class="breakdown-value">
-                    ₹<span class="format-num">{{ subtotal|floatformat:0 }}</span>
+                    ₹<span class="format-num" id="summarySubtotalVal">{{ subtotal|floatformat:0 }}</span>
+                  </span>
+                </div>
+
+                <div class="summary-breakdown-row" id="productDiscountRow" {% if discount_amount <= 0 %}style="display: none;"{% endif %}>
+                  <span class="breakdown-label">Product Offer Discounts</span>
+                  <span class="breakdown-value discount">
+                    -₹<span class="format-num" id="summaryProductDiscountVal">{{ discount_amount|floatformat:2 }}</span>
+                  </span>
+                </div>
+
+                <div class="summary-breakdown-row" id="couponDiscountRow" style="display: none;">
+                  <span class="breakdown-label">Coupon Discount (<span id="summaryCouponCodeLabel"></span>)</span>
+                  <span class="breakdown-value discount">
+                    -₹<span id="summaryCouponDiscountVal">0.00</span>
                   </span>
                 </div>
 
                 <div class="summary-breakdown-row">
-                  <span class="breakdown-label">Shipping Fee</span>
-                  <span class="breakdown-value {% if shipping_amount == 0 %}free{% endif %}">
+                  <span class="breakdown-label">Shipping Charges</span>
+                  <span class="breakdown-value {% if shipping_amount == 0 %}free{% endif %}" id="summaryShippingVal">
                     {% if shipping_amount == 0 %}
                       FREE
                     {% else %}
@@ -1715,15 +2253,6 @@
                     {% endif %}
                   </span>
                 </div>
-
-                {% if discount_amount > 0 %}
-                  <div class="summary-breakdown-row">
-                    <span class="breakdown-label">Discount</span>
-                    <span class="breakdown-value discount">
-                      -₹<span class="format-num">{{ discount_amount|floatformat:2 }}</span>
-                    </span>
-                  </div>
-                {% endif %}
 
                 <!-- Vault Insurance line matching screenshot -->
                 <div class="summary-breakdown-row">
@@ -1739,7 +2268,7 @@
                   <span class="tax-inclusive-tag">Inclusive of all taxes</span>
                 </div>
                 <div class="total-amount-display">
-                  ₹<span class="format-num-dec">{{ total_amount|floatformat:2 }}</span>
+                  ₹<span class="format-num-dec" id="summaryTotalAmountVal">{{ total_amount|floatformat:2 }}</span>
                 </div>
               </div>
 
@@ -1825,6 +2354,11 @@
           <span class="modal-row-value" id="modalPaymentMethod">Cash on Delivery</span>
         </div>
 
+        <div class="modal-summary-row" id="modalCouponRow" style="display: none;">
+          <span class="modal-row-label">COUPON APPLIED</span>
+          <span class="modal-row-value" id="modalCouponVal" style="color: #22c55e; font-weight: 700;"></span>
+        </div>
+
         <div class="modal-summary-row">
           <span class="modal-row-label">DELIVERING TO</span>
           <span class="modal-row-value" id="modalDeliveryTo">
@@ -1835,7 +2369,7 @@
         <div class="modal-summary-row total-highlight-row">
           <span class="modal-row-label">TOTAL AMOUNT</span>
           <span class="modal-row-value modal-total-price">
-            ₹<span class="format-num-dec">{{ total_amount|floatformat:2 }}</span>
+            ₹<span class="format-num-dec" id="modalTotalVal">{{ total_amount|floatformat:2 }}</span>
           </span>
         </div>
       </div>
@@ -1867,6 +2401,84 @@
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
         <span>Full buyer protection &amp; genuine die-cast guarantee</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Payment Failed / Retry Modal Overlay -->
+  <div class="order-success-modal-overlay" id="orderPaymentFailedModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="paymentFailedModalTitle">
+    <div class="order-payment-failed-modal-card">
+      <!-- Close button (links to order detail) -->
+      <a href="#" id="modalFailedCloseBtn" class="modal-close-icon-btn" title="View Order Details" aria-label="Close modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </a>
+
+      <!-- Danger badge -->
+      <div class="modal-failed-badge-wrap">
+        <div class="failed-badge-ring"></div>
+        <div class="failed-badge-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Title & Subtitle -->
+      <h2 class="failed-modal-title" id="paymentFailedModalTitle">PAYMENT FAILED</h2>
+      <p class="failed-modal-desc" id="paymentFailedDesc">
+        Your online payment could not be processed. Your order has been placed in pending status. You have 5 minutes to retry payment before the order is automatically cancelled.
+      </p>
+
+      <!-- 5-Minute Retry Countdown Box -->
+      <div class="modal-timer-box" id="modalTimerBox">
+        <span class="timer-label">PAYMENT RETRY WINDOW</span>
+        <span class="timer-digits" id="modalRetryCountdownDigits">05:00</span>
+        <span class="timer-subtext" id="modalTimerSubtext">Order will be cancelled if not completed in time</span>
+      </div>
+
+      <!-- Order Summary Recap Box -->
+      <div class="modal-order-summary-box">
+        <div class="modal-summary-row">
+          <span class="modal-row-label">ORDER NUMBER</span>
+          <span class="modal-row-value" id="modalFailedOrderNumber" style="font-weight: 700; color: #ffffff;"></span>
+        </div>
+
+        <div class="modal-summary-row">
+          <span class="modal-row-label">STATUS</span>
+          <span class="modal-row-value badge-failed" id="modalFailedOrderStatus">
+            <span class="dot-indicator"></span> <span id="modalFailedStatusText">Pending Payment</span>
+          </span>
+        </div>
+
+        <div class="modal-summary-row total-highlight-row">
+          <span class="modal-row-label">TOTAL AMOUNT</span>
+          <span class="modal-row-value modal-total-price">
+            ₹<span id="modalFailedTotalVal"></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Error message alert inside modal -->
+      <div class="modal-alert-error" id="modalFailedAlert" style="display: none;"></div>
+
+      <!-- Actions Group -->
+      <div class="modal-actions-group" id="modalFailedActionsGroup">
+        <button type="button" class="btn-retry-payment-modal" id="btnModalRetryPayment">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          <span id="btnModalRetryText">RETRY PAYMENT NOW</span>
+        </button>
+
+        <a href="#" class="btn-modal-secondary" id="btnModalViewOrderDetail">
+          VIEW ORDER DETAILS
+        </a>
       </div>
     </div>
   </div>
@@ -1937,7 +2549,10 @@
 
           this.classList.add('selected');
           const radio = this.querySelector('input[type="radio"]');
-          if (radio) radio.checked = true;
+          if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+          }
 
           const check = this.querySelector('.address-check-badge');
           if (check) check.style.display = 'flex';
@@ -1965,7 +2580,10 @@
           this.classList.add('selected');
 
           const radio = this.querySelector('input[type="radio"]');
-          if (radio) radio.checked = true;
+          if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+          }
 
           const method = this.getAttribute('data-method');
           if (submitBtnText) {
@@ -2028,6 +2646,185 @@
       const isStockBlocked = {% if can_checkout == False %}true{% elif can_checkout == True %}false{% else %}{% for item in cart_items %}{% if item.product_variant.stock_quantity <= 0 or item.quantity > item.product_variant.stock_quantity or not item.product_variant.is_active or not item.product_variant.product.is_active or item.product_variant.product.is_deleted or not item.product_variant.product.category.is_active %}true || {% endif %}{% endfor %}false{% endif %};
       const isBlocked = isCartEmpty || isStockBlocked;
 
+      // 5. Coupon Interactive Controls (Apply & Remove)
+      const couponInput = document.getElementById('checkoutCouponInput');
+      const couponActionInput = document.getElementById('couponActionInput');
+      const btnApplyCoupon = document.getElementById('btnApplyCoupon');
+      const btnRemoveCoupon = document.getElementById('btnRemoveCoupon');
+      const couponInputGroup = document.getElementById('couponInputGroup');
+      const appliedCouponCard = document.getElementById('appliedCouponCard');
+      const appliedCouponCodeBadge = document.getElementById('appliedCouponCodeBadge');
+      const appliedCouponStatusText = document.getElementById('appliedCouponStatusText');
+      const couponFeedbackMsg = document.getElementById('couponFeedbackMsg');
+      const couponDiscountRow = document.getElementById('couponDiscountRow');
+      const summaryCouponCodeLabel = document.getElementById('summaryCouponCodeLabel');
+      const summaryCouponDiscountVal = document.getElementById('summaryCouponDiscountVal');
+      const summaryTotalAmountVal = document.getElementById('summaryTotalAmountVal');
+
+      const baseSubtotal = parseFloat("{{ subtotal|default:0 }}");
+      const baseProductDiscount = parseFloat("{{ discount_amount|default:0 }}");
+      const baseDiscountedSubtotal = Math.max(0, baseSubtotal - baseProductDiscount);
+      const baseShipping = parseFloat("{{ shipping_amount|default:0 }}");
+      const baseTotalAmount = parseFloat("{{ total_amount|default:0 }}");
+
+      let currentAppliedDiscount = 0;
+
+      function formatCurrency(num) {
+        return num.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      function estimateCouponDiscount(code, eligibleSubtotal) {
+        if (!code || eligibleSubtotal <= 0) return 0;
+        const upperCode = code.toUpperCase();
+
+        const numMatch = upperCode.match(/\d+/);
+        if (numMatch) {
+          const val = parseFloat(numMatch[0]);
+          if (upperCode.includes('FLAT') || upperCode.includes('FIXED') || val > 100) {
+            return Math.min(val, eligibleSubtotal);
+          } else if (val > 0 && val <= 100) {
+            return Math.round((eligibleSubtotal * (val / 100)) * 100) / 100;
+          }
+        }
+        return Math.round((eligibleSubtotal * 0.10) * 100) / 100;
+      }
+
+      function showCouponMessage(text, isError = false) {
+        if (!couponFeedbackMsg) return;
+        couponFeedbackMsg.textContent = text;
+        couponFeedbackMsg.className = 'coupon-feedback-msg ' + (isError ? 'error' : 'success');
+        couponFeedbackMsg.style.display = 'flex';
+      }
+
+      function clearCouponMessage() {
+        if (!couponFeedbackMsg) return;
+        couponFeedbackMsg.textContent = '';
+        couponFeedbackMsg.style.display = 'none';
+        couponFeedbackMsg.className = 'coupon-feedback-msg';
+      }
+
+      function setCouponApplyingState(isApplying) {
+        if (btnApplyCoupon) {
+          btnApplyCoupon.disabled = isApplying;
+          const span = btnApplyCoupon.querySelector('span');
+          if (span) {
+            span.textContent = isApplying ? 'APPLYING...' : 'APPLY';
+          }
+        }
+        if (couponInput) {
+          couponInput.disabled = isApplying;
+        }
+      }
+
+      function refreshDisplayedTotals(couponCode, discountAmount) {
+        currentAppliedDiscount = discountAmount;
+        if (discountAmount > 0) {
+          if (summaryCouponCodeLabel) summaryCouponCodeLabel.textContent = couponCode;
+          if (summaryCouponDiscountVal) summaryCouponDiscountVal.textContent = formatCurrency(discountAmount);
+          if (couponDiscountRow) couponDiscountRow.style.display = 'flex';
+          const newTotal = Math.max(0, baseDiscountedSubtotal - discountAmount + baseShipping);
+          if (summaryTotalAmountVal) summaryTotalAmountVal.textContent = formatCurrency(newTotal);
+        } else {
+          if (couponDiscountRow) couponDiscountRow.style.display = 'none';
+          if (summaryTotalAmountVal) summaryTotalAmountVal.textContent = formatCurrency(baseTotalAmount);
+        }
+      }
+
+      function applyCouponAction() {
+        if (!couponInput) return;
+        const code = couponInput.value.trim().toUpperCase();
+        clearCouponMessage();
+        couponInput.classList.remove('has-error');
+
+        if (!code) {
+          couponInput.classList.add('has-error');
+          showCouponMessage('Please enter a coupon code.', true);
+          couponInput.focus();
+          return;
+        }
+
+        setCouponApplyingState(true);
+
+        setTimeout(() => {
+          couponInput.value = code;
+          if (couponActionInput) couponActionInput.value = 'apply';
+
+          const discount = estimateCouponDiscount(code, baseDiscountedSubtotal);
+          refreshDisplayedTotals(code, discount);
+
+          if (appliedCouponCodeBadge) appliedCouponCodeBadge.textContent = code;
+          if (appliedCouponStatusText) {
+            appliedCouponStatusText.textContent = discount > 0
+              ? `Applied (-₹${formatCurrency(discount)})`
+              : 'Coupon applied';
+          }
+          if (couponInputGroup) couponInputGroup.style.display = 'none';
+          if (appliedCouponCard) appliedCouponCard.style.display = 'flex';
+
+          showCouponMessage(`Coupon "${code}" applied. ₹${formatCurrency(discount)} discount reflected in total.`, false);
+          setCouponApplyingState(false);
+        }, 120);
+      }
+
+      function removeCouponAction() {
+        clearCouponMessage();
+        refreshDisplayedTotals('', 0);
+
+        if (couponInput) {
+          couponInput.value = '';
+          couponInput.disabled = false;
+          couponInput.classList.remove('has-error');
+        }
+        if (couponActionInput) {
+          couponActionInput.value = 'remove';
+        }
+        if (appliedCouponCard) {
+          appliedCouponCard.style.display = 'none';
+        }
+        if (couponInputGroup) {
+          couponInputGroup.style.display = 'flex';
+        }
+        showCouponMessage('Coupon removed. Totals updated.', false);
+      }
+
+      if (btnApplyCoupon) {
+        btnApplyCoupon.addEventListener('click', function(e) {
+          e.preventDefault();
+          applyCouponAction();
+        });
+      }
+
+      if (couponInput) {
+        couponInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            applyCouponAction();
+          }
+        });
+        couponInput.addEventListener('input', function() {
+          this.classList.remove('has-error');
+          clearCouponMessage();
+        });
+      }
+
+      if (btnRemoveCoupon) {
+        btnRemoveCoupon.addEventListener('click', function(e) {
+          e.preventDefault();
+          removeCouponAction();
+        });
+      }
+
+      // Check if URL contains a coupon query parameter when navigating from coupon garage
+      const checkoutUrlParams = new URLSearchParams(window.location.search);
+      const urlCouponCode = checkoutUrlParams.get('coupon') || checkoutUrlParams.get('code');
+      if (urlCouponCode && couponInput && !couponInput.value) {
+        couponInput.value = urlCouponCode.trim().toUpperCase();
+        showCouponMessage(`Coupon "${couponInput.value}" ready. Click APPLY to calculate your discount.`, false);
+      }
+
       // Form submission via fetch so the Order Success Modal displays smoothly
       const checkoutForm = document.getElementById('checkoutForm');
       const submitBtn = document.getElementById('placeOrderSubmitBtn');
@@ -2050,6 +2847,325 @@
               : 'Some items are out of stock or have insufficient stock.';
           }
         }
+      }
+
+      // Razorpay Payment Failure & Retry Modal Controller
+      let activeOrderNumber = null;
+      let activeOrderTotal = null;
+      let retryDeadlineTimer = null;
+      let isExpiredHandling = false;
+
+      function showPaymentFailedModal(orderNumber, totalAmount, reasonText, deadlineIso) {
+        activeOrderNumber = orderNumber;
+        activeOrderTotal = totalAmount;
+
+        const modal = document.getElementById('orderPaymentFailedModal');
+        const numEl = document.getElementById('modalFailedOrderNumber');
+        const totalEl = document.getElementById('modalFailedTotalVal');
+        const descEl = document.getElementById('paymentFailedDesc');
+        const closeBtn = document.getElementById('modalFailedCloseBtn');
+        const viewDetailBtn = document.getElementById('btnModalViewOrderDetail');
+        const alertEl = document.getElementById('modalFailedAlert');
+        const retryBtn = document.getElementById('btnModalRetryPayment');
+        const retryBtnText = document.getElementById('btnModalRetryText');
+
+        if (numEl) numEl.textContent = '#' + orderNumber;
+        if (totalEl) {
+          const num = parseFloat(totalAmount);
+          totalEl.textContent = !isNaN(num) ? num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalAmount;
+        }
+        if (descEl && reasonText) descEl.textContent = reasonText;
+        if (closeBtn) closeBtn.href = `/orders/my-orders/${orderNumber}/`;
+        if (viewDetailBtn) viewDetailBtn.href = `/orders/my-orders/${orderNumber}/`;
+        if (alertEl) {
+          alertEl.style.display = 'none';
+          alertEl.textContent = '';
+        }
+        if (retryBtn) {
+          retryBtn.disabled = false;
+          retryBtn.classList.remove('disabled');
+        }
+        if (retryBtnText) retryBtnText.textContent = 'RETRY PAYMENT NOW';
+
+        if (deadlineIso) {
+          startCheckoutRetryCountdown(orderNumber, deadlineIso);
+        }
+
+        if (modal) modal.style.display = 'flex';
+      }
+
+      function startCheckoutRetryCountdown(orderNumber, deadlineIso) {
+        if (retryDeadlineTimer) clearInterval(retryDeadlineTimer);
+
+        const deadlineMs = new Date(deadlineIso).getTime();
+        const timerBox = document.getElementById('modalTimerBox');
+        const digitsEl = document.getElementById('modalRetryCountdownDigits');
+        const retryBtn = document.getElementById('btnModalRetryPayment');
+        const retryBtnText = document.getElementById('btnModalRetryText');
+
+        if (timerBox) timerBox.style.display = 'flex';
+
+        function tick() {
+          const diff = deadlineMs - Date.now();
+          if (diff <= 0) {
+            clearInterval(retryDeadlineTimer);
+            if (digitsEl) digitsEl.textContent = '00:00 (EXPIRED)';
+            if (retryBtn) {
+              retryBtn.disabled = true;
+              retryBtn.classList.add('disabled');
+              retryBtn.setAttribute('aria-disabled', 'true');
+            }
+            if (retryBtnText) retryBtnText.textContent = 'RETRY WINDOW EXPIRED';
+            expirePaymentForOrder(orderNumber);
+            return;
+          }
+
+          const totalSec = Math.floor(diff / 1000);
+          const m = Math.floor(totalSec / 60);
+          const s = totalSec % 60;
+          if (digitsEl) {
+            digitsEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+          }
+        }
+
+        tick();
+        retryDeadlineTimer = setInterval(tick, 1000);
+      }
+
+      async function expirePaymentForOrder(orderNumber) {
+        if (isExpiredHandling) return;
+        isExpiredHandling = true;
+
+        const csrfToken = (function() {
+          const tokenInput = checkoutForm ? checkoutForm.querySelector('[name=csrfmiddlewaretoken]') : null;
+          if (tokenInput && tokenInput.value) return tokenInput.value;
+          const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+          return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
+        })();
+
+        try {
+          const res = await fetch(`/payments/orders/${orderNumber}/expire-payment/`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data && (data.order_status === 'cancelled' || data.retry_allowed === false)) {
+            const statusText = document.getElementById('modalFailedStatusText');
+            const modalStatus = document.getElementById('modalFailedOrderStatus');
+            const titleEl = document.getElementById('paymentFailedModalTitle');
+            const descEl = document.getElementById('paymentFailedDesc');
+            const timerBox = document.getElementById('modalTimerBox');
+            const actionsGroup = document.getElementById('modalFailedActionsGroup');
+
+            if (titleEl) titleEl.textContent = 'ORDER CANCELLED';
+            if (statusText) statusText.textContent = 'Order Cancelled';
+            if (modalStatus) {
+              modalStatus.style.background = 'rgba(239, 68, 68, 0.2)';
+              modalStatus.style.color = '#ef4444';
+            }
+            if (descEl) descEl.textContent = data.message || 'Payment retry period expired. Your order has been cancelled.';
+            if (timerBox) timerBox.style.display = 'none';
+
+            if (actionsGroup) {
+              actionsGroup.innerHTML = `
+                <a href="/products/" class="btn-retry-payment-modal" style="text-decoration: none; justify-content: center;">
+                  CONTINUE SHOPPING
+                </a>
+                <a href="/orders/my-orders/${orderNumber}/" class="btn-modal-secondary" style="justify-content: center;">
+                  VIEW ORDER DETAILS
+                </a>
+              `;
+            }
+          } else if (res.status === 409 && data && data.retry_allowed === true && data.retry_deadline) {
+            isExpiredHandling = false;
+            startCheckoutRetryCountdown(orderNumber, data.retry_deadline);
+          }
+        } catch (err) {
+          console.error('Failed to expire order payment:', err);
+        } finally {
+          isExpiredHandling = false;
+        }
+      }
+
+      // Hook up modal retry button
+      const btnModalRetryPayment = document.getElementById('btnModalRetryPayment');
+      if (btnModalRetryPayment) {
+        btnModalRetryPayment.addEventListener('click', async function () {
+          if (!activeOrderNumber) return;
+          const retryBtn = btnModalRetryPayment;
+          const retryBtnText = document.getElementById('btnModalRetryText');
+          const alertEl = document.getElementById('modalFailedAlert');
+
+          if (alertEl) alertEl.style.display = 'none';
+          retryBtn.disabled = true;
+          const origText = 'RETRY PAYMENT NOW';
+          if (retryBtnText) retryBtnText.textContent = 'CONNECTING TO RAZORPAY...';
+
+          const csrfToken = (function() {
+            const tokenInput = checkoutForm ? checkoutForm.querySelector('[name=csrfmiddlewaretoken]') : null;
+            if (tokenInput && tokenInput.value) return tokenInput.value;
+            const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
+          })();
+
+          try {
+            const rzpRes = await fetch(`/payments/orders/${activeOrderNumber}/create-order/`, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+            const rzpData = await rzpRes.json().catch(() => ({}));
+
+            if (!rzpRes.ok || !rzpData.key_id) {
+              const errorMsg = (rzpData && rzpData.error) ? rzpData.error : 'Payment retry rejected.';
+              if (alertEl) {
+                alertEl.textContent = errorMsg;
+                alertEl.style.display = 'block';
+              }
+              if (rzpData && rzpData.retry_allowed === false) {
+                retryBtn.disabled = true;
+                if (retryBtnText) retryBtnText.textContent = 'RETRY NOT ALLOWED';
+                expirePaymentForOrder(activeOrderNumber);
+              } else {
+                retryBtn.disabled = false;
+                if (retryBtnText) retryBtnText.textContent = origText;
+              }
+              return;
+            }
+
+            // Hide failed modal while Razorpay is open
+            const failedModal = document.getElementById('orderPaymentFailedModal');
+            if (failedModal) failedModal.style.display = 'none';
+
+            let custName = '{{ user.get_full_name|default:user.username|escapejs }}';
+            let custPhone = '{{ user.phone|default:""|escapejs }}';
+            const selectedAddrCard = document.querySelector('.address-card-choice.selected');
+            if (selectedAddrCard) {
+              const nameEl = selectedAddrCard.querySelector('.address-recipient-name');
+              if (nameEl && nameEl.textContent.trim()) custName = nameEl.textContent.trim();
+              const phoneEl = selectedAddrCard.querySelector('.address-phone-text');
+              if (phoneEl && phoneEl.textContent.trim()) custPhone = phoneEl.textContent.replace(/[^0-9+]/g, '');
+            }
+
+            const retryRzpOptions = {
+              key: rzpData.key_id,
+              amount: rzpData.amount,
+              currency: rzpData.currency || 'INR',
+              name: 'Hot Wheels HUB',
+              description: `Order #${activeOrderNumber}`,
+              order_id: rzpData.razorpay_order_id,
+              prefill: {
+                name: custName,
+                email: '{{ user.email|escapejs }}',
+                contact: custPhone
+              },
+              theme: {
+                color: '#e51b24'
+              },
+              handler: async function (paymentResponse) {
+                if (retryBtnText) retryBtnText.textContent = 'VERIFYING PAYMENT...';
+                retryBtn.disabled = true;
+
+                try {
+                  const verifyRes = await fetch('/payments/verify-razorpay-payment/', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      'X-CSRFToken': csrfToken,
+                      'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                      order_number: activeOrderNumber,
+                      razorpay_order_id: paymentResponse.razorpay_order_id,
+                      razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                      razorpay_signature: paymentResponse.razorpay_signature
+                    })
+                  });
+                  const verifyData = await verifyRes.json().catch(() => ({}));
+                  if (verifyRes.ok && (verifyRes.status === 200 || (verifyData && verifyData.order_number))) {
+                    window.location.href = `/orders/success/${activeOrderNumber}/`;
+                  } else {
+                    const verifyError = (verifyData && verifyData.error) ? verifyData.error : 'Payment verification failed.';
+                    showPaymentFailedModal(activeOrderNumber, activeOrderTotal, verifyError);
+                    if (alertEl) {
+                      alertEl.textContent = verifyError;
+                      alertEl.style.display = 'block';
+                    }
+                    retryBtn.disabled = false;
+                    if (retryBtnText) retryBtnText.textContent = origText;
+                  }
+                } catch (verifyErr) {
+                  showPaymentFailedModal(activeOrderNumber, activeOrderTotal, 'Network error while verifying payment.');
+                  retryBtn.disabled = false;
+                  if (retryBtnText) retryBtnText.textContent = origText;
+                }
+              },
+              modal: {
+                ondismiss: function () {
+                  retryBtn.disabled = false;
+                  if (retryBtnText) retryBtnText.textContent = origText;
+                  showPaymentFailedModal(activeOrderNumber, activeOrderTotal, 'Payment cancelled or modal closed. You can retry payment below.');
+                }
+              }
+            };
+
+            const retryRzpInstance = new Razorpay(retryRzpOptions);
+            retryRzpInstance.on('payment.failed', async function (failedResponse) {
+              retryBtn.disabled = false;
+              if (retryBtnText) retryBtnText.textContent = origText;
+
+              const meta = (failedResponse && failedResponse.error && failedResponse.error.metadata) || {};
+              let deadlineReturned = null;
+              if (meta.payment_id) {
+                try {
+                  const failRes = await fetch('/payments/payment-failure/', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      'X-CSRFToken': csrfToken,
+                      'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                      order_number: activeOrderNumber,
+                      razorpay_order_id: meta.order_id || rzpData.razorpay_order_id,
+                      razorpay_payment_id: meta.payment_id
+                    })
+                  });
+                  const failData = await failRes.json().catch(() => ({}));
+                  if (failData && failData.retry_deadline) {
+                    deadlineReturned = failData.retry_deadline;
+                  }
+                } catch (e) {
+                  console.error('Failed to report failure:', e);
+                }
+              }
+              const failDesc = (failedResponse && failedResponse.error && failedResponse.error.description)
+                ? failedResponse.error.description
+                : 'Payment failed at the gateway. Please retry.';
+              showPaymentFailedModal(activeOrderNumber, activeOrderTotal, failDesc, deadlineReturned);
+            });
+
+            retryRzpInstance.open();
+
+          } catch (err) {
+            console.error('Retry error:', err);
+            if (alertEl) {
+              alertEl.textContent = 'Network error while contacting payment gateway.';
+              alertEl.style.display = 'block';
+            }
+            retryBtn.disabled = false;
+            if (retryBtnText) retryBtnText.textContent = origText;
+          }
+        });
       }
 
       if (submitBtn) {
@@ -2087,11 +3203,13 @@
             return false;
           }
 
-          // Get selected payment name for modal
+          // Get selected payment name and method
           let selectedPaymentName = 'Cash on Delivery';
+          let selectedPaymentMethod = 'cod';
           const selectedPayment = document.querySelector('.payment-option-card.selected:not(.disabled)');
           if (selectedPayment) {
             const method = selectedPayment.getAttribute('data-method');
+            selectedPaymentMethod = method;
             if (method === 'cod') selectedPaymentName = 'Cash on Delivery';
             else if (method === 'wallet') selectedPaymentName = 'Wallet';
             else if (method === 'razorpay') selectedPaymentName = 'Razorpay';
@@ -2115,10 +3233,23 @@
           // Disable button and indicate placing
           submitBtn.disabled = true;
           const origText = submitBtnTextSpan ? submitBtnTextSpan.textContent : '';
-          if (submitBtnTextSpan) submitBtnTextSpan.textContent = 'CONFIRMING ORDER...';
+          if (submitBtnTextSpan) {
+            if (selectedPaymentMethod === 'razorpay') {
+              submitBtnTextSpan.textContent = 'INITIATING ORDER...';
+            } else if (selectedPaymentMethod === 'wallet') {
+              submitBtnTextSpan.textContent = 'PROCESSING WALLET DEBIT...';
+            } else {
+              submitBtnTextSpan.textContent = 'CONFIRMING ORDER...';
+            }
+          }
+
+          let isRazorpayFlow = false;
 
           try {
             const formData = new FormData(checkoutForm);
+            if (selectedPaymentMethod) {
+              formData.set('payment_method', selectedPaymentMethod);
+            }
             const csrfToken = (function() {
               const tokenInput = checkoutForm.querySelector('[name=csrfmiddlewaretoken]');
               if (tokenInput && tokenInput.value) return tokenInput.value;
@@ -2142,15 +3273,238 @@
             } catch (jsonErr) {}
 
             if (response.status === 201 || (response.ok && data && data.order_number)) {
+              // 1. Razorpay Payment Flow
+              if (data && (data.payment_required || data.payment_method === 'razorpay')) {
+                isRazorpayFlow = true;
+
+                if (typeof Razorpay === 'undefined') {
+                  if (stockWarningEl && warningTextEl) {
+                    warningTextEl.textContent = 'Razorpay checkout SDK failed to load. Please disable ad-blockers and refresh the page, or choose another payment method.';
+                    stockWarningEl.style.display = 'flex';
+                    stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                  submitBtn.disabled = false;
+                  if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
+                  return;
+                }
+
+                if (submitBtnTextSpan) submitBtnTextSpan.textContent = 'CONNECTING TO RAZORPAY...';
+
+                // Fetch gateway order info from existing backend endpoint
+                let rzpOrderData = null;
+                try {
+                  const rzpRes = await fetch(`/payments/orders/${data.order_number}/create-order/`, {
+                    method: 'POST',
+                    headers: {
+                      'Accept': 'application/json',
+                      'X-CSRFToken': csrfToken,
+                      'X-Requested-With': 'XMLHttpRequest'
+                    }
+                  });
+                  rzpOrderData = await rzpRes.json();
+                  if (!rzpRes.ok || !rzpOrderData.key_id) {
+                    const rzpErrMsg = (rzpOrderData && rzpOrderData.error)
+                      ? rzpOrderData.error
+                      : 'Unable to initialize online payment with Razorpay. Please try again.';
+                    if (stockWarningEl && warningTextEl) {
+                      warningTextEl.textContent = rzpErrMsg;
+                      stockWarningEl.style.display = 'flex';
+                      stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    submitBtn.disabled = false;
+                    if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
+                    return;
+                  }
+                } catch (initErr) {
+                  console.error('Razorpay init error:', initErr);
+                  if (stockWarningEl && warningTextEl) {
+                    warningTextEl.textContent = 'Failed to connect to payment gateway. Please check your network and try again.';
+                    stockWarningEl.style.display = 'flex';
+                    stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                  submitBtn.disabled = false;
+                  if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
+                  return;
+                }
+
+                // Prefill user details
+                let custName = '{{ user.get_full_name|default:user.username|escapejs }}';
+                let custPhone = '{{ user.phone|default:""|escapejs }}';
+                if (selectedAddrCard) {
+                  const nameEl = selectedAddrCard.querySelector('.address-recipient-name');
+                  if (nameEl && nameEl.textContent.trim()) custName = nameEl.textContent.trim();
+                  const phoneEl = selectedAddrCard.querySelector('.address-phone-text');
+                  if (phoneEl && phoneEl.textContent.trim()) custPhone = phoneEl.textContent.replace(/[^0-9+]/g, '');
+                }
+
+                if (submitBtnTextSpan) submitBtnTextSpan.textContent = 'WAITING FOR PAYMENT...';
+
+                const rzpOptions = {
+                  key: rzpOrderData.key_id,
+                  amount: rzpOrderData.amount,
+                  currency: rzpOrderData.currency || 'INR',
+                  name: 'Hot Wheels HUB',
+                  description: `Order #${data.order_number}`,
+                  order_id: rzpOrderData.razorpay_order_id,
+                  prefill: {
+                    name: custName,
+                    email: '{{ user.email|escapejs }}',
+                    contact: custPhone
+                  },
+                  theme: {
+                    color: '#e51b24'
+                  },
+                  handler: async function (paymentResponse) {
+                    if (submitBtnTextSpan) submitBtnTextSpan.textContent = 'VERIFYING PAYMENT...';
+                    submitBtn.disabled = true;
+
+                    try {
+                      const verifyRes = await fetch('/payments/verify-razorpay-payment/', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Accept': 'application/json',
+                          'X-CSRFToken': csrfToken,
+                          'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                          order_number: data.order_number,
+                          razorpay_order_id: paymentResponse.razorpay_order_id,
+                          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                          razorpay_signature: paymentResponse.razorpay_signature
+                        })
+                      });
+
+                      const verifyData = await verifyRes.json().catch(() => ({}));
+
+                      if (verifyRes.ok && (verifyRes.status === 200 || (verifyData && verifyData.order_number))) {
+                        window.location.href = `/orders/success/${data.order_number}/`;
+                      } else {
+                        const verifyError = (verifyData && verifyData.error)
+                          ? verifyData.error
+                          : 'Payment verification failed.';
+                        if (stockWarningEl && warningTextEl) {
+                          warningTextEl.textContent = verifyError;
+                          stockWarningEl.style.display = 'flex';
+                          stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        showPaymentFailedModal(data.order_number, data.total_amount || 0, verifyError, null);
+                        submitBtn.disabled = false;
+                        if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
+                      }
+                    } catch (verifyErr) {
+                      console.error('Payment verification error:', verifyErr);
+                      const netErr = 'Network error while verifying payment with server. Please check your order history.';
+                      if (stockWarningEl && warningTextEl) {
+                        warningTextEl.textContent = netErr;
+                        stockWarningEl.style.display = 'flex';
+                        stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
+                      showPaymentFailedModal(data.order_number, data.total_amount || 0, netErr, null);
+                      submitBtn.disabled = false;
+                      if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
+                    }
+                  },
+                  modal: {
+                    ondismiss: function () {
+                      submitBtn.disabled = false;
+                      if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
+                      showPaymentFailedModal(data.order_number, data.total_amount || 0, 'Payment cancelled or modal closed. Your order was saved as pending. You can retry payment below.', null);
+                    }
+                  }
+                };
+
+                const rzpInstance = new Razorpay(rzpOptions);
+
+                rzpInstance.on('payment.failed', async function (failedResponse) {
+                  submitBtn.disabled = false;
+                  if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
+
+                  let deadlineReturned = null;
+                  try {
+                    if (failedResponse && failedResponse.error && failedResponse.error.metadata) {
+                      const meta = failedResponse.error.metadata;
+                      const failRes = await fetch('/payments/payment-failure/', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Accept': 'application/json',
+                          'X-CSRFToken': csrfToken,
+                          'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                          order_number: data.order_number,
+                          razorpay_order_id: meta.order_id || rzpOrderData.razorpay_order_id,
+                          razorpay_payment_id: meta.payment_id
+                        })
+                      });
+                      const failData = await failRes.json().catch(() => ({}));
+                      if (failData && failData.retry_deadline) {
+                        deadlineReturned = failData.retry_deadline;
+                      }
+                    }
+                  } catch (failReportErr) {
+                    console.error('Failed to report payment failure:', failReportErr);
+                  }
+
+                  const failDesc = (failedResponse && failedResponse.error && failedResponse.error.description)
+                    ? failedResponse.error.description
+                    : 'Payment failed at the gateway. Please try again.';
+
+                  if (stockWarningEl && warningTextEl) {
+                    warningTextEl.textContent = failDesc;
+                    stockWarningEl.style.display = 'flex';
+                    stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                  showPaymentFailedModal(data.order_number, data.total_amount || 0, failDesc, deadlineReturned);
+                });
+
+                rzpInstance.open();
+                return;
+              }
+
+              // 2. COD & Wallet Instant Order Confirmation
               if (data && data.order_number) {
                 window.location.href = `/orders/success/${data.order_number}/`;
               } else {
+                if (data && data.coupon_code && data.coupon_discount) {
+                  const modalCouponRow = document.getElementById('modalCouponRow');
+                  const modalCouponVal = document.getElementById('modalCouponVal');
+                  if (modalCouponRow && modalCouponVal) {
+                    modalCouponVal.textContent = `${data.coupon_code} (-₹${parseFloat(data.coupon_discount).toLocaleString('en-IN', {minimumFractionDigits: 2})})`;
+                    modalCouponRow.style.display = 'flex';
+                  }
+                }
+                if (data && data.total_amount) {
+                  const modalTotalVal = document.getElementById('modalTotalVal');
+                  if (modalTotalVal) {
+                    modalTotalVal.textContent = parseFloat(data.total_amount).toLocaleString('en-IN', {minimumFractionDigits: 2});
+                  }
+                }
                 openSuccessModal(selectedPaymentName, selectedAddressText);
               }
             } else {
               const errMsg = (data && (data.error || data.message))
                 ? (data.error || data.message)
                 : 'Failed to place order. Please review your cart and details.';
+
+              // If the error message is related to coupon validation, also surface it in the coupon feedback area
+              const lowerErr = errMsg.toLowerCase();
+              const isCouponErr = lowerErr.includes('coupon') || 
+                                  lowerErr.includes('spend') || 
+                                  lowerErr.includes('expired') || 
+                                  lowerErr.includes('discount') ||
+                                  lowerErr.includes('active') ||
+                                  lowerErr.includes('limit');
+              if (isCouponErr) {
+                showCouponMessage(errMsg, true);
+                if (couponInput) {
+                  couponInput.classList.add('has-error');
+                  couponInput.disabled = false;
+                }
+                if (couponInputGroup) couponInputGroup.style.display = 'flex';
+                if (appliedCouponCard) appliedCouponCard.style.display = 'none';
+              }
 
               if (stockWarningEl && warningTextEl) {
                 warningTextEl.textContent = errMsg;
@@ -2165,14 +3519,16 @@
               stockWarningEl.style.display = 'flex';
             }
           } finally {
-            if (isBlocked) {
-              submitBtn.disabled = true;
-              submitBtn.classList.add('disabled');
-              submitBtn.setAttribute('aria-disabled', 'true');
-            } else {
-              submitBtn.disabled = false;
+            if (!isRazorpayFlow) {
+              if (isBlocked) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('disabled');
+                submitBtn.setAttribute('aria-disabled', 'true');
+              } else {
+                submitBtn.disabled = false;
+              }
+              if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
             }
-            if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
           }
         });
       }

@@ -1308,7 +1308,7 @@
         <li><a href="{% url 'home' %}" class="nav-link">HOME</a></li>
         <li><a href="{% url 'user_product_list' %}" class="nav-link">SHOP</a></li>
         <li><a href="{% url 'user_category_list' %}" class="nav-link">COLLECTIONS</a></li>
-        <li><a href="#" class="nav-link">ABOUT</a></li>
+        <li><a href="{% url 'home' %}#about" class="nav-link">ABOUT</a></li>
       </ul>
     </div>
 
@@ -1426,7 +1426,7 @@
           </li>
 
           <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'user_coupon_list' %}" class="sidebar-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
                 <path d="M13 5v2"/>
@@ -1438,7 +1438,7 @@
           </li>
 
           <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'wallet' %}" class="sidebar-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <line x1="2" y1="10" x2="22" y2="10"/>
@@ -1448,7 +1448,7 @@
           </li>
 
           <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'referral_dashboard' %}" class="sidebar-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -1725,6 +1725,16 @@
 
               <!-- Card Action Footer -->
               <div class="order-card-footer">
+                {% with status_clean=order.status|lower %}
+                  {% if status_clean == "delivered" or status_clean == "completed" %}
+                    <a href="{% url 'user_order_detail' order.order_number %}#review" class="order-btn-secondary" style="border-color: rgba(251, 191, 36, 0.4); color: #fbbf24; background: rgba(251, 191, 36, 0.08);" title="Write a review for delivered items">
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="#fbbf24" stroke="#fbbf24" style="margin-right: 5px;">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                      <span>Review</span>
+                    </a>
+                  {% endif %}
+                {% endwith %}
                 <a href="{% url 'download_invoice' order.order_number %}" class="order-btn-secondary" title="Download Invoice (PDF)">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

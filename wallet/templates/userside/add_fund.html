@@ -1,0 +1,1523 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Funds | Hot Wheels HUB</title>
+
+  <!-- Google Fonts matching Hot Wheels HUB -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Razorpay Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    /* CSS Reset & Design Tokens */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #09090c;
+      --bg-surface: #101014;
+      --bg-card: #141419;
+      --bg-card-subtle: #16161d;
+      --bg-input: #15151b;
+      --bg-pill: #16161c;
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-input: rgba(255, 255, 255, 0.09);
+
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff222e;
+      --accent-orange: #ff4d00;
+      --accent-coral: #fca5a5;
+      --accent-gold: #f59e0b;
+      --accent-green: #22c55e;
+
+      --text-white: #ffffff;
+      --text-muted: #8e8e98;
+      --text-dim: #5c5d68;
+      --text-placeholder: #52525b;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-brand: 'Montserrat', var(--font-main);
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ==================================================
+       TOP NAVIGATION BAR
+       ================================================== */
+    .navbar {
+      height: 72px;
+      background: rgba(9, 9, 12, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(24px, 5vw, 64px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(20px, 4vw, 44px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-white);
+    }
+
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.3);
+      flex-shrink: 0;
+    }
+
+    .logo-badge svg {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+    }
+
+    .brand-name {
+      font-family: var(--font-brand);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      padding: 6px 0;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: #ffffff;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.2s ease;
+      text-decoration: none;
+    }
+
+    .nav-action-btn:hover {
+      color: #ffffff;
+    }
+
+    .nav-action-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+    }
+
+    .nav-avatar-link {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .nav-avatar-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid rgba(229, 27, 36, 0.6);
+    }
+
+    .nav-avatar-placeholder {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #22222a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* ==================================================
+       MAIN CONTENT CONTAINER
+       ================================================== */
+    .page-viewport {
+      flex: 1;
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 48px clamp(20px, 4vw, 40px) 80px clamp(20px, 4vw, 40px);
+    }
+
+    /* Page Header */
+    .page-title-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+
+    .btn-back-wallet {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-card);
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      margin-right: 2px;
+    }
+
+    .btn-back-wallet:hover {
+      background: rgba(255, 255, 255, 0.09);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-back-wallet svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .page-title-icon-box {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-coral);
+      flex-shrink: 0;
+    }
+
+    .page-title-icon-box svg {
+      width: 34px;
+      height: 34px;
+      stroke: var(--accent-coral);
+    }
+
+    .page-title {
+      font-family: var(--font-brand);
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    /* 2-Column Grid Layout matching Figma */
+    .add-funds-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    /* ==================================================
+       LEFT COLUMN: BALANCE & ENTER AMOUNT
+       ================================================== */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* Available Balance Card */
+    .balance-card {
+      background: radial-gradient(ellipse at 88% 50%, rgba(180, 83, 9, 0.22) 0%, rgba(20, 20, 25, 0.98) 72%), #141419;
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .balance-card-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .balance-card-value {
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      font-family: var(--font-brand);
+      color: #ffffff;
+      line-height: 1;
+      margin: 4px 0 6px 0;
+    }
+
+    .balance-card-currency {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .balance-card-amount {
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .elite-status-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #fbbf24;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .elite-status-row svg {
+      width: 15px;
+      height: 15px;
+      fill: #fbbf24;
+      stroke: #fbbf24;
+    }
+
+    /* Enter Amount Section */
+    .amount-section {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .section-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .amount-input-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 12px;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .amount-input-box:focus-within {
+      border-color: rgba(229, 27, 36, 0.55);
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.15);
+    }
+
+    .amount-input-box.has-error {
+      border-color: rgba(239, 68, 68, 0.8);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+    }
+
+    .amount-currency-symbol {
+      font-family: var(--font-brand);
+      font-size: 32px;
+      font-weight: 700;
+      color: #71717a;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .amount-input-field {
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      font-family: var(--font-mono);
+      font-size: 34px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .amount-input-field::placeholder {
+      color: var(--text-placeholder);
+      opacity: 0.6;
+    }
+
+    /* Inline Error Message */
+    .amount-error-text {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      color: #ef4444;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-top: -6px;
+    }
+
+    .amount-error-text.visible {
+      display: flex;
+    }
+
+    .amount-error-text svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.2;
+      flex-shrink: 0;
+    }
+
+    /* Quick Amount Pills */
+    .quick-amount-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .quick-amount-btn {
+      background: var(--bg-pill);
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      padding: 9px 16px;
+      color: #cbd5e1;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+
+    .quick-amount-btn:hover {
+      background: #1f1f28;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    .quick-amount-btn:active {
+      transform: scale(0.97);
+    }
+
+    .quick-amount-btn.active-pill {
+      background: rgba(229, 27, 36, 0.12);
+      border-color: var(--accent-red);
+      color: #ffffff;
+    }
+
+    /* ==================================================
+       RIGHT COLUMN: PAYMENT METHOD & PROCEED
+       ================================================== */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .payment-section {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Razorpay Secure Card */
+    .payment-method-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .rzp-badge-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .rzp-badge-icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .payment-method-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .payment-method-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .payment-method-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .payment-tags-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .payment-tag {
+      background: #1b1b23;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      line-height: 1;
+    }
+
+    /* Action Button */
+    .btn-proceed-pay {
+      width: 100%;
+      background: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 17px 24px;
+      font-family: var(--font-brand);
+      font-size: 14.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 24px rgba(229, 27, 36, 0.45);
+      transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-proceed-pay:hover:not(:disabled) {
+      background: var(--accent-red-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px rgba(229, 27, 36, 0.6);
+    }
+
+    .btn-proceed-pay:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-proceed-pay:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Button Loading Spinner */
+    .btn-spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    .btn-proceed-pay.loading .btn-spinner {
+      display: inline-block;
+    }
+
+    .btn-proceed-pay.loading .btn-text-content {
+      opacity: 0.85;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Security Badges Row */
+    .security-badges-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      color: #71717a;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      user-select: none;
+      margin-top: -8px;
+    }
+
+    .security-badge-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .security-badge-item svg {
+      width: 14px;
+      height: 14px;
+      stroke: #71717a;
+      stroke-width: 2;
+    }
+
+    .security-badges-divider {
+      color: #3f3f46;
+      font-weight: 400;
+      user-select: none;
+    }
+
+    /* ==================================================
+       TOAST NOTIFICATIONS COMPONENT
+       ================================================== */
+    .toast-container {
+      position: fixed;
+      top: 88px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .toast-card {
+      pointer-events: auto;
+      min-width: 300px;
+      max-width: 440px;
+      background: #14141a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+      animation: toastSlideIn 0.25s ease forwards;
+    }
+
+    .toast-card.toast-error {
+      border-left: 4px solid var(--accent-red);
+    }
+
+    .toast-card.toast-success {
+      border-left: 4px solid var(--accent-green);
+    }
+
+    .toast-card.toast-info {
+      border-left: 4px solid #38bdf8;
+    }
+
+    .toast-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .toast-error .toast-icon {
+      color: var(--accent-red);
+    }
+
+    .toast-success .toast-icon {
+      color: var(--accent-green);
+    }
+
+    .toast-info .toast-icon {
+      color: #38bdf8;
+    }
+
+    .toast-body {
+      flex: 1;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #cbd5e1;
+    }
+
+    .toast-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px;
+    }
+
+    .toast-close-btn:hover {
+      color: #ffffff;
+    }
+
+    @keyframes toastSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==================================================
+       SITE FOOTER MATCHING FIGMA REFERENCE
+       ================================================== */
+    .site-footer {
+      background-color: #060608;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 48px clamp(24px, 5vw, 64px) 28px clamp(24px, 5vw, 64px);
+      margin-top: auto;
+    }
+
+    .footer-columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: clamp(24px, 4vw, 48px);
+      margin-bottom: 40px;
+      max-width: 1240px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .footer-brand .brand-logo {
+      margin-bottom: 14px;
+    }
+
+    .footer-brand-text {
+      font-size: 13px;
+      color: #7b7c87;
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    .footer-column-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #f87171;
+      margin-bottom: 16px;
+      text-transform: capitalize;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    .footer-social-icons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .social-icon-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .social-icon-link:hover {
+      color: #ffffff;
+    }
+
+    .social-icon-link svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .footer-social-text {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .footer-bottom-bar {
+      border-top: 1px solid #141418;
+      padding-top: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1240px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .footer-copyright {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #636472;
+    }
+
+    .footer-accent-bar {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, #ff4d00, #e51b24);
+      border-radius: 1px;
+    }
+
+    /* ==================================================
+       RESPONSIVE BREAKPOINTS
+       ================================================== */
+    @media (max-width: 860px) {
+      .add-funds-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .footer-columns {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .navbar {
+        padding: 0 16px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .page-viewport {
+        padding: 32px 16px 64px 16px;
+      }
+
+      .page-title {
+        font-size: 26px;
+      }
+
+      .balance-card {
+        padding: 22px 20px;
+      }
+
+      .balance-card-amount {
+        font-size: 34px;
+      }
+
+      .amount-input-box {
+        padding: 12px 16px;
+      }
+
+      .amount-input-field {
+        font-size: 28px;
+      }
+
+      .quick-amount-row {
+        gap: 8px;
+      }
+
+      .quick-amount-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .footer-bottom-bar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden CSRF token for AJAX requests -->
+  <form id="csrfHolderForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="{% url 'home' %}" class="brand-logo" title="Hot Wheels HUB Home">
+        <div class="logo-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M19.43 12.98c-.04-.32-.08-.64-.14-.96l-1.92.51c.05.27.09.54.12.82.26 2.06-1.12 3.96-3.18 4.22-2.06.26-3.96-1.12-4.22-3.18-.08-.66.01-1.31.25-1.91l-1.89-.68c-.35.88-.47 1.84-.36 2.81.39 3.09 3.24 5.16 6.33 4.77 3.09-.39 5.16-3.24 4.77-6.33l.24-.06z"/>
+            <path d="M12.05 2C6.53 2 2.05 6.48 2.05 12c0 2.22.73 4.27 1.95 5.94l1.52-1.32C4.6 15.29 4.05 13.71 4.05 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.71-.55 3.29-1.47 4.62l1.52 1.32C21.32 16.27 22.05 14.22 22.05 12c0-5.52-4.48-10-10-10z"/>
+          </svg>
+        </div>
+        <span class="brand-name">HUB</span>
+      </a>
+
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="{% url 'home' %}" class="nav-link active">Home</a></li>
+          <li><a href="{% url 'user_product_list' %}" class="nav-link">Shop</a></li>
+          <li><a href="{% url 'user_category_list' %}" class="nav-link">Collections</a></li>
+          <li><a href="#about" class="nav-link">About</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="nav-right">
+      <a href="{% url 'user_product_list' %}" class="nav-action-btn" title="Search die-cast models" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'wishlist' %}" class="nav-action-btn" title="Wishlist" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'cart_list' %}" class="nav-action-btn" title="Cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'profile' %}" class="nav-avatar-link" title="My Profile" aria-label="My Profile">
+        {% if request.user.profile_image %}
+          <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" class="nav-avatar-img">
+        {% else %}
+          <div class="nav-avatar-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+        {% endif %}
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Viewport Area -->
+  <main class="page-viewport">
+
+    <!-- Page Title Row matching Figma -->
+    <div class="page-title-row">
+      <a href="{% url 'wallet' %}" class="btn-back-wallet" title="Back to Hub Wallet" aria-label="Back to Hub Wallet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </a>
+      <div class="page-title-icon-box" aria-hidden="true">
+        <!-- Coral Wallet Icon matching Figma -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+          <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+          <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+        </svg>
+      </div>
+      <h1 class="page-title">ADD FUNDS</h1>
+    </div>
+
+    <!-- 2-Column Grid -->
+    <div class="add-funds-grid">
+
+      <!-- LEFT COLUMN -->
+      <div class="left-col">
+
+        <!-- Available Balance Card -->
+        <div class="balance-card">
+          <div class="balance-card-label">AVAILABLE BALANCE</div>
+          <div class="balance-card-value">
+            <span class="balance-card-currency">₹</span>
+            <span class="balance-card-amount" id="currentBalanceDisplay">{% if wallet %}{{ wallet.balance|floatformat:2 }}{% elif request.user.is_authenticated and request.user.wallet %}{{ request.user.wallet.balance|floatformat:2 }}{% else %}2,450.00{% endif %}</span>
+          </div>
+          <div class="elite-status-row">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+            <span>Hub Elite Status</span>
+          </div>
+        </div>
+
+        <!-- Enter Amount Section -->
+        <div class="amount-section">
+          <label for="amountInput" class="section-heading">Enter Amount</label>
+
+          <div class="amount-input-box" id="amountInputBox">
+            <span class="amount-currency-symbol">₹</span>
+            <input
+              type="text"
+              id="amountInput"
+              class="amount-input-field"
+              placeholder="0.00"
+              autocomplete="off"
+              inputmode="decimal"
+              aria-label="Amount to add in INR"
+            >
+          </div>
+
+          <!-- Inline error container -->
+          <div class="amount-error-text" id="amountErrorText" role="alert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span id="amountErrorMsg">Enter a valid amount.</span>
+          </div>
+
+          <!-- Quick Amount Buttons -->
+          <div class="quick-amount-row" role="group" aria-label="Quick amount selector">
+            <button type="button" class="quick-amount-btn" data-amount="500">+₹500</button>
+            <button type="button" class="quick-amount-btn" data-amount="1000">+₹1,000</button>
+            <button type="button" class="quick-amount-btn" data-amount="2000">+₹2,000</button>
+            <button type="button" class="quick-amount-btn" data-amount="5000">+₹5,000</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+
+        <!-- Payment Method Section -->
+        <div class="payment-section">
+          <h2 class="section-heading">Payment Method</h2>
+
+          <!-- Razorpay Secure Card -->
+          <div class="payment-method-card">
+            <div class="rzp-badge-icon" aria-hidden="true">
+              <!-- Razorpay Logo Glyphs -->
+              <svg viewBox="0 0 40 40" fill="none">
+                <path d="M14.667 7L6 26.667h8.889l-2.222 6.666L26.667 17.667h-8L21.333 7h-6.666z" fill="#0C2340"/>
+              </svg>
+            </div>
+            <div class="payment-method-info">
+              <span class="payment-method-title">Razorpay Secure</span>
+              <span class="payment-method-subtitle">Cards, UPI, NetBanking, Wallets</span>
+              <div class="payment-tags-row">
+                <span class="payment-tag">UPI</span>
+                <span class="payment-tag">CARDS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proceed To Pay Button -->
+        <button type="button" id="btnProceedToPay" class="btn-proceed-pay">
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span class="btn-text-content" id="btnProceedText">PROCEED TO PAY &rsaquo;</span>
+        </button>
+
+        <!-- Security Badges Row -->
+        <div class="security-badges-row">
+          <div class="security-badge-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>256-BIT SSL</span>
+          </div>
+
+          <span class="security-badges-divider">|</span>
+
+          <div class="security-badge-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+            <span>PCI DSS</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Site Footer matching Hot Wheels HUB -->
+  <footer class="site-footer">
+    <div class="footer-columns">
+      <div class="footer-brand">
+        <a href="{% url 'home' %}" class="brand-logo">
+          <div class="logo-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M19.43 12.98c-.04-.32-.08-.64-.14-.96l-1.92.51c.05.27.09.54.12.82.26 2.06-1.12 3.96-3.18 4.22-2.06.26-3.96-1.12-4.22-3.18-.08-.66.01-1.31.25-1.91l-1.89-.68c-.35.88-.47 1.84-.36 2.81.39 3.09 3.24 5.16 6.33 4.77 3.09-.39 5.16-3.24 4.77-6.33l.24-.06z"/>
+              <path d="M12.05 2C6.53 2 2.05 6.48 2.05 12c0 2.22.73 4.27 1.95 5.94l1.52-1.32C4.6 15.29 4.05 13.71 4.05 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.71-.55 3.29-1.47 4.62l1.52 1.32C21.32 16.27 22.05 14.22 22.05 12c0-5.52-4.48-10-10-10z"/>
+            </svg>
+          </div>
+          <span class="brand-name">HUB</span>
+        </a>
+        <p class="footer-brand-text">Precision engineering meets ultimate speed. The premier destination for serious die-cast collectors.</p>
+      </div>
+
+      <div class="footer-links-col">
+        <h4 class="footer-column-title">Company</h4>
+        <ul class="footer-links-list">
+          <li><a href="#about" class="footer-link">About Us</a></li>
+          <li><a href="#contact" class="footer-link">Contact</a></li>
+          <li><a href="#faq" class="footer-link">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-col">
+        <h4 class="footer-column-title">Connect</h4>
+        <div class="footer-social-icons">
+          <a href="#" class="social-icon-link" aria-label="Share">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-link" aria-label="Website">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-link" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+          </a>
+        </div>
+        <div class="footer-social-text">Instagram / Facebook / YouTube</div>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <div class="footer-copyright">
+        &copy; 2024 HOT WHEELS HUB. ALL RIGHTS RESERVED.
+      </div>
+      <div class="footer-accent-bar"></div>
+    </div>
+  </footer>
+
+  <!-- Interactive JavaScript -->
+  <script>
+    (function () {
+      'use strict';
+
+      // 1. DOM Elements
+      const amountInput = document.getElementById('amountInput');
+      const amountInputBox = document.getElementById('amountInputBox');
+      const amountErrorText = document.getElementById('amountErrorText');
+      const amountErrorMsg = document.getElementById('amountErrorMsg');
+      const quickBtns = document.querySelectorAll('.quick-amount-btn');
+      const btnProceed = document.getElementById('btnProceedToPay');
+      const btnProceedText = document.getElementById('btnProceedText');
+      const currentBalanceDisplay = document.getElementById('currentBalanceDisplay');
+      const toastContainer = document.getElementById('toastContainer');
+
+      // 2. CSRF Token Helper
+      function getCsrfToken() {
+        const csrfInput = document.querySelector('#csrfHolderForm [name=csrfmiddlewaretoken]');
+        if (csrfInput && csrfInput.value) {
+          return csrfInput.value;
+        }
+        const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : '';
+      }
+
+      // 3. Toast Notification Helper
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast-card toast-${type}`;
+
+        let iconSvg = '';
+        if (type === 'error') {
+          iconSvg = `
+            <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          `;
+        } else if (type === 'success') {
+          iconSvg = `
+            <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          `;
+        } else {
+          iconSvg = `
+            <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          `;
+        }
+
+        toast.innerHTML = `
+          ${iconSvg}
+          <div class="toast-body">${message}</div>
+          <button type="button" class="toast-close-btn" aria-label="Close notification">&times;</button>
+        `;
+
+        toast.querySelector('.toast-close-btn').addEventListener('click', function () {
+          toast.remove();
+        });
+
+        toastContainer.appendChild(toast);
+
+        // Auto remove after 5 seconds
+        setTimeout(function () {
+          if (toast.parentNode) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-8px)';
+            toast.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            setTimeout(() => toast.remove(), 250);
+          }
+        }, 5000);
+      }
+
+      // 4. Inline Error Helpers
+      function showError(msg) {
+        amountInputBox.classList.add('has-error');
+        amountErrorMsg.textContent = msg;
+        amountErrorText.classList.add('visible');
+      }
+
+      function clearError() {
+        amountInputBox.classList.remove('has-error');
+        amountErrorText.classList.remove('visible');
+      }
+
+      // 5. Button State Helpers
+      function setButtonLoading(loading, text = 'PROCESSING...') {
+        if (loading) {
+          btnProceed.classList.add('loading');
+          btnProceed.disabled = true;
+          btnProceedText.textContent = text;
+        } else {
+          btnProceed.classList.remove('loading');
+          btnProceed.disabled = false;
+          btnProceedText.innerHTML = 'PROCEED TO PAY &rsaquo;';
+        }
+      }
+
+      // 6. Input Sanitization & Quick Pills
+      // Restrict typing to numbers and single decimal point
+      amountInput.addEventListener('input', function (e) {
+        clearError();
+        let val = this.value;
+
+        // Strip non-digit and non-dot characters
+        val = val.replace(/[^0-9.]/g, '');
+
+        // Prevent multiple decimal points
+        const parts = val.split('.');
+        if (parts.length > 2) {
+          val = parts[0] + '.' + parts.slice(1).join('');
+        }
+
+        // Limit to 2 decimal places
+        if (parts.length === 2 && parts[1].length > 2) {
+          val = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+
+        this.value = val;
+
+        // Clear active pill style if amount does not match
+        quickBtns.forEach(btn => btn.classList.remove('active-pill'));
+      });
+
+      // Quick Amount Button Click
+      quickBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          clearError();
+          const addVal = parseFloat(this.getAttribute('data-amount')) || 0;
+          let currentVal = parseFloat(amountInput.value) || 0;
+
+          // If currently 0 or empty, set to clicked amount; otherwise add to current
+          if (currentVal === 0) {
+            currentVal = addVal;
+          } else {
+            currentVal = currentVal + addVal;
+          }
+
+          amountInput.value = currentVal.toFixed(2);
+
+          // Highlight current pill
+          quickBtns.forEach(b => b.classList.remove('active-pill'));
+          this.classList.add('active-pill');
+
+          amountInput.focus();
+        });
+      });
+
+      // 7. Validate Amount
+      function getValidatedAmount() {
+        const raw = amountInput.value.trim();
+        if (!raw) {
+          showError('Please enter an amount to proceed.');
+          amountInput.focus();
+          return null;
+        }
+
+        const num = parseFloat(raw);
+        if (isNaN(num) || !isFinite(num) || num <= 0) {
+          showError('Amount must be greater than zero.');
+          amountInput.focus();
+          return null;
+        }
+
+        // Check decimal places
+        const parts = raw.split('.');
+        if (parts.length === 2 && parts[1].length > 2) {
+          showError('Amount cannot have more than two decimal places.');
+          amountInput.focus();
+          return null;
+        }
+
+        if (num > 99999999.99) {
+          showError('Amount exceeds the maximum allowed limit.');
+          amountInput.focus();
+          return null;
+        }
+
+        return num.toFixed(2);
+      }
+
+      // 8. Handle Payment Verification
+      async function verifyPayment(rzpResponse, topupAmount) {
+        setButtonLoading(true, 'VERIFYING PAYMENT...');
+
+        try {
+          const response = await fetch("{% url 'verify_wallet_topup_payment' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+              razorpay_order_id: rzpResponse.razorpay_order_id,
+              razorpay_payment_id: rzpResponse.razorpay_payment_id,
+              razorpay_signature: rzpResponse.razorpay_signature
+            })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            setButtonLoading(false);
+            const errMsg = data.error || 'Payment verification failed. If money was deducted, it will reflect shortly.';
+            showToast(errMsg, 'error');
+            return;
+          }
+
+          // Verification Success
+          showToast(`₹${topupAmount} added to your wallet successfully! Redirecting...`, 'success');
+
+          // Dynamically update the current balance on screen
+          if (currentBalanceDisplay) {
+            const currentBal = parseFloat(currentBalanceDisplay.textContent.replace(/,/g, '')) || 0;
+            const newBal = currentBal + parseFloat(topupAmount);
+            currentBalanceDisplay.textContent = newBal.toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
+          }
+
+          // Clear amount input
+          amountInput.value = '';
+
+          // Redirect to wallet page after brief delay
+          setTimeout(function () {
+            window.location.href = "{% url 'wallet' %}";
+          }, 1500);
+
+        } catch (err) {
+          console.error('Payment verification error:', err);
+          setButtonLoading(false);
+          showToast('Network error during payment verification. Please check your wallet.', 'error');
+        }
+      }
+
+      // 9. Proceed to Pay Click Handler
+      btnProceed.addEventListener('click', async function () {
+        clearError();
+
+        const validatedAmount = getValidatedAmount();
+        if (!validatedAmount) {
+          return;
+        }
+
+        setButtonLoading(true, 'INITIATING PAYMENT...');
+
+        try {
+          const response = await fetch("{% url 'create_wallet_topup_order' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+              amount: validatedAmount
+            })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            setButtonLoading(false);
+            const errMsg = data.error || 'Unable to initiate payment. Please try again.';
+            showError(errMsg);
+            showToast(errMsg, 'error');
+            return;
+          }
+
+          // Launch Razorpay Checkout Modal
+          const options = {
+            key: data.key_id,
+            amount: data.amount,
+            currency: data.currency || 'INR',
+            name: 'Hot Wheels HUB',
+            description: 'Wallet Top-up',
+            order_id: data.razorpay_order_id,
+            prefill: {
+              name: "{% if request.user.get_full_name %}{{ request.user.get_full_name|escapejs }}{% elif request.user.username %}{{ request.user.username|escapejs }}{% endif %}",
+              email: "{% if request.user.email %}{{ request.user.email|escapejs }}{% endif %}",
+              contact: "{% if request.user.phone_number %}{{ request.user.phone_number|escapejs }}{% elif request.user.phone %}{{ request.user.phone|escapejs }}{% endif %}"
+            },
+            theme: {
+              color: '#e51b24'
+            },
+            modal: {
+              ondismiss: function () {
+                setButtonLoading(false);
+                showToast('Payment window closed. Your wallet was not charged.', 'info');
+              }
+            },
+            handler: function (rzpResponse) {
+              verifyPayment(rzpResponse, validatedAmount);
+            }
+          };
+
+          const rzpInstance = new Razorpay(options);
+
+          rzpInstance.on('payment.failed', function (failedResponse) {
+            setButtonLoading(false);
+            const desc = (failedResponse && failedResponse.error && failedResponse.error.description)
+              ? failedResponse.error.description
+              : 'Payment was declined or failed. Please try again.';
+            showToast(desc, 'error');
+          });
+
+          rzpInstance.open();
+
+        } catch (err) {
+          console.error('Order creation error:', err);
+          setButtonLoading(false);
+          const networkMsg = 'A network error occurred while connecting to payment gateway.';
+          showError(networkMsg);
+          showToast(networkMsg, 'error');
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>

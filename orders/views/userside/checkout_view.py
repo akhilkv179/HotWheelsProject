@@ -1,8 +1,10 @@
+
 from decimal import Decimal, ROUND_HALF_UP
 from uuid import uuid4
-
+from categories.models import CategoryOffer
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10,13 +12,21 @@ from django.utils import timezone
 
 from accounts.models import Address
 from cart.models import Cart, CartItem
-from products.models import ProductVariant, ProductOffer
+from products.models import ProductVariant
 from orders.models import Order, OrderItem, OrderAddress, OrderStatusHistory
+from payments.models import Payment
+from wallet.models import Wallet
+from wallet.services.transaction_service import process_wallet_transaction
+from coupons.services import (
+    calculate_coupon_discount,
+    record_coupon_usage,
+)
 
 
 # Check whether the client expects a JSON response.
 def wants_json(request):
     return "application/json" in request.headers.get("Accept", "")
+
 
 
 # Find the currently valid offer for a product.
@@ -28,10 +38,46 @@ def get_active_product_offer(product, current_time):
     ).order_by("-discount_value").first()
 
 
-# Calculate the offer discount and discounted price for a cart item.
+# Find the currently valid offer for a category.
+def get_active_category_offer(category, current_time):
+    return CategoryOffer.objects.filter(
+        category=category,
+        is_active=True,
+        start_date__lte=current_time,
+        end_date__gte=current_time,
+    ).order_by("-discount_value").first()
+
+
+# Compare product and category offers and apply only the larger discount.
 def calculate_item_offer(item, current_time):
     variant = item.product_variant
-    offer = get_active_product_offer(variant.product, current_time)
+    product = variant.product
+    category = product.category
+
+    product_offer = get_active_product_offer(
+        product,
+        current_time,
+    )
+
+    category_offer = (
+        get_active_category_offer(category, current_time)
+        if category
+        else None
+    )
+
+    # Product offers take precedence when both discounts are equal.
+    offer = product_offer
+    offer_type = "product" if product_offer else None
+
+    if (
+        category_offer
+        and (
+            offer is None
+            or category_offer.discount_value > offer.discount_value
+        )
+    ):
+        offer = category_offer
+        offer_type = "category"
 
     original_unit_price = variant.price
 
@@ -42,6 +88,7 @@ def calculate_item_offer(item, current_time):
             Decimal("0.01"),
             rounding=ROUND_HALF_UP,
         )
+
         offer_name = offer.offer_name
         offer_percentage = offer.discount_value
     else:
@@ -54,7 +101,7 @@ def calculate_item_offer(item, current_time):
     original_line_total = original_unit_price * item.quantity
     discounted_line_total = original_line_total - line_discount
 
-    # Attach calculated values for use in the template and JSON response.
+    # Attach calculated values for checkout templates and JSON responses.
     item.original_unit_price = original_unit_price
     item.discount_per_unit = discount_per_unit
     item.discounted_unit_price = discounted_unit_price
@@ -63,11 +110,13 @@ def calculate_item_offer(item, current_time):
     item.discounted_line_total = discounted_line_total
     item.offer_name = offer_name
     item.offer_percentage = offer_percentage
+    item.offer_type = offer_type
 
     return item
 
 
-# Process checkout, validate inventory, deduct stock, and create the order.
+
+# Process checkout, validate inventory, handle payment, and create the order.
 @login_required
 def checkout(request):
     # Allow only GET and POST requests.
@@ -204,6 +253,36 @@ def checkout(request):
 
         return render(request, "userside/checkout.html", context)
 
+    # Identify and validate the payment method selected by the customer.
+    payment_method = request.POST.get(
+        "payment_method", "cod"
+    ).strip().lower()
+
+    if payment_method not in ("cod", "razorpay", "wallet"):
+        error_message = "Please select a valid payment method."
+
+        if wants_json(request):
+            return JsonResponse({"error": error_message}, status=400)
+
+        messages.error(request, error_message)
+        return redirect("checkout")
+
+    # Razorpay must use the JSON checkout flow so payment can start afterward.
+    if payment_method == "razorpay" and not wants_json(request):
+        messages.error(
+            request,
+            "Please enable JavaScript to complete online payment.",
+        )
+        return redirect("checkout")
+
+    # Store the selected payment method using the existing Order field.
+    if payment_method == "razorpay":
+        delivery_method = "Razorpay"
+    elif payment_method == "wallet":
+        delivery_method = "Wallet"
+    else:
+        delivery_method = "Cash on Delivery"
+
     # Validate the delivery address before creating an order.
     if not selected_address:
         error_message = "Please add a delivery address."
@@ -229,8 +308,11 @@ def checkout(request):
             messages.error(request, error_message)
             return redirect("checkout")
 
+    # Read the coupon code submitted with the checkout request.
+    coupon_code = request.POST.get("coupon_code", "").strip()
+
     try:
-        # Keep stock validation and order creation in one transaction.
+        # Keep order creation, stock changes, coupon usage, and wallet payment atomic.
         with transaction.atomic():
             # Reload cart items before processing the order.
             locked_items = list(
@@ -244,16 +326,7 @@ def checkout(request):
             )
 
             if not locked_items:
-                error_message = "Your cart is empty."
-
-                if wants_json(request):
-                    return JsonResponse(
-                        {"error": error_message},
-                        status=400,
-                    )
-
-                messages.error(request, error_message)
-                return redirect("cart_list")
+                raise ValueError("Your cart is empty.")
 
             # Lock the product variants to avoid overselling available stock.
             variants = {
@@ -302,28 +375,72 @@ def checkout(request):
                 subtotal += item.original_line_total
                 discount_amount += item.item_discount_total
 
-            # Calculate final amounts after applying product offer discounts.
+            # Calculate the subtotal after product offer discounts.
             discounted_subtotal = subtotal - discount_amount
 
+            # Preserve the existing free-shipping threshold based on original subtotal.
             shipping_amount = (
                 Decimal("0.00")
                 if subtotal >= Decimal("1000.00")
                 else Decimal("50.00")
             )
 
-            total_amount = discounted_subtotal + shipping_amount
+            # Apply the coupon to the discounted subtotal, before shipping.
+            coupon = None
+            coupon_discount = Decimal("0.00")
 
-            # Create the order with the original subtotal and total discount.
+            if coupon_code:
+                coupon, coupon_discount = calculate_coupon_discount(
+                    code=coupon_code,
+                    eligible_subtotal=discounted_subtotal,
+                )
+
+            # Combine product-offer and coupon discounts for the order record.
+            final_discount_amount = discount_amount + coupon_discount
+
+            total_amount = (
+                discounted_subtotal
+                - coupon_discount
+                + shipping_amount
+            )
+
+            # Lock and validate the wallet before creating a wallet-paid order.
+            wallet = None
+
+            if payment_method == "wallet":
+                wallet = (
+                    Wallet.objects.select_for_update()
+                    .filter(user=request.user, is_active=True)
+                    .first()
+                )
+
+                if wallet is None:
+                    raise ValueError(
+                        "Your wallet is unavailable. Please try another payment method."
+                    )
+
+                if wallet.balance < total_amount:
+                    raise ValueError(
+                        "Insufficient wallet balance. Please add funds or choose another payment method."
+                    )
+
+            # Wallet orders are confirmed immediately after the debit succeeds.
+            order_status = (
+                "confirmed" if payment_method == "wallet" else "pending"
+            )
+
+            # Create the order with product and coupon discounts.
             order = Order.objects.create(
                 user=request.user,
                 address=selected_address,
                 order_number=f"HW-{uuid4().hex[:12].upper()}",
-                status="pending",
+                status=order_status,
                 subtotal=subtotal,
-                discount_amount=discount_amount,
+                discount_amount=final_discount_amount,
+                coupon=coupon,
                 shipping_amount=shipping_amount,
                 total_amount=total_amount,
-                delivery_method="Cash on Delivery",
+                delivery_method=delivery_method,
             )
 
             # Save a snapshot of the selected address for this order.
@@ -361,34 +478,85 @@ def checkout(request):
                     update_fields=["stock_quantity", "updated_at"]
                 )
 
+            # Deduct from the wallet and record the transaction via the service.
+            if payment_method == "wallet":
+                wallet_transaction_id = f"WALLET-{uuid4().hex.upper()}"
+
+                wallet_transaction = process_wallet_transaction(
+                    wallet_id=wallet.pk,
+                    amount=total_amount,
+                    transaction_type="debit",
+                    transaction_id=wallet_transaction_id,
+                    reference_id=order.order_number,
+                )
+
+                # Record the successful wallet payment against this order.
+                Payment.objects.create(
+                    order=order,
+                    amount=total_amount,
+                    payment_method="wallet",
+                    status="paid",
+                    transaction_id=wallet_transaction.transaction_id,
+                    paid_at=timezone.now(),
+                )
+
             # Record the initial order status.
             OrderStatusHistory.objects.create(
                 order=order,
-                status="pending",
+                status=order_status,
             )
 
-            # Empty the cart only after the order has been created.
+            # Record coupon usage inside the same transaction as the order.
+            # If checkout fails, the usage record and usage count roll back too.
+            if coupon is not None:
+                record_coupon_usage(
+                    coupon=coupon,
+                    order=order,
+                    user=request.user,
+                    discount_amount=coupon_discount,
+                )
+
+            # Empty the cart only after order processing succeeds.
             CartItem.objects.filter(cart=cart).delete()
 
-    except ValueError as error:
-        if wants_json(request):
-            return JsonResponse({"error": str(error)}, status=400)
+    except (ValueError, ValidationError) as error:
+        if isinstance(error, ValidationError):
+            error_message = (
+                error.messages[0]
+                if error.messages
+                else "Unable to process checkout."
+            )
+        else:
+            error_message = str(error)
 
-        messages.error(request, str(error))
+        if wants_json(request):
+            return JsonResponse({"error": error_message}, status=400)
+
+        messages.error(request, error_message)
         return redirect("checkout")
 
-    # Return the completed order details to JSON clients.
+    # Return order details and tell the frontend whether payment is required.
     if wants_json(request):
+        is_online_payment = payment_method == "razorpay"
+
         return JsonResponse(
             {
-                "message": "Your order has been placed successfully.",
+                "message": (
+                    "Order created. Continue to payment."
+                    if is_online_payment
+                    else "Your order has been placed successfully."
+                ),
                 "order_number": order.order_number,
                 "order_status": order.status,
+                "payment_method": payment_method,
+                "payment_required": is_online_payment,
                 "subtotal": str(order.subtotal),
                 "discount_amount": str(order.discount_amount),
                 "discounted_subtotal": str(
                     order.subtotal - order.discount_amount
                 ),
+                "coupon_code": coupon.code if coupon else None,
+                "coupon_discount": str(coupon_discount),
                 "shipping_amount": str(order.shipping_amount),
                 "total_amount": str(order.total_amount),
             },
@@ -416,6 +584,22 @@ def order_success(request, order_number):
         order_number=order_number,
         user=request.user,
     )
+
+    # Do not display Razorpay orders as successful before payment is verified.
+    if (
+        order.delivery_method == "Razorpay"
+        and not order.payments.filter(status="paid").exists()
+    ):
+        error_message = "Payment has not been confirmed for this order yet."
+
+        if wants_json(request):
+            return JsonResponse({"error": error_message}, status=409)
+
+        messages.error(request, error_message)
+        return redirect(
+            "user_order_detail",
+            order_number=order.order_number,
+        )
 
     # Return order confirmation details to JSON clients.
     if wants_json(request):

@@ -1,3 +1,4 @@
+
 from django.db import models
 
 from accounts.models import User, Address
@@ -6,15 +7,30 @@ from coupons.models import Coupon
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="orders")
-    address = models.ForeignKey(Address,on_delete=models.SET_NULL,null=True,related_name="orders")
-    coupon = models.ForeignKey(Coupon,on_delete=models.SET_NULL,null=True,blank=True,related_name="orders")
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="orders",
+    )
+    address = models.ForeignKey(
+        Address,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="orders",
+    )
+    coupon = models.ForeignKey(
+        Coupon,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
     order_number = models.CharField(max_length=255)
     status = models.CharField(max_length=100)
-    subtotal = models.DecimalField(max_digits=10,decimal_places=2)
-    discount_amount = models.DecimalField(max_digits=10,decimal_places=2)
-    shipping_amount = models.DecimalField(max_digits=10,decimal_places=2)
-    total_amount = models.DecimalField(max_digits=10,decimal_places=2)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    shipping_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_method = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -30,14 +46,30 @@ class OrderItem(models.Model):
         ("returned", "Returned"),
     ]
 
-    order = models.ForeignKey( Order,on_delete=models.CASCADE,related_name="items")
-    product_variant = models.ForeignKey(ProductVariant,on_delete=models.CASCADE,related_name="order_items")
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
+    product_variant = models.ForeignKey(
+        ProductVariant,
+        on_delete=models.CASCADE,
+        related_name="order_items",
+    )
     product_name = models.CharField(max_length=255)
     quantity = models.IntegerField()
-    unit_price = models.DecimalField(max_digits=10,decimal_places=2)
-    total_price = models.DecimalField(max_digits=10,decimal_places=2)
-    discount_amount = models.DecimalField(max_digits=10,decimal_places=2)
-    item_status = models.CharField(max_length=20,choices=ITEM_STATUS_CHOICES,default="active")
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    item_status = models.CharField(
+        max_length=20,
+        choices=ITEM_STATUS_CHOICES,
+        default="active",
+    )
+    cancellation_reason = models.TextField(
+        blank=True,
+        default="",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -45,17 +77,21 @@ class OrderItem(models.Model):
 
 
 class OrderAddress(models.Model):
-    order = models.OneToOneField(Order,on_delete=models.CASCADE,related_name="order_address")
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="order_address",
+    )
     address_label = models.CharField(max_length=255)
     full_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20)
     address_line1 = models.CharField(max_length=255)
-    address_line2 = models.CharField(max_length=255,blank=True)
+    address_line2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
     pin = models.CharField(max_length=20)
-    custom_label = models.CharField(max_length=255,blank=True)
+    custom_label = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -63,7 +99,11 @@ class OrderAddress(models.Model):
 
 
 class OrderStatusHistory(models.Model):
-    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="status_history")
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="status_history",
+    )
     status = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -72,8 +112,16 @@ class OrderStatusHistory(models.Model):
 
 
 class Return(models.Model):
-    order_item = models.ForeignKey(OrderItem,on_delete=models.CASCADE,related_name="returns")
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="returns")
+    order_item = models.ForeignKey(
+        OrderItem,
+        on_delete=models.CASCADE,
+        related_name="returns",
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="returns",
+    )
     reason = models.CharField(max_length=255)
     description = models.TextField()
     user_add_note = models.TextField()

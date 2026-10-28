@@ -29,7 +29,11 @@ SECRET_KEY = 'django-insecure-n1kw(v&whbjhrs3$*_lq5@ql8r_9_t3o%l=ef_wkd2zp7n9$g9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "lk1bx3h1twj5.shares.zrok.io",
+]
 
 
 # Application definition
@@ -124,7 +128,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 
@@ -160,4 +164,13 @@ LOGIN_URL = "/login/"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
+
+RAZORPAY_WEBHOOK_SECRET = os.environ.get(
+    "RAZORPAY_WEBHOOK_SECRET",
+    "",
+)
+
 

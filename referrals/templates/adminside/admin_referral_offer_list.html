@@ -1,0 +1,1391 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Referral Management | Hot Wheels Admin</title>
+
+  <!-- Google Fonts: Inter for UI, Montserrat for bold headings, JetBrains Mono for codes/IDs -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Design Tokens */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-page: #0c0c0e;
+      --bg-sidebar: #08080a;
+      --bg-card: #131316;
+      --bg-input-box: #0c0c0e;
+      --bg-pill: #1e1e24;
+
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-input: rgba(255, 255, 255, 0.09);
+      --border-pill: rgba(255, 255, 255, 0.1);
+
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff232d;
+      --accent-coral: #fca5a5;
+
+      --text-white: #ffffff;
+      --text-muted: #8e8f9c;
+      --text-dim: #5c5d6b;
+      --text-headers: #7a7974;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Overall Layout: Sidebar + Canvas */
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR NAVIGATION
+       ================================================== */
+    .admin-sidebar {
+      width: 230px;
+      min-width: 230px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 26px 16px 24px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .admin-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .admin-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .sidebar-brand {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #66635e;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+      stroke: #7a7974;
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      font-weight: 600;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-coral);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 6px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+    }
+
+    /* ==================================================
+       MAIN CONTENT CANVAS
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-page);
+    }
+
+    /* Top Navigation Bar */
+    .admin-topbar {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 3.5vw, 44px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .active-module-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .active-module-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #66635e;
+    }
+
+    .active-module-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .topbar-icon-btn {
+      background: transparent;
+      border: none;
+      color: #8a8b98;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      position: relative;
+      transition: color 0.15s ease;
+    }
+
+    .topbar-icon-btn:hover {
+      color: #ffffff;
+    }
+
+    .topbar-icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Red Notification Badge with '4' */
+    .bell-badge-count {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+      color: #ffffff;
+      font-size: 8.5px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .topbar-vdivider {
+      width: 1px;
+      height: 20px;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .profile-avatar-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #181820;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .profile-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .profile-role {
+      font-size: 10px;
+      font-weight: 500;
+      color: #7a7974;
+    }
+
+    /* ==================================================
+       VIEWPORT & PAGE CONTENT
+       ================================================== */
+    .admin-viewport {
+      flex: 1;
+      padding: 28px clamp(20px, 3.5vw, 44px) 36px clamp(20px, 3.5vw, 44px);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Django Messages Alert Box */
+    .alert-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .alert-box {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-left: 3px solid #22c55e;
+      color: #86efac;
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .alert-box.error {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.3);
+      border-left-color: var(--accent-red);
+      color: #fca5a5;
+    }
+
+    .alert-close-btn {
+      background: transparent;
+      border: none;
+      color: currentColor;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0.6;
+    }
+    .alert-close-btn:hover {
+      opacity: 1;
+    }
+
+    /* Header Row: Title & Subtitle + Reward Amount Widget */
+    .page-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .title-content {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .page-main-title {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .page-main-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* GLOBAL REWARD AMOUNT WIDGET */
+    .reward-widget-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 290px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .reward-card-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9c9a94;
+    }
+
+    .reward-form-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .reward-input-wrap {
+      background-color: var(--bg-input-box);
+      border: 1px solid var(--border-input);
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      transition: border-color 0.15s ease;
+    }
+
+    .reward-input-wrap:focus-within {
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .reward-currency-symbol {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .reward-number-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: var(--font-main);
+      font-size: 15px;
+      font-weight: 600;
+      width: 100%;
+      min-width: 60px;
+    }
+
+    .btn-update-reward {
+      background-color: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 18px;
+      font-family: var(--font-main);
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-update-reward:hover {
+      background-color: var(--accent-red-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-update-reward:active {
+      transform: translateY(0);
+    }
+
+    /* ==================================================
+       MAIN DATA TABLE CARD
+       ================================================== */
+    .table-container-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .table-scroll-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .table-scroll-wrap::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-scroll-wrap::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .referral-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      min-width: 780px;
+    }
+
+    .referral-data-table th {
+      padding: 18px 24px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-headers);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.008);
+      white-space: nowrap;
+    }
+
+    .referral-data-table th.text-right,
+    .referral-data-table td.text-right {
+      text-align: right;
+    }
+
+    .referral-data-table td {
+      padding: 18px 24px;
+      font-size: 13.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .referral-data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .referral-data-table tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Column Styles */
+    .col-id-text {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: #cbd5e1;
+      letter-spacing: 0.03em;
+    }
+
+    .col-referrer-text {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .col-referred-text {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #cbd5e1;
+    }
+
+    /* Referral Code Pill */
+    .referral-code-badge {
+      display: inline-block;
+      background-color: var(--bg-pill);
+      border: 1px solid var(--border-pill);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .col-date-text {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .col-reward-text {
+      font-family: var(--font-main);
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Empty State */
+    .table-empty-row td {
+      padding: 56px 24px;
+      text-align: center;
+    }
+
+    .table-empty-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .empty-icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+    }
+
+    .empty-icon-circle svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .empty-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .empty-subtext {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    /* ==================================================
+       PAGINATION BAR
+       ================================================== */
+    .table-pagination-footer {
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .pagination-page-pill {
+      min-width: 28px;
+      height: 28px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #8c8d98;
+    }
+
+    .pagination-page-pill:hover:not(.active):not(:disabled) {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .pagination-page-pill.active {
+      background-color: var(--accent-coral);
+      color: #121216;
+      font-weight: 800;
+      cursor: default;
+    }
+
+    .pagination-page-pill.next-pill {
+      color: #8c8d98;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      gap: 4px;
+    }
+
+    .pagination-page-pill.next-pill:hover:not(:disabled) {
+      color: #ffffff;
+    }
+
+    .pagination-page-pill:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* ==================================================
+       PAGE FOOTER
+       ================================================== */
+    .admin-site-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-top: 24px;
+      margin-top: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .footer-copyright {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #52535d;
+      text-transform: uppercase;
+    }
+
+    .footer-links-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer-nav-link {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #52535d;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.15s ease;
+    }
+
+    .footer-nav-link:hover {
+      color: #ffffff;
+    }
+
+    .footer-vdivider {
+      color: #383842;
+      font-size: 11px;
+      user-select: none;
+    }
+
+    /* ==================================================
+       RESPONSIVE BREAKPOINTS
+       ================================================== */
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        position: fixed;
+        left: -230px;
+        top: 0;
+        bottom: 0;
+      }
+      .admin-sidebar.open {
+        transform: translateX(230px);
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .admin-viewport {
+        padding: 18px 16px 32px 16px;
+      }
+      .page-title-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .reward-widget-card {
+        width: 100%;
+        min-width: 0;
+      }
+      .page-main-title {
+        font-size: 26px;
+      }
+      .admin-site-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- ==================================================
+         SIDEBAR NAVIGATION
+         ================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand">
+          <a href="{% url 'admin_dashboard' %}" class="brand-title">ADMIN</a>
+        </div>
+
+        <nav class="sidebar-nav">
+
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="{% url 'admin_coupon_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <!-- Active State on Referrals -->
+            <a href="{% url 'admin_referral_offer_list' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="nav-group">
+            <span class="nav-group-label">CONTENT</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+              <span>Banners</span>
+            </a>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Logout Item at Bottom -->
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==================================================
+         MAIN CONTENT AREA
+         ================================================== -->
+    <main class="admin-main">
+
+      <!-- Topbar Header matching Figma -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="active-module-block">
+            <span class="active-module-label">ACTIVE MODULE</span>
+            <span class="active-module-title">Product Management</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Search Icon Button -->
+          <button type="button" class="topbar-icon-btn" title="Search" aria-label="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+
+          <!-- Notification Bell with '4' badge -->
+          <button type="button" class="topbar-icon-btn" title="Notifications" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="bell-badge-count">4</span>
+          </button>
+
+          <div class="topbar-vdivider"></div>
+
+          <!-- User Profile -->
+          <div class="topbar-profile">
+            <div class="profile-avatar-circle"></div>
+            <div class="profile-info">
+              <span class="profile-name">Admin User</span>
+              <span class="profile-role">Fleet Manager</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Viewport Content -->
+      <div class="admin-viewport">
+
+        <!-- Django Messages Alert -->
+        <div class="alert-container" id="alertContainer">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert-box {% if message.tags == 'error' %}error{% endif %}">
+                <span>{{ message }}</span>
+                <button type="button" class="alert-close-btn" onclick="this.parentElement.remove();">&times;</button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- PAGE TITLE & GLOBAL REWARD AMOUNT WIDGET -->
+        <div class="page-title-row">
+          <div class="title-content">
+            <h1 class="page-main-title">REFERRAL MANAGEMENT</h1>
+            <p class="page-main-subtitle">Manage HOT WHEELS customer referral program.</p>
+          </div>
+
+          <!-- Global Reward Amount Card with Form submission to admin_referral_offer_create -->
+          <form method="POST" action="{% url 'admin_referral_offer_create' %}" class="reward-widget-card" id="rewardOfferForm">
+            {% csrf_token %}
+            <span class="reward-card-label">GLOBAL REWARD AMOUNT (₹)</span>
+            <div class="reward-form-row">
+              <div class="reward-input-wrap">
+                <span class="reward-currency-symbol">₹</span>
+                <input
+                  type="number"
+                  name="reward_amount"
+                  id="global_reward_amount"
+                  step="0.01"
+                  min="0.01"
+                  max="99999999.99"
+                  value="{% if offers.0 %}{{ offers.0.reward_amount|floatformat:0 }}{% elif page_obj.0 %}{{ page_obj.0.reward_amount|floatformat:0 }}{% else %}100{% endif %}"
+                  class="reward-number-input"
+                  required
+                >
+              </div>
+              <button type="submit" class="btn-update-reward" id="btnUpdateReward">UPDATE</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- MAIN DATA TABLE CARD -->
+        <div class="table-container-card">
+          <div class="table-scroll-wrap">
+            <table class="referral-data-table" id="referralDataTable">
+              <thead>
+                <tr>
+                  <th>REFERRAL ID</th>
+                  <th>REFERRER</th>
+                  <th>REFERRED CUSTOMER</th>
+                  <th>REFERRAL CODE</th>
+                  <th>JOINED DATE</th>
+                  <th class="text-right">REWARD</th>
+                </tr>
+              </thead>
+              <tbody id="referralTableBody">
+                {% for referral in referrals %}
+                  <tr class="referral-row" data-referral-id="{{ referral.id }}">
+                    <td>
+                      <span class="col-id-text">REF1000{{ referral.id }}</span>
+                    </td>
+
+                    <td>
+                      <span class="col-referrer-text">
+                        {% if referral.referrer.first_name %}
+                          {{ referral.referrer.first_name }}{% if referral.referrer.last_name %} {{ referral.referrer.last_name }}{% endif %}
+                        {% else %}
+                          {{ referral.referrer.username }}
+                        {% endif %}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span class="col-referred-text">
+                        {% if referral.referred_user.first_name %}
+                          {{ referral.referred_user.first_name }}{% if referral.referred_user.last_name %} {{ referral.referred_user.last_name }}{% endif %}
+                        {% else %}
+                          {{ referral.referred_user.username }}
+                        {% endif %}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span class="referral-code-badge">{{ referral.referral_code }}</span>
+                    </td>
+
+                    <td>
+                      <span class="col-date-text">
+                        {% if referral.referred_user.date_joined %}
+                          {{ referral.referred_user.date_joined|date:"m/d/Y" }}
+                        {% else %}
+                          {{ referral.created_at|date:"m/d/Y" }}
+                        {% endif %}
+                      </span>
+                    </td>
+
+                    <td class="text-right">
+                      <span class="col-reward-text">₹{{ referral.reward_amount|floatformat:0 }}</span>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr class="table-empty-row" id="emptyReferralRow">
+                    <td colspan="6">
+                      <div class="table-empty-wrap">
+                        <div class="empty-icon-circle">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 12 20 22 4 22 4 12"/>
+                            <rect x="2" y="7" width="20" height="5"/>
+                            <line x1="12" y1="22" x2="12" y2="7"/>
+                          </svg>
+                        </div>
+                        <div class="empty-title">No Referral Records Found</div>
+                        <p class="empty-subtext">
+                          Customer referral records will appear here as users invite their friends.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- TABLE PAGINATION BAR MATCHING FIGMA -->
+          <div class="table-pagination-footer" id="tablePaginationFooter">
+            {% if referral_page_obj.paginator.num_pages > 1 %}
+              {% for p in referral_page_obj.paginator.page_range %}
+                {% if p == referral_page_obj.number %}
+                  <span class="pagination-page-pill active">{{ p }}</span>
+                {% elif p <= 5 or p == referral_page_obj.paginator.num_pages %}
+                  <a href="?referral_page={{ p }}" class="pagination-page-pill">{{ p }}</a>
+                {% endif %}
+              {% endfor %}
+
+              {% if referral_page_obj.has_next %}
+                <a href="?referral_page={{ referral_page_obj.next_page_number }}" class="pagination-page-pill next-pill">
+                  NEXT &rarr;
+                </a>
+              {% endif %}
+            {% else %}
+              <!-- Fallback interactive pagination matching Figma design -->
+              <div id="clientPaginationControls" style="display: inline-flex; align-items: center; gap: 6px;">
+                <button type="button" class="pagination-page-pill active" data-page="1">1</button>
+                <button type="button" class="pagination-page-pill" data-page="2">2</button>
+                <button type="button" class="pagination-page-pill" data-page="3">3</button>
+                <button type="button" class="pagination-page-pill" data-page="4">4</button>
+                <button type="button" class="pagination-page-pill" data-page="5">5</button>
+                <button type="button" class="pagination-page-pill next-pill" id="btnNextClientPage">NEXT &rarr;</button>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- SITE FOOTER MATCHING FIGMA -->
+        <footer class="admin-site-footer">
+          <div class="footer-copyright">
+            &copy; 2026 HOT WHEELS. ALL RIGHTS RESERVED.
+          </div>
+          <div class="footer-links-row">
+            <a href="#" class="footer-nav-link">PRIVACY POLICY</a>
+            <span class="footer-vdivider">|</span>
+            <a href="#" class="footer-nav-link">TERMS OF SERVICE</a>
+            <span class="footer-vdivider">|</span>
+            <a href="#" class="footer-nav-link">COOKIES</a>
+          </div>
+        </footer>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Client-side Interactions -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 1. Mobile Sidebar Toggle
+      var mobileBtn = document.getElementById('mobileMenuToggle');
+      var sidebar = document.getElementById('adminSidebar');
+
+      if (mobileBtn && sidebar) {
+        mobileBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          sidebar.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function (e) {
+          if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== mobileBtn) {
+            sidebar.classList.remove('open');
+          }
+        });
+      }
+
+      // 2. Global Reward Offer Form Submission with Double-Click Protection
+      var rewardForm = document.getElementById('rewardOfferForm');
+      var btnUpdate = document.getElementById('btnUpdateReward');
+      var alertContainer = document.getElementById('alertContainer');
+      var isSubmitting = false;
+
+      function showAlert(message, isError) {
+        if (!alertContainer) {
+          alertContainer = document.createElement('div');
+          alertContainer.id = 'alertContainer';
+          alertContainer.className = 'alert-container';
+          var viewport = document.querySelector('.admin-viewport');
+          var titleRow = document.querySelector('.page-title-row');
+          if (viewport && titleRow) {
+            viewport.insertBefore(alertContainer, titleRow);
+          }
+        }
+        var alertBox = document.createElement('div');
+        alertBox.className = 'alert-box' + (isError ? ' error' : '');
+        alertBox.innerHTML = '<span>' + message + '</span><button type="button" class="alert-close-btn" onclick="this.parentElement.remove();">&times;</button>';
+        alertContainer.appendChild(alertBox);
+        setTimeout(function () {
+          if (alertBox.parentElement) {
+            alertBox.remove();
+          }
+        }, 5000);
+      }
+
+      if (rewardForm && btnUpdate) {
+        rewardForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          if (isSubmitting) {
+            return;
+          }
+
+          var inputEl = document.getElementById('global_reward_amount');
+          var rawVal = inputEl ? inputEl.value.trim() : '';
+          var numVal = parseFloat(rawVal);
+
+          if (!rawVal || isNaN(numVal) || numVal <= 0) {
+            showAlert('Enter a valid reward amount greater than zero.', true);
+            if (inputEl) inputEl.focus();
+            return;
+          }
+
+          var parts = rawVal.split('.');
+          if (parts.length === 2 && parts[1].length > 2) {
+            showAlert('Reward amount can have at most two decimal places.', true);
+            if (inputEl) inputEl.focus();
+            return;
+          }
+
+          // Lock submit button to prevent double submission
+          isSubmitting = true;
+          btnUpdate.disabled = true;
+          btnUpdate.textContent = 'UPDATING...';
+
+          try {
+            var csrfInput = rewardForm.querySelector('[name=csrfmiddlewaretoken]');
+            var csrfToken = csrfInput ? csrfInput.value : '';
+
+            var formData = new FormData(rewardForm);
+
+            var response = await fetch(rewardForm.action, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrfToken
+              },
+              body: formData
+            });
+
+            var data = await response.json();
+
+            if (!response.ok) {
+              var errMsg = data.error || 'Failed to update referral reward amount.';
+              showAlert(errMsg, true);
+              btnUpdate.disabled = false;
+              btnUpdate.textContent = 'UPDATE';
+              isSubmitting = false;
+              return;
+            }
+
+            // Success: show message and keep input updated
+            var successMsg = data.message || 'Referral reward offer created successfully.';
+            showAlert(successMsg, false);
+
+            if (data.offer && data.offer.reward_amount && inputEl) {
+              inputEl.value = parseFloat(data.offer.reward_amount).toFixed(0);
+            }
+
+            btnUpdate.disabled = false;
+            btnUpdate.textContent = 'UPDATE';
+            isSubmitting = false;
+
+          } catch (err) {
+            console.error('Update referral offer error:', err);
+            // Fallback to standard form submission if AJAX fails
+            rewardForm.submit();
+          }
+        });
+      }
+
+      // 3. Client-side Pagination Handler for multi-row tables
+      var rows = Array.prototype.slice.call(document.querySelectorAll('.referral-row'));
+      var clientControls = document.getElementById('clientPaginationControls');
+
+      if (rows.length > 0 && clientControls) {
+        var rowsPerPage = 6;
+        var totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        if (totalPages > 1) {
+          var currentPage = 1;
+          var pagePills = clientControls.querySelectorAll('.pagination-page-pill:not(.next-pill)');
+          var nextBtn = document.getElementById('btnNextClientPage');
+
+          function showPage(p) {
+            currentPage = p;
+            var start = (p - 1) * rowsPerPage;
+            var end = start + rowsPerPage;
+
+            rows.forEach(function (row, idx) {
+              row.style.display = (idx >= start && idx < end) ? '' : 'none';
+            });
+
+            pagePills.forEach(function (pill) {
+              var pageNum = parseInt(pill.getAttribute('data-page'), 10);
+              if (pageNum === p) {
+                pill.classList.add('active');
+              } else {
+                pill.classList.remove('active');
+              }
+              pill.style.display = (pageNum <= totalPages) ? '' : 'none';
+            });
+
+            if (nextBtn) {
+              nextBtn.disabled = (p >= totalPages);
+            }
+          }
+
+          pagePills.forEach(function (pill) {
+            pill.addEventListener('click', function () {
+              var p = parseInt(this.getAttribute('data-page'), 10);
+              showPage(p);
+            });
+          });
+
+          if (nextBtn) {
+            nextBtn.addEventListener('click', function () {
+              if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+              }
+            });
+          }
+
+          showPage(1);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1041 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if is_edit %}Edit Coupon {{ coupon.code }} | Hot Wheels Admin{% else %}Create Coupon | Hot Wheels Admin{% endif %}</title>
+
+  <!-- Google Fonts: Inter for UI typography, Space Mono / JetBrains Mono for codes and headers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Figma Design Tokens */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-page: #0c0c0e;
+      --bg-sidebar: #08080a;
+      --bg-card: #131316;
+      --bg-input: #1a1a20;
+
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.07);
+      --border-input: rgba(255, 255, 255, 0.09);
+
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff232d;
+      --accent-coral: #f5a596;
+
+      --status-active-bg: rgba(34, 197, 94, 0.12);
+      --status-active-border: rgba(34, 197, 94, 0.28);
+      --status-active-text: #22c55e;
+
+      --status-expired-bg: rgba(142, 143, 156, 0.12);
+      --status-expired-border: rgba(142, 143, 156, 0.25);
+      --status-expired-text: #8e8f9c;
+
+      --text-white: #ffffff;
+      --text-muted: #8e8f9c;
+      --text-dim: #5c5d6b;
+      --text-header-gold: #c7beaf;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR NAVIGATION
+       ================================================== */
+    .admin-sidebar {
+      width: 230px;
+      min-width: 230px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 26px 16px 24px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .admin-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .admin-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #66635e;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+      stroke: #7a7974;
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-coral);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 6px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ==================================================
+       MAIN CONTENT CANVAS
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-page);
+    }
+
+    .admin-topbar {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 3.5vw, 44px);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .topbar-accent-bar {
+      width: 3px;
+      height: 22px;
+      background-color: var(--accent-coral);
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .topbar-bell-btn {
+      background: transparent;
+      border: none;
+      color: #8c8d98;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      position: relative;
+    }
+
+    .topbar-bell-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .bell-badge-dot {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-coral);
+    }
+
+    .topbar-vdivider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .profile-avatar-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #15151a;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .profile-role {
+      font-size: 10.5px;
+      color: #8b8882;
+      line-height: 1.2;
+    }
+
+    /* Viewport Area */
+    .admin-viewport {
+      padding: 10px clamp(20px, 3.5vw, 44px) 50px clamp(20px, 3.5vw, 44px);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .back-nav-link {
+      color: #8c8d98;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s ease;
+      align-self: flex-start;
+    }
+
+    .back-nav-link:hover {
+      color: #ffffff;
+    }
+
+    .page-title-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .page-main-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+      color: #8c8d98;
+      font-weight: 400;
+    }
+
+    /* Read-only Coupon Summary Badge for Edit Mode */
+    .coupon-meta-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: #18181f;
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 12.5px;
+      color: #cbd5e1;
+    }
+
+    .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meta-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-header-gold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .meta-code-tag {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      background: #25252e;
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: #ffffff;
+    }
+
+    .meta-count-badge {
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .meta-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .meta-status-pill .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    .meta-status-pill.active {
+      background: var(--status-active-bg);
+      border: 1px solid var(--status-active-border);
+      color: var(--status-active-text);
+    }
+
+    .meta-status-pill.inactive {
+      background: var(--status-expired-bg);
+      border: 1px solid var(--status-expired-border);
+      color: var(--status-expired-text);
+    }
+
+    /* Flash Messages */
+    .alert-banner {
+      padding: 12px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .alert-banner.error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-left: 3px solid var(--accent-red);
+      color: #fca5a5;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 28px 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      max-width: 900px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text-header-gold);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .required-star {
+      color: var(--accent-red);
+    }
+
+    .form-input-box input,
+    .form-input-box select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-input-box input:focus,
+    .form-input-box select:focus {
+      border-color: rgba(245, 165, 150, 0.6);
+      box-shadow: 0 0 0 1px rgba(245, 165, 150, 0.3);
+    }
+
+    .form-group.has-error .form-input-box input,
+    .form-group.has-error .form-input-box select {
+      border-color: rgba(239, 68, 68, 0.7);
+      background-color: rgba(239, 68, 68, 0.05);
+    }
+
+    .field-error-msg {
+      font-size: 11.5px;
+      color: #f87171;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 3px;
+    }
+
+    .field-help-text {
+      font-size: 11.5px;
+      color: #7b7d8d;
+      margin-top: 2px;
+    }
+
+    /* Form Action Buttons */
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      padding: 9px 18px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-cancel:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .btn-submit-coupon {
+      background: var(--accent-red);
+      border: none;
+      color: #ffffff;
+      padding: 9px 22px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.3);
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-submit-coupon:hover {
+      background: var(--accent-red-hover);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        position: fixed;
+        left: -230px;
+        top: 0;
+        bottom: 0;
+      }
+      .admin-sidebar.open {
+        transform: translateX(230px);
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .admin-viewport {
+        padding: 14px 16px 40px 16px;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-card {
+        padding: 20px 18px;
+      }
+      .coupon-meta-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- ==================================================
+         SIDEBAR NAVIGATION
+         ================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+        <nav class="sidebar-nav">
+
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="{% url 'admin_coupon_list' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <a href="{% url 'admin_referral_offer_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="nav-group">
+            <span class="nav-group-label">CONTENT</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+              <span>Banners</span>
+            </a>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Logout Item at Bottom -->
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==================================================
+         MAIN CONTENT AREA
+         ================================================== -->
+    <main class="admin-main">
+
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <span class="topbar-accent-bar"></span>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" class="topbar-bell-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="bell-badge-dot"></span>
+          </button>
+
+          <div class="topbar-vdivider"></div>
+
+          <div class="topbar-profile">
+            <div class="profile-avatar-circle"></div>
+            <div class="profile-info">
+              <span class="profile-name">Admin User</span>
+              <span class="profile-role">Fleet Manager</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Viewport Content -->
+      <div class="admin-viewport">
+
+        <!-- Back Link -->
+        <a href="{% url 'admin_coupon_list' %}" class="back-nav-link">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          <span>Back to Coupon Management</span>
+        </a>
+
+        <!-- Page Header -->
+        <div class="page-title-row">
+          <h1 class="page-main-title">
+            {% if is_edit %}EDIT COUPON{% else %}CREATE NEW COUPON{% endif %}
+          </h1>
+          <p class="page-subtitle">
+            {% if is_edit %}
+              Update discount rules, spend requirements, and validity dates for coupon {{ coupon.code }}.
+            {% else %}
+              Configure discount rules, spend requirements, and usage limits.
+            {% endif %}
+          </p>
+        </div>
+
+        <!-- Read-only Summary Bar for Edit Mode -->
+        {% if is_edit and coupon %}
+          <div class="coupon-meta-bar">
+            <div class="meta-item">
+              <span class="meta-label">CODE:</span>
+              <span class="meta-code-tag">{{ coupon.code }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">USAGE STATS:</span>
+              <span class="meta-count-badge">{{ coupon.used_count }}</span>
+              <span style="color: #7b7d8d;">/ {{ coupon.usage_limit }} redeemed</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">STATUS:</span>
+              {% with status_clean=coupon.status|lower %}
+                {% if status_clean == "active" %}
+                  <span class="meta-status-pill active">
+                    <span class="dot"></span> Active
+                  </span>
+                {% else %}
+                  <span class="meta-status-pill inactive">
+                    <span class="dot"></span> Inactive
+                  </span>
+                {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Django Flash Messages -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert-banner {% if message.tags %}{{ message.tags }}{% else %}error{% endif %}" role="alert">
+              <span>{{ message }}</span>
+              <button type="button" class="alert-close" onclick="this.parentElement.remove()" aria-label="Dismiss">&times;</button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Form Card -->
+        <div class="form-card">
+
+          <form method="POST" action="{% if is_edit %}{% url 'admin_coupon_edit' coupon.id %}{% else %}{% url 'admin_coupon_create' %}{% endif %}">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="alert-banner error" role="alert" style="margin-bottom: 20px;">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <div class="form-grid">
+
+              <!-- Coupon Code -->
+              <div class="form-group {% if form.code.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.code.id_for_label }}">
+                  {{ form.code.label }} <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.code }}
+                </div>
+                {% if form.code.help_text %}
+                  <span class="field-help-text">{{ form.code.help_text }}</span>
+                {% endif %}
+                {% for error in form.code.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Coupon Name -->
+              <div class="form-group {% if form.coupon_name.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.coupon_name.id_for_label }}">
+                  {{ form.coupon_name.label }} <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.coupon_name }}
+                </div>
+                {% if form.coupon_name.help_text %}
+                  <span class="field-help-text">{{ form.coupon_name.help_text }}</span>
+                {% endif %}
+                {% for error in form.coupon_name.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Discount Type -->
+              <div class="form-group {% if form.discount_type.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.discount_type.id_for_label }}">
+                  Discount Type <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.discount_type }}
+                </div>
+                {% for error in form.discount_type.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Discount Value -->
+              <div class="form-group {% if form.discount_value.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.discount_value.id_for_label }}">
+                  {{ form.discount_value.label }} <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.discount_value }}
+                </div>
+                {% for error in form.discount_value.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Minimum Spend -->
+              <div class="form-group {% if form.minimum_spend.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.minimum_spend.id_for_label }}">
+                  {{ form.minimum_spend.label }} <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.minimum_spend }}
+                </div>
+                {% for error in form.minimum_spend.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Maximum Discount -->
+              <div class="form-group {% if form.maximum_discount.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.maximum_discount.id_for_label }}">
+                  {{ form.maximum_discount.label }} <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.maximum_discount }}
+                </div>
+                <span class="field-help-text">Max limit for percentage discounts (set 0 for flat discounts).</span>
+                {% for error in form.maximum_discount.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Usage Limit -->
+              <div class="form-group {% if form.usage_limit.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.usage_limit.id_for_label }}">
+                  {{ form.usage_limit.label }} <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.usage_limit }}
+                </div>
+                {% for error in form.usage_limit.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Status -->
+              <div class="form-group {% if form.status.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.status.id_for_label }}">
+                  Status <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.status }}
+                </div>
+                {% for error in form.status.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Start Date & Time -->
+              <div class="form-group {% if form.start_date.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.start_date.id_for_label }}">
+                  {{ form.start_date.label }} <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.start_date }}
+                </div>
+                {% for error in form.start_date.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+              <!-- Expiry Date & Time -->
+              <div class="form-group {% if form.expiry_date.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ form.expiry_date.id_for_label }}">
+                  {{ form.expiry_date.label }} <span class="required-star">*</span>
+                </label>
+                <div class="form-input-box">
+                  {{ form.expiry_date }}
+                </div>
+                {% for error in form.expiry_date.errors %}
+                  <span class="field-error-msg">{{ error }}</span>
+                {% endfor %}
+              </div>
+
+            </div>
+
+            <div class="form-actions">
+              <a href="{% url 'admin_coupon_list' %}" class="btn-cancel">
+                CANCEL
+              </a>
+              <button type="submit" class="btn-submit-coupon">
+                {% if is_edit %}
+                  <span>SAVE CHANGES</span>
+                {% else %}
+                  <span>CREATE COUPON</span>
+                {% endif %}
+                <span>&rarr;</span>
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.getElementById('mobileMenuToggle');
+      const sidebar = document.getElementById('adminSidebar');
+      if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', function() {
+          sidebar.classList.toggle('open');
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>

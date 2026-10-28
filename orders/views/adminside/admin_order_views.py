@@ -8,6 +8,8 @@ from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import render, redirect, get_object_or_404
 from products.models import ProductVariant
 from orders.models import Order, OrderStatusHistory
+from django.core.exceptions import ValidationError
+from wallet.services.refund_service import credit_wallet_refund
 
 
 ORDER_STATUSES = [
@@ -207,10 +209,9 @@ def admin_update_order_status(request, order_number):
             )
         return HttpResponseNotAllowed(["POST"])
 
-    # Read the requested order status.
+    # Read and validate the requested order status.
     new_status = request.POST.get("status", "").strip()
 
-    # Reject statuses that are not supported.
     if new_status not in ORDER_STATUSES:
         if wants_json(request):
             return JsonResponse(
@@ -224,24 +225,25 @@ def admin_update_order_status(request, order_number):
             order_number=order_number,
         )
 
-    # Define the allowed order status transitions.
+    # Define allowed order status transitions.
     allowed_transitions = {
         "pending": ["confirmed", "cancelled"],
         "confirmed": ["shipped", "cancelled"],
         "shipped": ["out for delivery"],
-        "out_for_delivery": ["delivered"],
+        "out for delivery": ["delivered"],
         "delivered": [],
         "cancelled": [],
     }
 
-    # Lock the order and update its status safely inside a transaction.
+    refund_issued = False
+
+    # Update the order, stock, and refund atomically.
     with transaction.atomic():
         order = get_object_or_404(
             Order.objects.select_for_update(),
             order_number=order_number,
         )
 
-        # Avoid updating an order when its status is already selected.
         if new_status == order.status:
             if wants_json(request):
                 return JsonResponse(
@@ -261,7 +263,6 @@ def admin_update_order_status(request, order_number):
                 order_number=order_number,
             )
 
-        # Reject status changes that violate the allowed workflow.
         if new_status not in allowed_transitions.get(order.status, []):
             error_message = (
                 f"Cannot change order status from "
@@ -280,30 +281,65 @@ def admin_update_order_status(request, order_number):
                 order_number=order_number,
             )
 
-        # Restore stock when the administrator cancels the order.
+        # Refund paid Wallet or Razorpay orders before cancellation.
         if new_status == "cancelled":
+            paid_online = (
+                order.delivery_method.strip().lower()
+                in ("wallet", "razorpay")
+                and order.payments.filter(status="paid").exists()
+            )
+
+            refund_amount = order.total_amount or 0
+
+            if paid_online and refund_amount > 0:
+                try:
+                    credit_wallet_refund(
+                        user=order.user,
+                        amount=refund_amount,
+                        transaction_id=f"ADMIN-CANCEL-{order.pk}",
+                        reference_id=order.order_number,
+                    )
+                    refund_issued = True
+
+                except ValidationError as error:
+                    error_message = (
+                        error.messages[0]
+                        if error.messages
+                        else "The refund could not be processed."
+                    )
+
+                    if wants_json(request):
+                        return JsonResponse(
+                            {"error": error_message},
+                            status=400,
+                        )
+
+                    messages.error(request, error_message)
+                    return redirect(
+                        "admin_order_detail",
+                        order_number=order_number,
+                    )
+
+            # Restore stock for all remaining active order items.
             items = list(
                 order.items.select_for_update().all()
             )
 
             for item in items:
-                # Skip items whose stock has already been handled.
+                # Skip items whose stock has already been restored.
                 if item.item_status != "active":
                     continue
 
-                # Lock the variant before changing its stock quantity.
                 variant = get_object_or_404(
                     ProductVariant.objects.select_for_update(),
                     id=item.product_variant_id,
                 )
 
-                # Return the cancelled item's quantity to stock.
                 variant.stock_quantity += item.quantity
                 variant.save(
                     update_fields=["stock_quantity", "updated_at"]
                 )
 
-                # Mark the order item as cancelled.
                 item.item_status = "cancelled"
                 item.save(update_fields=["item_status"])
 
@@ -311,28 +347,31 @@ def admin_update_order_status(request, order_number):
         order.status = new_status
         order.save(update_fields=["status", "updated_at"])
 
-        # Record the new status in the order history.
+        # Record the change in order status history.
         OrderStatusHistory.objects.create(
             order=order,
             status=new_status,
         )
 
-    # Return a successful JSON response after the transaction completes.
+    # Prepare a success message after the transaction completes.
+    success_message = "Order status updated successfully."
+
+    if refund_issued:
+        success_message += (
+            " The refund has been credited to the customer's wallet."
+        )
+
     if wants_json(request):
         return JsonResponse(
             {
-                "message": "Order status updated successfully.",
+                "message": success_message,
                 "order_number": order.order_number,
                 "status": order.status,
             },
             status=200,
         )
 
-    # Display a success message and return to the order detail page.
-    messages.success(
-        request,
-        "Order status updated successfully.",
-    )
+    messages.success(request, success_message)
     return redirect(
         "admin_order_detail",
         order_number=order_number,

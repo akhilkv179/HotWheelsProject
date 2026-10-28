@@ -1,26 +1,85 @@
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Sum
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect
 
+from coupons.models import CouponUsage
 from orders.models import Order, OrderItem, OrderStatusHistory
 from products.models import ProductVariant
+from wallet.services.refund_service import credit_wallet_refund
 
 
-# Check whether the client expects a JSON response.
+ZERO = Decimal("0.00")
+CENT = Decimal("0.01")
+
+
 def wants_json(request):
     return "application/json" in request.headers.get("Accept", "")
 
 
-# Cancel an order or a specific order item and restore inventory stock.
+def get_coupon_discount_allocations(order, items):
+    """Allocate the original coupon discount proportionally across order items."""
+    allocations = {item.pk: ZERO for item in items}
+
+    if not order.coupon_id or not items:
+        return allocations
+
+    usage = CouponUsage.objects.filter(
+        order=order,
+        coupon_id=order.coupon_id,
+    ).order_by("pk").first()
+
+    if usage:
+        coupon_discount = usage.discount_amount or ZERO
+    else:
+        product_discount_total = sum(
+            (item.discount_amount or ZERO for item in items),
+            ZERO,
+        )
+        coupon_discount = max(
+            (order.discount_amount or ZERO) - product_discount_total,
+            ZERO,
+        )
+
+    weights = {
+        item.pk: max(item.total_price or ZERO, ZERO)
+        for item in items
+    }
+    eligible_total = sum(weights.values(), ZERO)
+
+    if coupon_discount <= ZERO or eligible_total <= ZERO:
+        return allocations
+
+    coupon_discount = min(coupon_discount, eligible_total)
+
+    eligible_items = [
+        item for item in items if weights[item.pk] > ZERO
+    ]
+    remaining_discount = coupon_discount
+
+    # Assign any rounding remainder to the final eligible item.
+    for item in eligible_items[:-1]:
+        share = (
+            coupon_discount * weights[item.pk] / eligible_total
+        ).quantize(CENT, rounding=ROUND_HALF_UP)
+
+        share = min(max(share, ZERO), remaining_discount)
+        allocations[item.pk] = share
+        remaining_discount -= share
+
+    if eligible_items:
+        allocations[eligible_items[-1].pk] = remaining_discount
+
+    return allocations
+
+
 @login_required
 def cancel_order(request, order_number, item_id):
-    # Only allow POST requests to cancel an order or item.
     if request.method != "POST":
         if wants_json(request):
             return JsonResponse(
@@ -29,130 +88,229 @@ def cancel_order(request, order_number, item_id):
             )
         return HttpResponseNotAllowed(["POST"])
 
-    reason = request.POST.get("reason", "").strip()
+    # Accept either field name to support existing frontend payloads.
+    cancellation_reason = (
+        request.POST.get("cancellation_reason")
+        or request.POST.get("reason", "")
+    ).strip()
 
-    with transaction.atomic():
-        # Find and lock the order belonging to the logged-in user.
-        order = get_object_or_404(
-            Order.objects.select_for_update(),
+    if not cancellation_reason:
+        error_message = "Please provide a reason for cancelling this item."
+
+        if wants_json(request):
+            return JsonResponse({"error": error_message}, status=400)
+
+        messages.error(request, error_message)
+        return redirect(
+            "user_order_detail",
             order_number=order_number,
-            user=request.user,
         )
 
-        # Check whether the order is still eligible for cancellation.
-        if order.status not in ["pending", "confirmed"]:
-            error_message = "This order can no longer be cancelled."
+    try:
+        with transaction.atomic():
+            order = get_object_or_404(
+                Order.objects.select_for_update(),
+                order_number=order_number,
+                user=request.user,
+            )
 
-            if wants_json(request):
-                return JsonResponse(
-                    {"error": error_message},
-                    status=400,
+            if order.status not in ["pending", "confirmed"]:
+                error_message = "This order can no longer be cancelled."
+
+                if wants_json(request):
+                    return JsonResponse(
+                        {"error": error_message},
+                        status=400,
+                    )
+
+                messages.error(request, error_message)
+                return redirect(
+                    "user_order_detail",
+                    order_number=order.order_number,
                 )
 
-            messages.error(request, error_message)
-            return redirect(
-                "user_order_detail",
-                order_number=order.order_number,
+            all_items = list(
+                order.items.select_for_update().order_by("pk")
             )
 
-        # Find and lock the selected item in this order.
-        item = get_object_or_404(
-            OrderItem.objects.select_for_update(),
-            id=item_id,
-            order=order,
-        )
+            item = next(
+                (
+                    order_item
+                    for order_item in all_items
+                    if order_item.pk == item_id
+                ),
+                None,
+            )
 
-        # Prevent cancelling an item that is already processed.
-        if item.item_status != "active":
-            error_message = "This item can no longer be cancelled."
+            if item is None:
+                error_message = "Order item not found."
 
-            if wants_json(request):
-                return JsonResponse(
-                    {"error": error_message},
-                    status=400,
+                if wants_json(request):
+                    return JsonResponse(
+                        {"error": error_message},
+                        status=404,
+                    )
+
+                messages.error(request, error_message)
+                return redirect(
+                    "user_order_detail",
+                    order_number=order.order_number,
                 )
 
-            messages.error(request, error_message)
-            return redirect(
-                "user_order_detail",
-                order_number=order.order_number,
+            if item.item_status != "active":
+                error_message = "This item can no longer be cancelled."
+
+                if wants_json(request):
+                    return JsonResponse(
+                        {"error": error_message},
+                        status=400,
+                    )
+
+                messages.error(request, error_message)
+                return redirect(
+                    "user_order_detail",
+                    order_number=order.order_number,
+                )
+
+            previous_total = order.total_amount or ZERO
+
+            # Calculate coupon allocations before changing the item status.
+            coupon_allocations = get_coupon_discount_allocations(
+                order,
+                all_items,
             )
 
-        # Lock the product variant before restoring its stock.
-        variant = get_object_or_404(
-            ProductVariant.objects.select_for_update(),
-            id=item.product_variant_id,
+            variant = get_object_or_404(
+                ProductVariant.objects.select_for_update(),
+                id=item.product_variant_id,
+            )
+
+            # Restore stock and save the cancellation reason together.
+            variant.stock_quantity += item.quantity
+            variant.save(
+                update_fields=["stock_quantity", "updated_at"]
+            )
+
+            item.item_status = "cancelled"
+            item.cancellation_reason = cancellation_reason
+            item.save(
+                update_fields=[
+                    "item_status",
+                    "cancellation_reason",
+                ]
+            )
+
+            remaining_items = [
+                order_item
+                for order_item in all_items
+                if order_item.item_status == "active"
+            ]
+
+            remaining_subtotal = sum(
+                (
+                    remaining_item.unit_price * remaining_item.quantity
+                    for remaining_item in remaining_items
+                ),
+                ZERO,
+            )
+
+            remaining_product_discount = sum(
+                (
+                    remaining_item.discount_amount or ZERO
+                    for remaining_item in remaining_items
+                ),
+                ZERO,
+            )
+
+            remaining_coupon_discount = sum(
+                (
+                    coupon_allocations.get(remaining_item.pk, ZERO)
+                    for remaining_item in remaining_items
+                ),
+                ZERO,
+            )
+
+            if not remaining_items:
+                order.status = "cancelled"
+                order.subtotal = ZERO
+                order.discount_amount = ZERO
+                order.shipping_amount = ZERO
+                order.total_amount = ZERO
+
+                OrderStatusHistory.objects.create(
+                    order=order,
+                    status="cancelled",
+                )
+
+                message = "All items have been cancelled."
+
+            else:
+                order.subtotal = remaining_subtotal
+                order.discount_amount = (
+                    remaining_product_discount
+                    + remaining_coupon_discount
+                )
+
+                # Preserve the existing shipping policy for partial cancellation.
+                order.total_amount = (
+                    order.subtotal
+                    - order.discount_amount
+                    + order.shipping_amount
+                )
+
+                message = "The selected item has been cancelled."
+
+            refund_amount = max(
+                previous_total - order.total_amount,
+                ZERO,
+            ).quantize(CENT, rounding=ROUND_HALF_UP)
+
+            paid_online = (
+                order.delivery_method.strip().lower()
+                in ("wallet", "razorpay")
+                and order.payments.filter(status="paid").exists()
+            )
+
+            if paid_online and refund_amount > ZERO:
+                credit_wallet_refund(
+                    user=request.user,
+                    amount=refund_amount,
+                    transaction_id=f"CANCEL-{order.pk}-{item.pk}",
+                    reference_id=order.order_number,
+                )
+
+                message += " The refund has been credited to your wallet."
+
+            order.save(
+                update_fields=[
+                    "status",
+                    "subtotal",
+                    "discount_amount",
+                    "shipping_amount",
+                    "total_amount",
+                    "updated_at",
+                ]
+            )
+
+    except ValidationError as error:
+        error_message = (
+            error.messages[0]
+            if error.messages
+            else "The refund could not be processed."
         )
 
-        variant.stock_quantity += item.quantity
-        variant.save(
-            update_fields=["stock_quantity", "updated_at"]
+        if wants_json(request):
+            return JsonResponse(
+                {"error": error_message},
+                status=400,
+            )
+
+        messages.error(request, error_message)
+        return redirect(
+            "user_order_detail",
+            order_number=order_number,
         )
 
-        # Mark the item as cancelled to prevent duplicate stock restoration.
-        item.item_status = "cancelled"
-        item.save(update_fields=["item_status"])
-
-        # Recalculate totals using the remaining active items.
-        remaining_items = order.items.filter(
-            item_status="active"
-        )
-
-        remaining_subtotal = remaining_items.aggregate(
-            total=Sum("total_price")
-        )["total"] or Decimal("0.00")
-
-        remaining_discount = remaining_items.aggregate(
-            total=Sum("discount_amount")
-        )["total"] or Decimal("0.00")
-
-        order.subtotal = remaining_subtotal
-        order.discount_amount = remaining_discount
-
-        if not remaining_items.exists():
-            # Mark the order as cancelled when no active items remain.
-            order.status = "cancelled"
-            # order.shipping_amount = Decimal("0.00")
-            # order.total_amount = Decimal("0.00")
-
-            OrderStatusHistory.objects.create(
-                order=order,
-                status="cancelled",
-            )
-
-            message = "All items have been cancelled."
-
-        else:
-            # Recalculate shipping using the existing checkout rule.
-            order.shipping_amount = (
-                Decimal("0.00")
-                if remaining_subtotal >= Decimal("1000.00")
-                else Decimal("50.00")
-            )
-
-            order.total_amount = (
-                order.subtotal
-                - order.discount_amount
-                + order.shipping_amount
-            )
-
-            message = "The selected item has been cancelled."
-
-        # Save the updated order totals and status when applicable.
-        update_fields = [
-            "subtotal",
-            "discount_amount",
-            "shipping_amount",
-            "total_amount",
-            "updated_at",
-        ]
-
-        if order.status == "cancelled":
-            update_fields.append("status")
-
-        order.save(update_fields=update_fields)
-
-    # Return a JSON response for API clients.
     if wants_json(request):
         return JsonResponse(
             {
@@ -161,6 +319,7 @@ def cancel_order(request, order_number, item_id):
                 "order_status": order.status,
                 "item_id": item.id,
                 "item_status": item.item_status,
+                "cancellation_reason": item.cancellation_reason,
                 "subtotal": str(order.subtotal),
                 "discount_amount": str(order.discount_amount),
                 "shipping_amount": str(order.shipping_amount),
@@ -169,7 +328,6 @@ def cancel_order(request, order_number, item_id):
             status=200,
         )
 
-    # Preserve the existing message and redirect for HTML requests.
     messages.success(request, message)
 
     return redirect(

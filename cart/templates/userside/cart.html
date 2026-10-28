@@ -769,89 +769,6 @@
       color: var(--accent-coral);
     }
 
-    /* Apply Coupon Section */
-    .coupon-section-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .coupon-section-label {
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--accent-coral);
-    }
-
-    .coupon-select-wrap {
-      position: relative;
-      width: 100%;
-    }
-
-    .coupon-select {
-      width: 100%;
-      background-color: var(--bg-input);
-      border: 1px solid var(--border-input);
-      border-radius: 8px;
-      padding: 12px 14px;
-      padding-right: 36px;
-      color: #9ca3af;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-      transition: border-color 0.2s ease, color 0.2s ease;
-    }
-
-    .coupon-select:focus {
-      border-color: rgba(252, 165, 165, 0.4);
-      color: #ffffff;
-    }
-
-    .coupon-select-arrow {
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      color: var(--text-dim);
-    }
-
-    .coupon-select-arrow svg {
-      width: 15px;
-      height: 15px;
-      stroke-width: 2;
-    }
-
-    .btn-apply-coupon {
-      width: 100%;
-      background-color: var(--accent-red);
-      color: #ffffff;
-      border: none;
-      border-radius: 7px;
-      padding: 13px 18px;
-      font-family: inherit;
-      font-size: 11.5px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .btn-apply-coupon:hover {
-      background-color: var(--accent-red-hover);
-      box-shadow: 0 4px 16px rgba(229, 27, 36, 0.4);
-      transform: translateY(-1px);
-    }
-
-    .btn-apply-coupon:active {
-      transform: translateY(0);
-    }
 
     /* Gauge / Telemetry Divider with Dot */
     .telemetry-divider-gauge {
@@ -1530,24 +1447,6 @@
             <h2 class="telemetry-heading">Telemetry<span class="telemetry-dot">.</span></h2>
           </div>
 
-          <!-- Coupon Box -->
-          <div class="coupon-section-group">
-            <label class="coupon-section-label" for="cartCouponSelect">APPLY COUPON</label>
-            <div class="coupon-select-wrap">
-              <select id="cartCouponSelect" class="coupon-select" aria-label="Select Coupon">
-                <option value="">Select a coupon</option>
-                <option value="REDLINE10">REDLINE10 - 10% Off</option>
-                <option value="GARAGE20">GARAGE20 - 20% Off</option>
-                <option value="SPEEDVIP">SPEEDVIP - Special Discount</option>
-              </select>
-              <div class="coupon-select-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"/></svg>
-              </div>
-            </div>
-            <button type="button" class="btn-apply-coupon" id="btnApplyCoupon">
-              APPLY COUPON
-            </button>
-          </div>
 
           <!-- Telemetry Gauge Line with Dot -->
           <div class="telemetry-divider-gauge">
@@ -1774,7 +1673,7 @@
     </div>
   </footer>
 
-  <!-- Number formatting and coupon helper script -->
+  <!-- Number formatting helper script -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       // Helper function to format prices with Indian currency format and 2 decimal places
@@ -1791,20 +1690,6 @@
       document.querySelectorAll(".format-number").forEach(function (el) {
         el.textContent = formatPrice(el.textContent);
       });
-
-      // Coupon interactive feedback
-      const applyCouponBtn = document.getElementById("btnApplyCoupon");
-      const couponSelect = document.getElementById("cartCouponSelect");
-      if (applyCouponBtn && couponSelect) {
-        applyCouponBtn.addEventListener("click", function () {
-          const selected = couponSelect.value;
-          if (!selected) {
-            alert("Please select a coupon to apply.");
-          } else {
-            alert("Coupon " + selected + " applied to your cart!");
-          }
-        });
-      }
 
       // Helper functions for CSRF and Toast notifications
       function getCsrfToken() {

@@ -1058,6 +1058,7 @@
       padding-top: 14px;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
+
   </style>
 </head>
 <body>
@@ -1212,7 +1213,7 @@
           </li>
 
           <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'user_coupon_list' %}" class="sidebar-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
                 <path d="M13 5v2"/>
@@ -1224,7 +1225,7 @@
           </li>
 
           <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'wallet' %}" class="sidebar-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <line x1="2" y1="10" x2="22" y2="10"/>
@@ -1234,7 +1235,7 @@
           </li>
 
           <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'referral_dashboard' %}" class="sidebar-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -1388,6 +1389,7 @@
           {% endif %}
         </div>
 
+
       </section>
 
     </div>
@@ -1510,6 +1512,8 @@
     </div>
   </div>
 
+
+
   <!-- Interactive Modal Script -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -1545,6 +1549,8 @@
           closeModal();
         }
       });
+
+
 
       // Check and display persisted address success message from sessionStorage / URL
       try {
@@ -1603,6 +1609,7 @@
         }
       }
     });
+
   </script>
 
 </body>

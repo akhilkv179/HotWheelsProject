@@ -1,0 +1,1852 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Rewards Garage | Hot Wheels HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       CSS RESET & DESIGN TOKENS
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #09090c;
+      --bg-surface: #101014;
+      --bg-card: #131419;
+      --bg-stub: #181920;
+      --bg-pill: #1b1c23;
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.05);
+
+      --accent-red: #e51b24;
+      --accent-red-bright: #ff222e;
+      --accent-orange: #ff4d00;
+      --accent-coral: #fca5a5;
+      --accent-coral-bright: #f87171;
+      --accent-gold: #facc15;
+      --accent-amber: #eab308;
+      --accent-green: #22c55e;
+
+      --text-white: #ffffff;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-brand: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== */
+    .navbar {
+      height: 72px;
+      background: rgba(9, 9, 12, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(24px, 5vw, 64px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(20px, 4vw, 44px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-white);
+    }
+
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.35);
+      flex-shrink: 0;
+    }
+
+    .logo-badge svg {
+      width: 18px;
+      height: 18px;
+      fill: #ffffff;
+    }
+
+    .brand-name {
+      font-family: var(--font-brand);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 0;
+      transition: color 0.2s ease;
+      position: relative;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: #ffffff;
+    }
+
+    .nav-link.active {
+      color: var(--accent-coral-bright);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.2s ease;
+      text-decoration: none;
+    }
+
+    .nav-action-btn:hover {
+      color: #ffffff;
+    }
+
+    .nav-action-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+    }
+
+    .nav-avatar-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .nav-avatar-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-avatar-placeholder {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1b1b22;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       MAIN VIEWPORT & 2-COLUMN DASHBOARD LAYOUT
+       ========================================================================== */
+    .page-viewport {
+      flex: 1;
+      padding: 40px clamp(20px, 4vw, 56px) 80px clamp(20px, 4vw, 56px);
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    /* ==========================================================================
+       LEFT SIDEBAR (User Profile & Navigation)
+       ========================================================================== */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .user-profile-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 32px 24px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin-bottom: 16px;
+    }
+
+    .profile-avatar-img {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(229, 27, 36, 0.5);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .profile-avatar-default {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #1e1e26 0%, #121216 100%);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .profile-avatar-default svg {
+      width: 44px;
+      height: 44px;
+      stroke: #8e8e98;
+    }
+
+    .user-card-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-white);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .user-card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .user-card-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+    }
+
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .sidebar-menu-item {
+      width: 100%;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .sidebar-link:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .sidebar-link.active {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .sidebar-link.active svg {
+      color: var(--accent-red);
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-link svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      margin: 8px 12px;
+    }
+
+    .logout-form {
+      width: 100%;
+    }
+
+    .sidebar-logout-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      text-align: left;
+    }
+
+    .sidebar-logout-btn:hover {
+      color: var(--accent-red-bright);
+      background-color: rgba(229, 27, 36, 0.08);
+    }
+
+    .sidebar-logout-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       RIGHT MAIN CONTENT AREA
+       ========================================================================== */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-width: 0;
+    }
+
+    .page-header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .page-header-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-family: var(--font-main);
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      line-height: 1.15;
+    }
+
+    .btn-return-checkout {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      color: #ffffff;
+      font-family: var(--font-main);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .btn-return-checkout:hover {
+      background: rgba(229, 27, 36, 0.15);
+      border-color: rgba(229, 27, 36, 0.4);
+      color: #ffffff;
+      transform: translateX(-2px);
+    }
+
+    .btn-return-checkout svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+
+    .toast-checkout-link {
+      display: inline-flex;
+      align-items: center;
+      color: var(--accent-coral-bright);
+      font-weight: 700;
+      text-decoration: underline;
+      margin-left: 8px;
+      transition: color 0.15s ease;
+    }
+
+    .toast-checkout-link:hover {
+      color: #ffffff;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 680px;
+    }
+
+    /* ==========================================================================
+       TABS NAVIGATION (AVAILABLE, USED, EXPIRED)
+       ========================================================================== */
+    .coupon-tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 4px;
+    }
+
+    .coupon-tab-btn {
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 10px 0 14px 0;
+      color: #71717a;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .coupon-tab-btn:hover {
+      color: #d4d4d8;
+    }
+
+    .coupon-tab-btn.active {
+      color: #ffffff;
+    }
+
+    .coupon-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: var(--accent-coral-bright);
+      border-radius: 2px 2px 0 0;
+    }
+
+    /* ==========================================================================
+       COUPONS GRID & TICKET-STYLE CARDS
+       ========================================================================== */
+    .coupons-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      width: 100%;
+    }
+
+    .coupon-card {
+      display: flex;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      position: relative;
+      overflow: visible;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .coupon-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.14);
+      box-shadow: 0 14px 38px -10px rgba(0, 0, 0, 0.75);
+    }
+
+    /* Left Ticket Stub */
+    .coupon-stub-left {
+      width: 145px;
+      min-width: 145px;
+      background-color: var(--bg-stub);
+      border-top-left-radius: 13px;
+      border-bottom-left-radius: 13px;
+      padding: 24px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      border-right: 1.5px dashed rgba(255, 255, 255, 0.12);
+    }
+
+    /* Semi-circular Punch-Out Notches */
+    .coupon-stub-left::before,
+    .coupon-stub-left::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-card);
+      border-radius: 50%;
+      right: -12px;
+      z-index: 5;
+    }
+
+    .coupon-stub-left::before {
+      top: -12px;
+    }
+
+    .coupon-stub-left::after {
+      bottom: -12px;
+    }
+
+    .stub-tag-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #8e8e98;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .stub-discount-val {
+      font-family: var(--font-brand);
+      font-size: 30px;
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+    }
+
+    .stub-discount-val.coral {
+      color: var(--accent-coral);
+    }
+
+    .stub-discount-val.gold {
+      color: var(--accent-gold);
+    }
+
+    .stub-discount-off {
+      font-family: var(--font-brand);
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+    }
+
+    .stub-discount-off.coral {
+      color: var(--accent-coral);
+    }
+
+    .stub-discount-off.gold {
+      color: var(--accent-gold);
+    }
+
+    /* Right Ticket Body */
+    .coupon-body-right {
+      flex: 1;
+      min-width: 0;
+      background-color: var(--bg-card);
+      border-top-right-radius: 13px;
+      border-bottom-right-radius: 13px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .coupon-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .coupon-title {
+      font-size: 16.5px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .coupon-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3.5px 8px;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .coupon-badge.ending-soon {
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px solid rgba(234, 179, 8, 0.3);
+      color: var(--accent-gold);
+    }
+
+    .coupon-badge.new-users {
+      background: rgba(249, 115, 22, 0.12);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: #fb923c;
+    }
+
+    .badge-fire-icon {
+      width: 12px;
+      height: 12px;
+    }
+
+    .coupon-details-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      list-style: none;
+    }
+
+    .coupon-detail-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .detail-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .detail-icon.check {
+      color: var(--accent-gold);
+    }
+
+    .detail-icon.clock {
+      color: #9ca3af;
+    }
+
+    .detail-icon svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    /* Bottom Action Row (Code Pill & Copy Button) */
+    .coupon-action-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 2px;
+    }
+
+    .coupon-code-pill {
+      background: var(--bg-pill);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 6px;
+      padding: 7px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: all;
+    }
+
+    .coupon-code-text {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .code-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-gold);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .btn-copy-coupon {
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-copy-red {
+      background: var(--accent-red);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(229, 27, 36, 0.35);
+    }
+
+    .btn-copy-red:hover {
+      background: var(--accent-red-bright);
+      box-shadow: 0 6px 18px rgba(229, 27, 36, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-copy-dark {
+      background: #2a2a34;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-copy-dark:hover {
+      background: #353542;
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .btn-copy-coupon:active {
+      transform: translateY(0);
+    }
+
+    .btn-copy-coupon.copied {
+      background: rgba(34, 197, 94, 0.18) !important;
+      border: 1px solid rgba(34, 197, 94, 0.4) !important;
+      color: #4ade80 !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    .btn-copy-coupon svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       PAGINATION BAR
+       ========================================================================== */
+    .pagination-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .pagination-btn {
+      background: #141419;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border-radius: 6px;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      text-decoration: none;
+    }
+
+    .pagination-btn:hover:not(:disabled):not(.active) {
+      background: #1e1e26;
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    .pagination-btn.active {
+      background: #fca5a5;
+      color: #111116;
+      border-color: #fca5a5;
+      font-weight: 800;
+      cursor: default;
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ==========================================================================
+       EMPTY STATE
+       ========================================================================== */
+    .empty-state {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 64px 28px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .empty-icon-wrap {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(229, 27, 36, 0.1);
+      border: 1px solid rgba(229, 27, 36, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-coral-bright);
+      margin-bottom: 4px;
+    }
+
+    .empty-icon-wrap svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .empty-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      max-width: 440px;
+      line-height: 1.5;
+    }
+
+    .btn-empty-action {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 26px;
+      background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(229, 27, 36, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-empty-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(229, 27, 36, 0.5);
+    }
+
+    /* ==========================================================================
+       FLOATING TOAST NOTIFICATION
+       ========================================================================== */
+    .toast-notification {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #181820;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-left: 3px solid var(--accent-red);
+      color: #ffffff;
+      padding: 14px 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      transform: translateY(100px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      z-index: 1000;
+    }
+
+    .toast-notification.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .toast-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--accent-green);
+      flex-shrink: 0;
+    }
+
+    .toast-message {
+      font-size: 13px;
+      color: #e4e4e7;
+    }
+
+    .toast-message strong {
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       SITE FOOTER (Exact Match with Figma)
+       ========================================================================== */
+    .site-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background-color: #08080a;
+      padding: 56px clamp(24px, 5vw, 64px) 36px clamp(24px, 5vw, 64px);
+      margin-top: auto;
+    }
+
+    .footer-columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 48px;
+      max-width: 1240px;
+      margin: 0 auto 48px auto;
+    }
+
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .footer-brand-text {
+      font-size: 13px;
+      color: #7b7c87;
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    .footer-column-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--accent-coral-bright);
+      margin-bottom: 16px;
+      text-transform: capitalize;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    .footer-social-icons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .social-icon-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .social-icon-link:hover {
+      color: #ffffff;
+    }
+
+    .social-icon-link svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .footer-social-text {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .footer-bottom-bar {
+      border-top: 1px solid #141418;
+      padding-top: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1240px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .footer-copyright {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #52535d;
+      text-transform: uppercase;
+    }
+
+    .footer-accent-bar {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, #ff4d00, #e51b24);
+    }
+
+    /* ==========================================================================
+       RESPONSIVE BREAKPOINTS
+       ========================================================================== */
+    @media (max-width: 1080px) {
+      .dashboard-layout {
+        grid-template-columns: 240px 1fr;
+        gap: 24px;
+      }
+      .coupons-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .sidebar {
+        max-width: 440px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      .footer-columns {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links {
+        display: none;
+      }
+
+      .page-title {
+        font-size: 26px;
+      }
+
+      .coupon-tabs-bar {
+        gap: 20px;
+      }
+
+      .coupon-stub-left {
+        width: 120px;
+        min-width: 120px;
+        padding: 20px 10px;
+      }
+
+      .stub-discount-val {
+        font-size: 24px;
+      }
+
+      .coupon-body-right {
+        padding: 18px 16px;
+      }
+
+      .coupon-action-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .coupon-code-pill {
+        justify-content: center;
+      }
+
+      .btn-copy-coupon {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation matching Hot Wheels HUB -->
+  <header class="navbar">
+    <div class="nav-left">
+      <a href="{% url 'home' %}" class="brand-logo">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+            <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+            <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+          </svg>
+        </div>
+        <span class="brand-name">HUB</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="{% url 'home' %}" class="nav-link active">HOME</a></li>
+          <li><a href="{% url 'user_product_list' %}" class="nav-link">SHOP</a></li>
+          <li><a href="{% url 'user_category_list' %}" class="nav-link">COLLECTIONS</a></li>
+          <li><a href="{% url 'home' %}#about" class="nav-link">ABOUT</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="nav-right">
+      <a href="{% url 'user_product_list' %}" class="nav-action-btn" title="Search" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'wishlist' %}" class="nav-action-btn" title="Wishlist" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'cart_list' %}" class="nav-action-btn" title="Cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </a>
+
+      <a href="{% url 'profile' %}" class="nav-avatar-link" title="My Profile">
+        {% if request.user.profile_image %}
+          <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" class="nav-avatar-img">
+        {% else %}
+          <div class="nav-avatar-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+        {% endif %}
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="page-viewport">
+    <div class="dashboard-layout">
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="sidebar">
+
+        <!-- User Profile Card -->
+        <div class="user-profile-card">
+          <div class="avatar-wrapper">
+            {% if request.user.profile_image %}
+              <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" class="profile-avatar-img">
+            {% else %}
+              <div class="profile-avatar-default">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <h2 class="user-card-name">{{ request.user.get_full_name|default:request.user.username|default:"Collector" }}</h2>
+          <div class="user-card-badge">COLLECTOR</div>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a href="{% url 'profile' %}" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>My Profile</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="{% url 'user_order_list' %}" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="{% url 'user_coupon_list' %}" class="sidebar-link active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                <path d="M13 5v2"/>
+                <path d="M13 17v2"/>
+                <path d="M13 11v2"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="{% url 'wallet' %}" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+              <span>Wallet</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="{% url 'referral_dashboard' %}" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="{% url 'address_list' %}" class="sidebar-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>Addresses</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-divider"></div>
+
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit" class="sidebar-logout-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>Logout</span>
+          </button>
+        </form>
+
+      </aside>
+
+      <!-- RIGHT MAIN CONTENT -->
+      <section class="main-content">
+
+        <!-- Page Section Header -->
+        <div class="page-header">
+          <div class="page-header-top-row">
+            <h1 class="page-title">Your Rewards Garage</h1>
+            <a href="{% url 'checkout' %}" class="btn-return-checkout" title="Return to checkout">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Return to Checkout</span>
+            </a>
+          </div>
+          <p class="page-subtitle">
+            Unlock maximum performance on your next purchase. Copy codes below and apply them at checkout to boost your savings.
+          </p>
+        </div>
+
+        <!-- Filter Tabs Bar -->
+        <div class="coupon-tabs-bar" role="tablist">
+          <button type="button" class="coupon-tab-btn active" data-tab="available" role="tab" aria-selected="true" id="tabAvailable">
+            AVAILABLE (<span id="availableCount">{{ coupons|length }}</span>)
+          </button>
+          <button type="button" class="coupon-tab-btn" data-tab="used" role="tab" aria-selected="false" id="tabUsed">
+            USED (0)
+          </button>
+          <button type="button" class="coupon-tab-btn" data-tab="expired" role="tab" aria-selected="false" id="tabExpired">
+            EXPIRED (0)
+          </button>
+        </div>
+
+        <!-- Tab 1: Available Coupons View -->
+        <div class="tab-view-container" id="viewAvailable">
+          {% if coupons %}
+            <!-- Coupons Grid matching Figma 2-Column ticket voucher layout -->
+            <div class="coupons-grid" id="couponsGrid">
+              {% for coupon in coupons %}
+                <article class="coupon-card" data-coupon-id="{{ coupon.id }}" data-code="{{ coupon.code }}">
+
+                  <!-- Left Stub with Cutout Notches -->
+                  <div class="coupon-stub-left">
+                    {% if coupon.discount_type|lower == "percentage" or coupon.discount_type|lower == "percent" %}
+                      <span class="stub-tag-label">FLAT DISCOUNT</span>
+                      <div class="stub-discount-val coral">{{ coupon.discount_value|floatformat:0 }}%</div>
+                      <div class="stub-discount-off coral">OFF</div>
+                    {% else %}
+                      <span class="stub-tag-label">WELCOME OFFER</span>
+                      <div class="stub-discount-val gold">₹<span class="format-num">{{ coupon.discount_value|floatformat:0 }}</span></div>
+                      <div class="stub-discount-off gold">OFF</div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Right Ticket Body -->
+                  <div class="coupon-body-right">
+                    <!-- Title & Badge Row -->
+                    <div class="coupon-header-row">
+                      <h3 class="coupon-title">{{ coupon.coupon_name|default:coupon.code }}</h3>
+                      {% if coupon.minimum_spend == 0 %}
+                        <span class="coupon-badge new-users">
+                          <span>NEW USERS</span>
+                        </span>
+                      {% elif forloop.counter|divisibleby:2 %}
+                        <span class="coupon-badge new-users">
+                          <span>NEW USERS</span>
+                        </span>
+                      {% else %}
+                        <span class="coupon-badge ending-soon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="badge-fire-icon">
+                            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/>
+                          </svg>
+                          <span>ENDING SOON</span>
+                        </span>
+                      {% endif %}
+                    </div>
+
+                    <!-- Bullet Requirements -->
+                    <ul class="coupon-details-list">
+                      <li class="coupon-detail-item">
+                        <span class="detail-icon check">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        </span>
+                        <span>Min Order: ₹<span class="format-num">{{ coupon.minimum_spend|floatformat:0 }}</span></span>
+                      </li>
+
+                      {% if coupon.maximum_discount and coupon.maximum_discount > 0 %}
+                        <li class="coupon-detail-item">
+                          <span class="detail-icon check">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          </span>
+                          <span>Max Discount: ₹<span class="format-num">{{ coupon.maximum_discount }}</span></span>
+                        </li>
+                      {% else %}
+                        <li class="coupon-detail-item">
+                          <span class="detail-icon check">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          </span>
+                          <span>Applicable on all 1:18 scale models</span>
+                        </li>
+                      {% endif %}
+
+                      <li class="coupon-detail-item">
+                        <span class="detail-icon clock">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                          </svg>
+                        </span>
+                        <span>Valid until {{ coupon.expiry_date|date:"d M Y" }}</span>
+                      </li>
+                    </ul>
+
+                    <!-- Code Pill & Copy Action Row -->
+                    <div class="coupon-action-row">
+                      <div class="coupon-code-pill" title="Coupon code">
+                        <span class="coupon-code-text">{{ coupon.code }}</span>
+                        <span class="code-dot">●</span>
+                      </div>
+
+                      <button type="button" class="btn-copy-coupon {% if forloop.counter|divisibleby:2 %}btn-copy-dark{% else %}btn-copy-red{% endif %}" data-code="{{ coupon.code }}" aria-label="Copy coupon code {{ coupon.code }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                        <span class="copy-label">COPY</span>
+                      </button>
+                    </div>
+                  </div>
+
+                </article>
+              {% endfor %}
+            </div>
+
+            <!-- Pagination Row matching Figma (< 1 >) -->
+            <div class="pagination-container" id="paginationContainer">
+              <button type="button" class="pagination-btn" id="paginationPrevBtn" disabled aria-label="Previous Page">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+              </button>
+              <div id="paginationNumbers" style="display: flex; gap: 6px;">
+                <button type="button" class="pagination-btn active">1</button>
+              </div>
+              <button type="button" class="pagination-btn" id="paginationNextBtn" disabled aria-label="Next Page">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          {% else %}
+            <!-- Helpful Empty State when no coupons are available -->
+            <div class="empty-state">
+              <div class="empty-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                  <path d="M13 5v2"/>
+                  <path d="M13 17v2"/>
+                  <path d="M13 11v2"/>
+                </svg>
+              </div>
+              <h3 class="empty-title">YOUR REWARDS GARAGE IS EMPTY</h3>
+              <p class="empty-subtitle">
+                There are currently no active promotional coupons available. Check back soon for exclusive collector savings and race-day discounts!
+              </p>
+              <a href="{% url 'user_product_list' %}" class="btn-empty-action">
+                EXPLORE SHOP
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Tab 2: Used Coupons View (Interactive Empty State) -->
+        <div class="tab-view-container" id="viewUsed" style="display: none;">
+          <div class="empty-state">
+            <div class="empty-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+              </svg>
+            </div>
+            <h3 class="empty-title">NO USED COUPONS</h3>
+            <p class="empty-subtitle">
+              You haven't redeemed any coupons yet. Copy an available coupon code and apply it during checkout to save!
+            </p>
+            <button type="button" class="btn-empty-action" onclick="switchCouponTab('available')">
+              VIEW AVAILABLE COUPONS
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab 3: Expired Coupons View (Interactive Empty State) -->
+        <div class="tab-view-container" id="viewExpired" style="display: none;">
+          <div class="empty-state">
+            <div class="empty-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <h3 class="empty-title">NO EXPIRED COUPONS</h3>
+            <p class="empty-subtitle">
+              There are no expired coupons in your garage. All your current coupons are active and ready to be redeemed.
+            </p>
+            <button type="button" class="btn-empty-action" onclick="switchCouponTab('available')">
+              VIEW AVAILABLE COUPONS
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Site Footer matching Figma reference -->
+  <footer class="site-footer">
+    <div class="footer-columns">
+      <div class="footer-brand">
+        <a href="{% url 'home' %}" class="brand-logo" style="margin-bottom: 14px;">
+          <div class="logo-badge">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2c1.1 0 2.2.4 3 1.1 2.3 2 2.8 5.6 1.1 8.2l-1.3 2c-.3.4-.2 1 .2 1.3.4.3 1 .2 1.3-.2l1.6-2.5c1.6-2.6 1.4-6-.4-8.4-1.2-1.6-3-2.6-5-2.7-1.1-.1-2.2.2-3.1.8-2.6 1.7-3.7 4.9-2.7 7.8l.6 1.7c.2.5.7.8 1.2.7.5-.1.9-.6.7-1.1l-.6-1.7c-.6-1.9.1-4 1.8-5.1.7-.5 1.4-.7 2.1-.6z"/>
+              <path d="M11 9c.6 0 1 .4 1 1v6c0 1.7-1.3 3-3 3s-3-1.3-3-3v-4c0-.6.4-1 1-1s1 .4 1 1v4c0 .6.4 1 1 1s1-.4 1-1v-6c0-.6.4-1 1-1z"/>
+              <path d="M17.5 13.5c-.5.3-.7.9-.4 1.4.7 1.3.9 2.7.4 4.1-.7 1.9-2.4 3.2-4.5 3.5-2.5.4-4.9-.9-5.9-3.2-.2-.5-.8-.8-1.3-.6-.5.2-.8.8-.6 1.3 1.4 3.1 4.5 4.8 7.9 4.3 2.9-.4 5.3-2.2 6.2-4.9.7-1.9.4-3.9-.6-5.6-.2-.5-.8-.7-1.2-.3z"/>
+            </svg>
+          </div>
+          <span class="brand-name">HUB</span>
+        </a>
+        <p class="footer-brand-text">
+          Precision engineering meets ultimate speed. The premier destination for serious die-cast collectors.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Company</h4>
+        <ul class="footer-links-list">
+          <li><a href="{% url 'home' %}#about" class="footer-link">About Us</a></li>
+          <li><a href="#" class="footer-link">Contact</a></li>
+          <li><a href="#" class="footer-link">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-column-title">Connect</h4>
+        <div class="footer-social-icons">
+          <a href="#" class="social-icon-link" aria-label="Share">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-link" aria-label="Global">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-icon-link" aria-label="Play">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+          </a>
+        </div>
+        <div class="footer-social-text">Instagram / Facebook / YouTube</div>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <div class="footer-copyright">
+        &copy; 2024 HOT WHEELS HUB. ALL RIGHTS RESERVED.
+      </div>
+      <div class="footer-accent-bar"></div>
+    </div>
+  </footer>
+
+  <!-- Floating Toast Notification -->
+  <div class="toast-notification" id="couponToast" role="alert" aria-live="polite">
+    <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    <div class="toast-message" id="toastMessage">Coupon code copied to clipboard!</div>
+  </div>
+
+  <!-- Interactive Client-side Script -->
+  <script>
+    // Tab switching function
+    function switchCouponTab(tabName) {
+      const tabs = document.querySelectorAll('.coupon-tab-btn');
+      tabs.forEach(t => {
+        const isMatch = t.getAttribute('data-tab') === tabName;
+        t.classList.toggle('active', isMatch);
+        t.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+      });
+
+      const views = {
+        'available': document.getElementById('viewAvailable'),
+        'used': document.getElementById('viewUsed'),
+        'expired': document.getElementById('viewExpired')
+      };
+
+      for (const [key, el] of Object.entries(views)) {
+        if (el) {
+          el.style.display = (key === tabName) ? 'block' : 'none';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // 1. Tab Click Event Listeners
+      const tabBtns = document.querySelectorAll('.coupon-tab-btn');
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+          const tab = this.getAttribute('data-tab');
+          if (tab) switchCouponTab(tab);
+        });
+      });
+
+      // 2. Toast Notification Helper
+      let toastTimer = null;
+      function showToast(messageHtml) {
+        const toast = document.getElementById('couponToast');
+        const msgEl = document.getElementById('toastMessage');
+        if (!toast || !msgEl) return;
+
+        msgEl.innerHTML = messageHtml;
+        toast.classList.add('show');
+
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          toast.classList.remove('show');
+        }, 2500);
+      }
+
+      // 3. Robust Clipboard Copy with Fallback
+      function copyCode(text, onSuccess, onError) {
+        if (!text) return;
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(onSuccess).catch(function () {
+            fallbackCopy(text, onSuccess, onError);
+          });
+        } else {
+          fallbackCopy(text, onSuccess, onError);
+        }
+      }
+
+      function fallbackCopy(text, onSuccess, onError) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.top = '0';
+          textarea.style.left = '0';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          const success = document.execCommand('copy');
+          document.body.removeChild(textarea);
+          if (success) {
+            if (onSuccess) onSuccess();
+          } else {
+            if (onError) onError();
+          }
+        } catch (e) {
+          if (onError) onError();
+        }
+      }
+
+      // 4. Attach Copy Event Listeners to Buttons
+      const copyButtons = document.querySelectorAll('.btn-copy-coupon');
+      copyButtons.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          const code = this.getAttribute('data-code');
+          if (!code) return;
+
+          const label = this.querySelector('.copy-label');
+          const origText = label ? label.textContent : 'COPY';
+
+          copyCode(
+            code,
+            () => {
+              if (label) label.textContent = 'COPIED!';
+              this.classList.add('copied');
+              showToast(`Coupon code <strong>${code}</strong> copied! <a href="{% url 'checkout' %}?coupon=${encodeURIComponent(code)}" class="toast-checkout-link">Apply at Checkout &rarr;</a>`);
+
+              setTimeout(() => {
+                if (label) label.textContent = origText;
+                this.classList.remove('copied');
+              }, 2000);
+            },
+            () => {
+              prompt('Copy this coupon code:', code);
+            }
+          );
+        });
+      });
+
+      // 5. Client-Side Pagination for Coupons (4 per page)
+      const cards = Array.from(document.querySelectorAll('.coupon-card'));
+      const itemsPerPage = 4;
+      const totalPages = Math.ceil(cards.length / itemsPerPage);
+      let currentPage = 1;
+
+      const paginationContainer = document.getElementById('paginationContainer');
+      const prevBtn = document.getElementById('paginationPrevBtn');
+      const nextBtn = document.getElementById('paginationNextBtn');
+      const numbersContainer = document.getElementById('paginationNumbers');
+
+      function renderPage(page) {
+        if (cards.length === 0) return;
+
+        currentPage = Math.max(1, Math.min(page, totalPages));
+
+        cards.forEach((card, idx) => {
+          const start = (currentPage - 1) * itemsPerPage;
+          const end = start + itemsPerPage;
+          card.style.display = (idx >= start && idx < end) ? 'flex' : 'none';
+        });
+
+        if (prevBtn) prevBtn.disabled = (currentPage === 1);
+        if (nextBtn) nextBtn.disabled = (currentPage === totalPages);
+
+        if (numbersContainer) {
+          numbersContainer.innerHTML = '';
+          for (let p = 1; p <= totalPages; p++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.type = 'button';
+            pageBtn.className = 'pagination-btn' + (p === currentPage ? ' active' : '');
+            pageBtn.textContent = p;
+            pageBtn.addEventListener('click', function () {
+              renderPage(p);
+            });
+            numbersContainer.appendChild(pageBtn);
+          }
+        }
+      }
+
+      if (cards.length > 0 && paginationContainer) {
+        if (totalPages <= 1) {
+          // If only 1 page, keep the container visible matching Figma's < 1 > layout
+          if (prevBtn) prevBtn.disabled = true;
+          if (nextBtn) nextBtn.disabled = true;
+        } else {
+          renderPage(1);
+
+          if (prevBtn) {
+            prevBtn.addEventListener('click', function () {
+              if (currentPage > 1) renderPage(currentPage - 1);
+            });
+          }
+
+          if (nextBtn) {
+            nextBtn.addEventListener('click', function () {
+              if (currentPage < totalPages) renderPage(currentPage + 1);
+            });
+          }
+        }
+      }
+
+      // 6. Indian Thousands Formatting for currency values
+      document.querySelectorAll('.format-num').forEach(function(el) {
+        const val = parseFloat(el.textContent.replace(/,/g, ''));
+        if (!isNaN(val)) {
+          el.textContent = val.toLocaleString('en-IN');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
+

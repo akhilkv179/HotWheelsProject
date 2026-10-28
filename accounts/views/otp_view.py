@@ -1,7 +1,10 @@
+
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 from django.contrib import messages
-from django.contrib.auth import login
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -12,10 +15,26 @@ from ..models import User
 from ..services.otp_service import generate_otp, get_otp_expiry
 from ..services.email_service import send_otp_email
 
+from referrals.models import ReferralCode, Referral, ReferralOffer
+from wallet.models import Wallet
+from wallet.services.transaction_service import process_wallet_transaction
+
 
 # Check whether the frontend expects a JSON response.
 def wants_json(request):
     return "application/json" in request.headers.get("Accept", "")
+
+
+# Return an OTP workflow error without losing the signup session.
+def otp_error(request, message, status=400):
+    if wants_json(request):
+        return JsonResponse({
+            "success": False,
+            "message": message,
+        }, status=status)
+
+    messages.error(request, message)
+    return redirect("verify_otp")
 
 
 # Verify the signup OTP and create the customer's account.
@@ -104,21 +123,151 @@ def verify_otp(request):
         # Verify the OTP entered by the customer.
         elif entered_otp == stored_otp:
 
-            # Create the customer account after successful verification.
-            user = User(
-                username=signup_data["username"],
-                email=signup_data["email"],
-                phone=signup_data["phone"],
-                password=signup_data["password_hash"],
+            referral_code_text = request.session.get(
+                "signup_referral_code"
             )
+            referral_code_record = None
+            referral_offer = None
 
-            user.save()
+            # Validate a stored referral before creating the account.
+            if referral_code_text:
+                referral_code_record = (
+                    ReferralCode.objects.select_related("user")
+                    .filter(code__iexact=referral_code_text)
+                    .first()
+                )
 
-            # Clear temporary signup data from the session.
+                if referral_code_record is None:
+                    request.session.pop(
+                        "signup_referral_code",
+                        None,
+                    )
+                    return otp_error(
+                        request,
+                        "The referral code is no longer valid. "
+                        "The referral has been removed; submit your OTP "
+                        "again to continue without it.",
+                    )
+
+                # Prevent referrals to the same email account.
+                if (
+                    referral_code_record.user.email.casefold()
+                    == signup_data["email"].casefold()
+                ):
+                    request.session.pop(
+                        "signup_referral_code",
+                        None,
+                    )
+                    return otp_error(
+                        request,
+                        "You cannot use your own referral code. "
+                        "The referral has been removed; submit your OTP "
+                        "again to continue.",
+                    )
+
+                # This model has no active flag, so use the most
+                # recently created referral offer.
+                referral_offer = (
+                    ReferralOffer.objects.order_by("-created_at")
+                    .first()
+                )
+
+                if referral_offer is None:
+                    request.session.pop(
+                        "signup_referral_code",
+                        None,
+                    )
+                    return otp_error(
+                        request,
+                        "No referral reward is configured. "
+                        "The referral has been removed; submit your OTP "
+                        "again to complete signup.",
+                    )
+
+                if referral_offer.reward_amount <= Decimal("0.00"):
+                    request.session.pop(
+                        "signup_referral_code",
+                        None,
+                    )
+                    return otp_error(
+                        request,
+                        "The referral reward is not configured correctly. "
+                        "The referral has been removed; submit your OTP "
+                        "again to complete signup.",
+                    )
+
+            try:
+                # Create the account, wallet, referral record, and reward
+                # in one database transaction.
+                with transaction.atomic():
+
+                    user = User(
+                        username=signup_data["username"],
+                        email=signup_data["email"],
+                        phone=signup_data["phone"],
+                        password=signup_data["password_hash"],
+                    )
+                    user.save()
+
+                    # Create a wallet for the new customer.
+                    Wallet.objects.get_or_create(
+                        user=user,
+                        defaults={
+                            "balance": Decimal("0.00"),
+                            "is_active": True,
+                        },
+                    )
+
+                    if referral_code_record and referral_offer:
+                        # Snapshot the offer amount on the referral record.
+                        referral = Referral.objects.create(
+                            referral_code=referral_code_record.code,
+                            referral_offer=referral_offer,
+                            referrer=referral_code_record.user,
+                            referred_user=user,
+                            reward_amount=referral_offer.reward_amount,
+                        )
+
+                        # Ensure the referrer has a wallet.
+                        referrer_wallet, _ = Wallet.objects.get_or_create(
+                            user=referral_code_record.user,
+                            defaults={
+                                "balance": Decimal("0.00"),
+                                "is_active": True,
+                            },
+                        )
+
+                        # Credit the referrer exactly once using a stable ID.
+                        process_wallet_transaction(
+                            wallet_id=referrer_wallet.pk,
+                            amount=referral.reward_amount,
+                            transaction_type="credit",
+                            transaction_id=(
+                                f"REFERRAL-{referral.pk}-REFERRER"
+                            ),
+                            reference_id=f"REFERRAL-{referral.pk}",
+                        )
+
+                        # Record that the reward has been credited.
+                        referral.rewarded_at = timezone.now()
+                        referral.save(
+                            update_fields=["rewarded_at"]
+                        )
+
+            except ValidationError as error:
+                error_message = (
+                    error.messages[0]
+                    if error.messages
+                    else "The referral reward could not be processed."
+                )
+                return otp_error(request, error_message)
+
+            # Clear temporary signup data after successful creation.
             request.session.pop("signup_otp", None)
             request.session.pop("signup_otp_expiry", None)
             request.session.pop("last_otp_resend", None)
             request.session.pop("signup_data", None)
+            request.session.pop("signup_referral_code", None)
 
             if wants_json(request):
                 return JsonResponse({
@@ -151,7 +300,6 @@ def verify_otp(request):
             int((expiry_time - timezone.now()).total_seconds())
         )
 
-    # Display the existing OTP verification page.
     return render(
         request,
         "accounts/verify_otp.html",
@@ -229,7 +377,6 @@ def resend_otp(request):
     # Send the new OTP to the email address used during signup.
     send_otp_email(signup_data["email"], otp)
 
-    # Return success to a frontend expecting JSON.
     if wants_json(request):
         return JsonResponse({
             "success": True,

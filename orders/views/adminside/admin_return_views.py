@@ -1,14 +1,24 @@
 
+from decimal import Decimal, ROUND_HALF_UP
+
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from coupons.models import CouponUsage
 from orders.models import OrderItem, Return
+from payments.models import Refund
 from products.models import ProductVariant
+from wallet.services.refund_service import credit_wallet_refund
+
+
+ZERO = Decimal("0.00")
+CENT = Decimal("0.01")
 
 
 RETURN_STATUSES = [
@@ -25,10 +35,79 @@ def wants_json(request):
     return "application/json" in request.headers.get("Accept", "")
 
 
+# Allocate the original coupon discount across all items proportionally.
+def get_coupon_discount_allocations(order, items):
+    allocations = {item.pk: ZERO for item in items}
+
+    if not order.coupon_id or not items:
+        return allocations
+
+    # Use the recorded original discount so previous cancellations
+    # do not change how the coupon discount is allocated.
+    usage = CouponUsage.objects.filter(
+        order=order,
+        coupon_id=order.coupon_id,
+    ).order_by("pk").first()
+
+    if usage:
+        coupon_discount = usage.discount_amount or ZERO
+    else:
+        # Compatibility fallback for older coupon orders without
+        # a CouponUsage record.
+        product_discount_total = sum(
+            (item.discount_amount or ZERO for item in items),
+            ZERO,
+        )
+
+        coupon_discount = max(
+            (order.discount_amount or ZERO) - product_discount_total,
+            ZERO,
+        )
+
+    # Item totals already include product-offer discounts.
+    weights = {
+        item.pk: max(item.total_price or ZERO, ZERO)
+        for item in items
+    }
+
+    eligible_total = sum(weights.values(), ZERO)
+
+    if coupon_discount <= ZERO or eligible_total <= ZERO:
+        return allocations
+
+    # Do not allocate more coupon discount than the eligible item totals.
+    coupon_discount = min(coupon_discount, eligible_total)
+
+    eligible_items = [
+        item for item in items
+        if weights[item.pk] > ZERO
+    ]
+
+    remaining_discount = coupon_discount
+
+    # Round each proportional allocation to cents, assigning any
+    # remaining cents to the final eligible item.
+    for item in eligible_items[:-1]:
+        share = (
+            coupon_discount * weights[item.pk] / eligible_total
+        ).quantize(CENT, rounding=ROUND_HALF_UP)
+
+        share = min(max(share, ZERO), remaining_discount)
+
+        allocations[item.pk] = share
+        remaining_discount -= share
+
+    if eligible_items:
+        allocations[eligible_items[-1].pk] = remaining_discount
+
+    return allocations
+
+
+
+
 # Display all customer return requests with pagination.
 @staff_member_required(login_url="/d/admin_login/")
 def admin_return_list(request):
-    # Allow only GET requests to view return requests.
     if request.method != "GET":
         if wants_json(request):
             return JsonResponse(
@@ -37,7 +116,6 @@ def admin_return_list(request):
             )
         return HttpResponseNotAllowed(["GET"])
 
-    # Retrieve return requests with their related order and product information.
     returns = Return.objects.select_related(
         "user",
         "order_item",
@@ -45,13 +123,46 @@ def admin_return_list(request):
         "order_item__product_variant",
     ).order_by("-requested_at")
 
-    # Show 5 return requests on each page.
-    paginator = Paginator(returns, 5)
+    # Calculate the coupon-adjusted price for each returned item.
+    return_items_by_order = {}
 
-    # Get the requested page, defaulting to page 1 for invalid page values.
+    for return_request in returns:
+        item = return_request.order_item
+        order = item.order
+
+        if order.pk not in return_items_by_order:
+            return_items_by_order[order.pk] = list(
+                OrderItem.objects.filter(order_id=order.pk).order_by("pk")
+            )
+
+    coupon_allocations_by_order = {}
+
+    for return_request in returns:
+        item = return_request.order_item
+        order = item.order
+
+        if order.pk not in coupon_allocations_by_order:
+            coupon_allocations_by_order[order.pk] = (
+                get_coupon_discount_allocations(
+                    order,
+                    return_items_by_order[order.pk],
+                )
+            )
+
+    paginator = Paginator(returns, 5)
     page_obj = paginator.get_page(request.GET.get("page", 1))
 
-    # Return the current page's return requests as JSON when requested.
+    def get_paid_item_price(return_request):
+        item = return_request.order_item
+        coupon_discount = coupon_allocations_by_order[
+            item.order_id
+        ].get(item.pk, ZERO)
+
+        return max(
+            (item.total_price or ZERO) - coupon_discount,
+            ZERO,
+        ).quantize(CENT, rounding=ROUND_HALF_UP)
+
     if wants_json(request):
         return JsonResponse(
             {
@@ -64,6 +175,20 @@ def admin_return_list(request):
                         ),
                         "product_variant_id": (
                             return_request.order_item.product_variant_id
+                        ),
+                        "original_item_price": str(
+                            return_request.order_item.total_price or ZERO
+                        ),
+                        "coupon_discount": str(
+                            coupon_allocations_by_order[
+                                return_request.order_item.order_id
+                            ].get(
+                                return_request.order_item_id,
+                                ZERO,
+                            )
+                        ),
+                        "paid_item_price": str(
+                            get_paid_item_price(return_request)
                         ),
                         "status": return_request.status,
                         "internal_note": return_request.internal_note,
@@ -100,7 +225,19 @@ def admin_return_list(request):
             status=200,
         )
 
-    # Render the current page of return requests in the HTML template.
+    # Attach the calculated prices for use in the HTML template.
+    for return_request in page_obj:
+        item = return_request.order_item
+        return_request.original_item_price = item.total_price or ZERO
+        return_request.coupon_discount = (
+            coupon_allocations_by_order[item.order_id].get(
+                item.pk, ZERO
+            )
+        )
+        return_request.paid_item_price = get_paid_item_price(
+            return_request
+        )
+
     return render(
         request,
         "adminside/admin_return_list.html",
@@ -112,6 +249,9 @@ def admin_return_list(request):
         },
         status=200,
     )
+
+
+
 
 
 # Update a return request through receipt, inspection, and refund processing.
@@ -198,7 +338,6 @@ def admin_update_return_status(request, return_id):
 
         # Restore stock only after the returned item passes inspection.
         if new_status == "inspection_approved":
-            # Lock the order item to prevent concurrent stock restoration.
             item = get_object_or_404(
                 OrderItem.objects.select_for_update(),
                 id=return_request.order_item_id,
@@ -236,11 +375,107 @@ def admin_update_return_status(request, return_id):
             item.item_status = "returned"
             item.save(update_fields=["item_status"])
 
+        # Credit the wallet when the administrator processes a refund.
+        if new_status == "refund_processed":
+            # Prevent the same return from being refunded twice.
+            if Refund.objects.filter(
+                return_request=return_request
+            ).exists():
+                error_message = "This return has already been refunded."
+
+                if wants_json(request):
+                    return JsonResponse(
+                        {"error": error_message},
+                        status=400,
+                    )
+
+                messages.error(request, error_message)
+                return redirect("admin_return_list")
+
+            # Lock the order item associated with this return.
+            return_item = get_object_or_404(
+                OrderItem.objects.select_for_update().select_related(
+                    "order"
+                ),
+                id=return_request.order_item_id,
+            )
+
+            # Allocate the original coupon discount across all order items.
+            order_items = list(
+                OrderItem.objects.select_for_update()
+                .filter(order_id=return_item.order_id)
+                .order_by("pk")
+            )
+
+            coupon_allocations = get_coupon_discount_allocations(
+                return_item.order,
+                order_items,
+            )
+
+            coupon_discount_for_item = coupon_allocations.get(
+                return_item.pk,
+                ZERO,
+            )
+
+            # total_price already includes product-offer discounts.
+            # Subtract this item's allocated coupon discount as well.
+            refund_amount = (
+                (return_item.total_price or ZERO)
+                - coupon_discount_for_item
+            ).quantize(CENT, rounding=ROUND_HALF_UP)
+
+            if refund_amount <= ZERO:
+                error_message = (
+                    "The refund amount must be greater than zero."
+                )
+
+                if wants_json(request):
+                    return JsonResponse(
+                        {"error": error_message},
+                        status=400,
+                    )
+
+                messages.error(request, error_message)
+                return redirect("admin_return_list")
+
+            # Credit the refund using the shared wallet transaction service.
+            try:
+                wallet_transaction = credit_wallet_refund(
+                    user=return_request.user,
+                    amount=refund_amount,
+                    transaction_id=(
+                        f"RETURN-REFUND-{return_request.pk}"
+                    ),
+                    reference_id=f"RETURN-{return_request.pk}",
+                )
+            except ValidationError as error:
+                error_message = (
+                    error.messages[0]
+                    if error.messages
+                    else "The wallet refund could not be processed."
+                )
+
+                if wants_json(request):
+                    return JsonResponse(
+                        {"error": error_message},
+                        status=400,
+                    )
+
+                messages.error(request, error_message)
+                return redirect("admin_return_list")
+
+            # Save the refund record in the same database transaction.
+            Refund.objects.create(
+                return_request=return_request,
+                wallet_transaction=wallet_transaction,
+                amount=refund_amount,
+                status="processed",
+                processed_at=timezone.now(),
+            )
+
         # Save the new return status and administrator's note.
         return_request.status = new_status
         return_request.internal_note = internal_note
-
-        # Record when the latest status-processing action occurred.
         return_request.processed_at = timezone.now()
 
         return_request.save(
@@ -263,8 +498,7 @@ def admin_update_return_status(request, return_id):
         )
     elif new_status == "refund_processed":
         success_message = (
-            "Return status updated to refund processed. "
-            "Verify the actual refund separately."
+            "Refund credited to the customer's wallet successfully."
         )
     else:
         success_message = "Return status updated successfully."

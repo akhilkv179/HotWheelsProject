@@ -2090,7 +2090,7 @@
               </svg>
               <span>Returns</span>
             </a>
-            <a href="{% url 'admin_inventory_list' %}" class="nav-item" title="Coupons">
+            <a href="{% url 'admin_coupon_list' %}" class="nav-item" title="Coupons">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="6" width="20" height="12" rx="2"/>
                 <circle cx="12" cy="12" r="2"/>
@@ -2112,7 +2112,7 @@
               </svg>
               <span>Users</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="{% url 'admin_referral_offer_list' %}" class="nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 12 20 22 4 22 4 12"/>
                 <rect x="2" y="7" width="20" height="5"/>
@@ -2409,7 +2409,14 @@
                             </span>
                           {% endif %}
                           <span class="qty-tag">Qty: {{ return_request.order_item.quantity }}</span>
-                          <span class="price-tag">&bull; ₹{{ return_request.order_item.total_price }}</span>
+                          <span class="price-tag" title="Paid Price: ₹{{ return_request.paid_item_price|default:return_request.order_item.total_price|floatformat:2 }}{% if return_request.coupon_discount and return_request.coupon_discount > 0 %} (Original: ₹{{ return_request.original_item_price|default:return_request.order_item.total_price|floatformat:2 }}, Coupon: -₹{{ return_request.coupon_discount|floatformat:2 }}){% endif %}">
+                            &bull; Paid: ₹<span class="format-return-price">{{ return_request.paid_item_price|default:return_request.order_item.total_price|floatformat:2 }}</span>
+                            {% if return_request.coupon_discount and return_request.coupon_discount > 0 %}
+                              <span class="price-breakdown-sub" style="font-size: 11px; opacity: 0.7; font-weight: 500; margin-left: 3px;">
+                                (<span style="text-decoration: line-through;">₹<span class="format-return-price">{{ return_request.original_item_price|default:return_request.order_item.total_price|floatformat:2 }}</span></span> <span style="color: #4ade80;">-₹<span class="format-return-price">{{ return_request.coupon_discount|floatformat:2 }}</span></span>)
+                              </span>
+                            {% endif %}
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -2503,7 +2510,13 @@
                           "variantColor": "{{ return_request.order_item.product_variant.color|default:''|escapejs }}",
                           "variantSize": "{{ return_request.order_item.product_variant.size|default:''|escapejs }}",
                           "quantity": {{ return_request.order_item.quantity|default:1 }},
-                          "totalPrice": "{{ return_request.order_item.total_price|default:'0.00' }}",
+                          "totalPrice": "{{ return_request.paid_item_price|default:return_request.order_item.total_price|default:'0.00' }}",
+                          "paidItemPrice": "{{ return_request.paid_item_price|default:return_request.order_item.total_price|default:'0.00' }}",
+                          "paid_item_price": "{{ return_request.paid_item_price|default:return_request.order_item.total_price|default:'0.00' }}",
+                          "originalItemPrice": "{{ return_request.original_item_price|default:return_request.order_item.total_price|default:'0.00' }}",
+                          "original_item_price": "{{ return_request.original_item_price|default:return_request.order_item.total_price|default:'0.00' }}",
+                          "couponDiscount": "{{ return_request.coupon_discount|default:'0.00' }}",
+                          "coupon_discount": "{{ return_request.coupon_discount|default:'0.00' }}",
                           "unitPrice": "{{ return_request.order_item.unit_price|default:'0.00' }}",
                           "imageUrl": "{{ return_request.order_item.product_variant.images.first.image_url|default:''|escapejs }}",
                           "reason": "{{ return_request.reason|escapejs }}",
@@ -2843,6 +2856,16 @@
        SCRIPTS: Live Clock, Modal Logic, Transitions, Filtering
        ================================================== -->
   <script>
+    // Price formatter: formats numbers into Indian currency string with 2 decimal places (e.g. 65,001.00)
+    function formatInrCurrency(amount) {
+      const num = parseFloat(String(amount).replace(/,/g, ''));
+      if (isNaN(num)) return '0.00';
+      return num.toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
     // Currently active return object data
     let currentReturnData = null;
     let pendingStatusToSubmit = null;
@@ -2908,8 +2931,20 @@
       document.getElementById('modalCustomerEmail').textContent = currentReturnData.customerEmail || ('@' + currentReturnData.customerUsername);
 
       // Settlement
-      document.getElementById('modalSettlementAmount').textContent = '₹' + currentReturnData.totalPrice;
-      document.getElementById('modalSettlementSub').textContent = 'Item Price: ₹' + currentReturnData.unitPrice + ' (Qty: ' + currentReturnData.quantity + ')';
+      const paidPrice = currentReturnData.paidItemPrice !== undefined ? currentReturnData.paidItemPrice : (currentReturnData.paid_item_price !== undefined ? currentReturnData.paid_item_price : currentReturnData.totalPrice);
+      const originalPrice = currentReturnData.originalItemPrice !== undefined ? currentReturnData.originalItemPrice : (currentReturnData.original_item_price !== undefined ? currentReturnData.original_item_price : currentReturnData.totalPrice);
+      const couponDiscount = currentReturnData.couponDiscount !== undefined ? currentReturnData.couponDiscount : (currentReturnData.coupon_discount || '0.00');
+
+      const formattedPaidPrice = formatInrCurrency(paidPrice);
+      const formattedOrigPrice = formatInrCurrency(originalPrice);
+      const formattedDiscount = formatInrCurrency(couponDiscount);
+
+      document.getElementById('modalSettlementAmount').textContent = '₹' + formattedPaidPrice;
+      if (parseFloat(couponDiscount) > 0) {
+        document.getElementById('modalSettlementSub').innerHTML = `Paid Price (Original: ₹${formattedOrigPrice}, Coupon: -₹${formattedDiscount}) &bull; Qty: ${currentReturnData.quantity}`;
+      } else {
+        document.getElementById('modalSettlementSub').textContent = `Paid Price: ₹${formattedPaidPrice} (Qty: ${currentReturnData.quantity})`;
+      }
 
       // Product
       document.getElementById('modalProductTitle').textContent = currentReturnData.productName;
@@ -2995,10 +3030,13 @@
         mandateContainer.style.display = 'none';
         if (subheader) subheader.style.display = 'none';
 
+        const paidPrice = currentReturnData.paidItemPrice !== undefined ? currentReturnData.paidItemPrice : (currentReturnData.paid_item_price !== undefined ? currentReturnData.paid_item_price : currentReturnData.totalPrice);
+        const formattedPaidPrice = formatInrCurrency(paidPrice);
+
         actionsFooter.innerHTML = `
           <button type="button" class="btn-approve-claim" id="btnApproveAction" onclick="promptInspectionApproval()">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>APPROVE RETURN (₹${currentReturnData.totalPrice})</span>
+            <span>APPROVE RETURN (₹${formattedPaidPrice})</span>
           </button>
           <button type="button" class="btn-reject-claim" id="btnRejectAction" onclick="promptRejection()">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -3010,6 +3048,9 @@
 
       // 3. STATUS: inspection_approved -> can only transition to 'refund_processed'
       else if (status === 'inspection_approved') {
+        const paidPrice = currentReturnData.paidItemPrice !== undefined ? currentReturnData.paidItemPrice : (currentReturnData.paid_item_price !== undefined ? currentReturnData.paid_item_price : currentReturnData.totalPrice);
+        const formattedPaidPrice = formatInrCurrency(paidPrice);
+
         if (subheader) subheader.textContent = 'SETTLEMENT MANDATE';
         mandateContainer.innerHTML = `
           <div class="mandate-option-card selected">
@@ -3017,7 +3058,7 @@
             <div class="mandate-content">
               <div class="mandate-top-row">
                 <span class="mandate-title">Process Refund (Original Method)</span>
-                <span class="mandate-amount">₹${currentReturnData.totalPrice}</span>
+                <span class="mandate-amount">₹${formattedPaidPrice}</span>
               </div>
               <p class="mandate-desc">
                 Settlement payout to customer. Stock quantity was already restored to inventory during inspection approval.
@@ -3032,7 +3073,7 @@
         actionsFooter.innerHTML = `
           <button type="button" class="btn-approve-claim" onclick="submitStatusDirect('refund_processed')">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>PROCESS REFUND (₹${currentReturnData.totalPrice})</span>
+            <span>PROCESS REFUND (₹${formattedPaidPrice})</span>
           </button>
           <button type="button" class="btn-cancel-claim" onclick="closeManageReturnModal()">CANCEL</button>
         `;
@@ -3313,6 +3354,17 @@
           filterRows();
         });
       }
+
+      // 5. Format return prices with Indian numbering formatting and 2 decimal places
+      document.querySelectorAll('.format-return-price').forEach(el => {
+        const val = parseFloat(el.textContent.replace(/,/g, ''));
+        if (!isNaN(val)) {
+          el.textContent = val.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        }
+      });
     });
   </script>
 
