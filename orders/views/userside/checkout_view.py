@@ -9,7 +9,6 @@ from django.db import transaction
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-
 from accounts.models import Address
 from cart.models import Cart, CartItem
 from products.models import ProductVariant
