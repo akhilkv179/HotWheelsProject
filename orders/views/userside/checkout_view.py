@@ -471,11 +471,13 @@ def checkout(request):
                     discount_amount=item.item_discount_total,
                 )
 
-                # Deduct the purchased quantity from stock.
-                variant.stock_quantity -= item.quantity
-                variant.save(
-                    update_fields=["stock_quantity", "updated_at"]
-                )
+                # Deduct stock immediately for COD and Wallet.
+                # Razorpay stock will be deducted after successful payment verification.
+                if payment_method != "razorpay":
+                    variant.stock_quantity -= item.quantity
+                    variant.save(
+                        update_fields=["stock_quantity", "updated_at"]
+                    )
 
             # Deduct from the wallet and record the transaction via the service.
             if payment_method == "wallet":

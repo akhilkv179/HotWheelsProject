@@ -952,10 +952,22 @@
     }
 
     /* Toggle List/Unlist Button */
-    .btn-action-icon.btn-toggle-list:hover {
+    .btn-action-icon.btn-toggle-list:hover,
+    .btn-action-icon.btn-toggle-list.action-unlist:hover {
       background-color: rgba(245, 158, 11, 0.15);
       border-color: rgba(245, 158, 11, 0.4);
       color: #fbbf24;
+    }
+
+    .btn-action-icon.btn-toggle-list.action-list {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+
+    .btn-action-icon.btn-toggle-list.action-list:hover {
+      background-color: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.5);
+      color: #10b981;
     }
 
     .btn-action-icon.disabled,
@@ -1003,10 +1015,32 @@
     }
 
     /* Toggle Offer Button */
-    .btn-action-icon.btn-offer-toggle:hover {
-      background-color: rgba(168, 85, 247, 0.15);
-      border-color: rgba(168, 85, 247, 0.4);
-      color: #c084fc;
+    .btn-action-icon.btn-offer-toggle {
+      color: #9ca3af;
+      border-color: rgba(255, 255, 255, 0.08);
+      background-color: #171821;
+    }
+
+    .btn-action-icon.btn-offer-toggle.offer-active {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.3);
+    }
+
+    .btn-action-icon.btn-offer-toggle.offer-active:hover {
+      background-color: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .btn-action-icon.btn-offer-toggle.offer-inactive {
+      color: #6b7280;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-action-icon.btn-offer-toggle.offer-inactive:hover {
+      background-color: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.4);
+      color: #34d399;
     }
 
     /* Empty Table State */
@@ -2031,9 +2065,9 @@
                         <!-- Toggle List/Unlist Category Button -->
                         <button
                           type="button"
-                          class="btn-action-icon btn-toggle-list btn-toggle-category-status {% if category.is_deleted %}disabled{% endif %}"
+                          class="btn-action-icon btn-toggle-list btn-toggle-category-status {% if category.is_deleted %}disabled{% endif %} {% if category.is_active %}action-unlist{% else %}action-list{% endif %}"
                           title="{% if category.is_deleted %}Listing disabled for deleted category{% elif category.is_active %}Unlist Category{% else %}List Category{% endif %}"
-                          aria-label="Toggle Category Status"
+                          aria-label="{% if category.is_deleted %}Listing disabled for deleted category{% elif category.is_active %}Unlist Category{% else %}List Category{% endif %}"
                           {% if category.is_deleted %}disabled aria-disabled="true"{% endif %}
                           data-id="{{ category.id }}"
                           data-name="{{ category.name }}"
@@ -2123,18 +2157,21 @@
                               </svg>
                             </button>
 
-                            <!-- Disable / Toggle Offer Button -->
-                            <a
-                              href="{% url 'admin_category_offer_toggle' category.current_offer.id %}"
-                              class="btn-action-icon btn-offer-toggle"
-                              title="{% if category.current_offer.is_active %}Disable Offer{% else %}Activate Offer{% endif %}"
-                              aria-label="Toggle Offer"
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="1" y="5" width="22" height="14" rx="7" ry="7"/>
-                                <circle cx="{% if category.current_offer.is_active %}16{% else %}8{% endif %}" cy="12" r="3"/>
-                              </svg>
-                            </a>
+                            <!-- Disable / Toggle Offer Button Form -->
+                            <form method="POST" action="{% url 'admin_category_offer_toggle' category.current_offer.id %}" class="form-toggle-offer" style="display: inline-flex; margin: 0; padding: 0;">
+                              {% csrf_token %}
+                              <button
+                                type="submit"
+                                class="btn-action-icon btn-offer-toggle {% if category.current_offer.is_active %}offer-active{% else %}offer-inactive{% endif %}"
+                                title="{% if category.current_offer.is_active %}Disable Offer: {{ category.current_offer.offer_name }}{% else %}Enable Offer: {{ category.current_offer.offer_name }}{% endif %}"
+                                aria-label="{% if category.current_offer.is_active %}Disable Offer{% else %}Enable Offer{% endif %}"
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <rect x="1" y="5" width="22" height="14" rx="7" ry="7"/>
+                                  <circle cx="{% if category.current_offer.is_active %}16{% else %}8{% endif %}" cy="12" r="3"/>
+                                </svg>
+                              </button>
+                            </form>
                           {% endif %}
                         {% endif %}
 
@@ -2503,26 +2540,29 @@
   <!-- 10b. TOGGLE LIST/UNLIST CATEGORY CONFIRMATION MODAL -->
   <div class="modal-backdrop" id="toggleCategoryModal">
     <div class="modal-card" style="max-width: 440px;">
-      <div class="delete-modal-content">
-        <div class="toggle-icon-badge" id="toggleCategoryIconBadge">
-          <svg id="toggleCategoryIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
+      <form method="POST" id="toggleCategoryForm" action="">
+        {% csrf_token %}
+        <div class="delete-modal-content">
+          <div class="toggle-icon-badge" id="toggleCategoryIconBadge">
+            <svg id="toggleCategoryIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+          <h3 class="delete-modal-title" id="toggleCategoryModalTitle">Unlist Category?</h3>
+          <p class="delete-modal-desc">
+            Are you sure you want to <span id="toggleCategoryActionWord" style="color: #ffffff; font-weight: 700;">unlist</span> <span class="delete-target-highlight" id="toggleCategoryTargetName">this category</span>? <span id="toggleCategoryDescSuffix">This will hide the category from customer view.</span>
+          </p>
+          <div class="delete-modal-actions">
+            <button type="button" class="btn-modal-cancel" onclick="closeModal('toggleCategoryModal');">
+              Cancel
+            </button>
+            <button type="submit" id="toggleCategoryConfirmBtn" class="btn-modal-submit" style="background-color: #d97706;">
+              Confirm
+            </button>
+          </div>
         </div>
-        <h3 class="delete-modal-title" id="toggleCategoryModalTitle">Unlist Category?</h3>
-        <p class="delete-modal-desc">
-          Are you sure you want to <span id="toggleCategoryActionWord" style="color: #ffffff; font-weight: 700;">unlist</span> <span class="delete-target-highlight" id="toggleCategoryTargetName">this category</span>? <span id="toggleCategoryDescSuffix">This will hide the category from customer view.</span>
-        </p>
-        <div class="delete-modal-actions">
-          <button type="button" class="btn-modal-cancel" onclick="closeModal('toggleCategoryModal');">
-            Cancel
-          </button>
-          <a href="#" id="toggleCategoryConfirmBtn" class="btn-modal-submit" style="background-color: #d97706;">
-            Confirm
-          </a>
-        </div>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -3152,6 +3192,7 @@
           const name = this.getAttribute('data-name');
           const action = this.getAttribute('data-action') || 'unlist';
 
+          const toggleCategoryForm = document.getElementById('toggleCategoryForm');
           const modalTitle = document.getElementById('toggleCategoryModalTitle');
           const actionWord = document.getElementById('toggleCategoryActionWord');
           const targetName = document.getElementById('toggleCategoryTargetName');
@@ -3160,13 +3201,16 @@
           const iconBadge = document.getElementById('toggleCategoryIconBadge');
           const iconSvg = document.getElementById('toggleCategoryIconSvg');
 
+          if (toggleCategoryForm && url) {
+            toggleCategoryForm.action = url;
+          }
+
           if (modalTitle) modalTitle.textContent = action === 'unlist' ? 'Unlist Category?' : 'List Category?';
           if (actionWord) actionWord.textContent = action;
           if (targetName) targetName.textContent = '"' + (name || 'this category') + '"';
           if (descSuffix) descSuffix.textContent = action === 'unlist' ? 'This will hide the category from customer view.' : 'This will make the category visible to customers.';
 
           if (confirmBtn) {
-            confirmBtn.href = url;
             confirmBtn.textContent = action === 'unlist' ? 'Unlist Category' : 'List Category';
             confirmBtn.style.backgroundColor = action === 'unlist' ? '#d97706' : '#15803d';
           }

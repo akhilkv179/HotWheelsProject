@@ -1,0 +1,1693 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales &amp; Revenue | Hot Wheels Admin</title>
+
+  <!-- Google Fonts: Montserrat for bold headers, Inter for clean UI data -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Variables */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-body: #131313;
+      --bg-sidebar: #0e0e0e;
+      --bg-card: #201f1f;
+      --bg-card-inner: #161618;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.06);
+      --border-card-hover: rgba(255, 255, 255, 0.12);
+
+      --accent-red: #e81023;
+      --accent-red-hover: #ff2334;
+      --accent-coral: #df8e88;
+      --accent-coral-bar: #d29590;
+      --chart-bar-dark: #313130;
+
+      --btn-pdf-bg: #ffb3ac;
+      --btn-pdf-text: #7d1c1c;
+      --btn-excel-bg: #2b2b2b;
+      --btn-excel-text: #ffffff;
+
+      --text-white: #ffffff;
+      --text-muted: #8e8f9c;
+      --text-dim: #5c5d6b;
+      --text-label: #767784;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==================================================
+       SIDEBAR NAVIGATION
+       ================================================== */
+    .admin-sidebar {
+      width: 220px;
+      min-width: 220px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 28px 18px 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .admin-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .admin-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .brand-header {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-group-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #555765;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 3px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      stroke: var(--text-dim);
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background-color: #1e1d1e;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      font-weight: 700;
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ==================================================
+       MAIN CONTENT CANVAS
+       ================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-body);
+    }
+
+    /* Topbar Header */
+    .admin-topbar {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 3.5vw, 40px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    .header-accent-bar {
+      width: 4px;
+      height: 22px;
+      background-color: var(--accent-red);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .page-main-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .notification-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease;
+    }
+
+    .notification-btn:hover {
+      color: #ffffff;
+    }
+
+    .notification-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .notification-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+    }
+
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: #1a1a1f;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .profile-text-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .profile-role {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    /* ==================================================
+       DASHBOARD VIEWPORT / BODY CONTENT
+       ================================================== */
+    .dashboard-viewport {
+      padding: 28px clamp(20px, 3.5vw, 40px) 50px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ==================================================
+       ROW 1: 6-METRIC CARDS GRID
+       ================================================== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+    }
+
+    .metric-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 116px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .metric-card:hover {
+      border-color: var(--border-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .metric-title {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-label);
+      line-height: 1.2;
+    }
+
+    .metric-icon {
+      width: 15px;
+      height: 15px;
+      stroke: var(--text-label);
+      flex-shrink: 0;
+    }
+
+    .metric-value {
+      font-family: var(--font-heading);
+      font-size: 23px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      font-feature-settings: "tnum";
+    }
+
+    .metric-subtitle {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Card 6: Special PENDING Red Card */
+    .metric-card-pending {
+      background: var(--accent-red);
+      border: none;
+      box-shadow: 0 6px 20px rgba(232, 16, 35, 0.35);
+    }
+
+    .metric-card-pending:hover {
+      border: none;
+      background: var(--accent-red-hover);
+      transform: translateY(-2px);
+    }
+
+    .metric-card-pending .metric-title {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .metric-card-pending .metric-icon {
+      stroke: rgba(255, 255, 255, 0.9);
+    }
+
+    .metric-card-pending .metric-value {
+      color: #ffffff;
+    }
+
+    .metric-card-pending .metric-subtitle {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* ==================================================
+       ROW 2: TWO-COLUMN MAIN WORKSPACE (LEFT 72% / RIGHT 28%)
+       ================================================== */
+    .main-workspace-grid {
+      display: grid;
+      grid-template-columns: 1fr 240px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .workspace-left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      min-width: 0;
+    }
+
+    .workspace-right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Top Export Button in Right Column */
+    .top-export-container {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .btn-top-export {
+      background-color: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 9999px;
+      padding: 9px 24px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(232, 16, 35, 0.35);
+      transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+
+    .btn-top-export:hover {
+      background-color: var(--accent-red-hover);
+      box-shadow: 0 6px 20px rgba(232, 16, 35, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-top-export svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ==================================================
+       SALES ANALYTICS CARD & BAR CHART
+       ================================================== */
+    .analytics-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 22px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .analytics-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .analytics-title {
+      font-family: var(--font-main);
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    /* Segmented Control Pill */
+    .segmented-control {
+      background: #141414;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 9999px;
+      padding: 3px;
+      display: inline-flex;
+      gap: 2px;
+    }
+
+    .segment-btn {
+      background: transparent;
+      border: none;
+      color: #7e7f8e;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: color 0.15s, background-color 0.15s;
+    }
+
+    .segment-btn:hover {
+      color: #ffffff;
+    }
+
+    .segment-btn.active {
+      background: #252425;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* Bar Chart Container & SVG */
+    .chart-container {
+      width: 100%;
+      height: 220px;
+      position: relative;
+    }
+
+    .bar-chart-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .chart-bar {
+      transition: height 0.3s ease, y 0.3s ease, fill 0.2s ease;
+      cursor: pointer;
+    }
+
+    .chart-bar.coral {
+      fill: var(--accent-coral-bar);
+    }
+
+    .chart-bar.dark {
+      fill: var(--chart-bar-dark);
+    }
+
+    .chart-bar:hover {
+      filter: brightness(1.2);
+    }
+
+    .chart-axis-label {
+      fill: #82828e;
+      font-family: var(--font-main);
+      font-size: 10.5px;
+      font-weight: 600;
+      text-anchor: middle;
+    }
+
+    /* ==================================================
+       RECENT ACTIVITY TABLE CARD
+       ================================================== */
+    .activity-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .activity-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .activity-title {
+      font-family: var(--font-main);
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-filter-trigger {
+      background: transparent;
+      border: none;
+      color: #8e8f9c;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+
+    .btn-filter-trigger:hover {
+      color: #ffffff;
+    }
+
+    .btn-filter-trigger svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .table-container::-webkit-scrollbar {
+      height: 4px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+    }
+
+    .activity-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .activity-table th {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-label);
+      padding: 10px 14px 14px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .activity-table th:first-child,
+    .activity-table td:first-child {
+      padding-left: 2px;
+    }
+
+    .activity-table th:last-child,
+    .activity-table td:last-child {
+      padding-right: 2px;
+      text-align: center;
+    }
+
+    .activity-table td {
+      padding: 16px 14px;
+      font-size: 13px;
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+    }
+
+    .activity-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .order-id-cell {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent-coral);
+      font-size: 12.5px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .customer-cell {
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .date-cell {
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .amount-cell {
+      font-weight: 700;
+      color: #ffffff;
+      font-feature-settings: "tnum";
+      white-space: nowrap;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-badge.processing {
+      background: rgba(202, 138, 4, 0.16);
+      color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+
+    .status-badge.shipped {
+      background: rgba(148, 163, 184, 0.14);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .status-badge.delivered {
+      background: rgba(180, 83, 9, 0.16);
+      color: #d97706;
+      border: 1px solid rgba(217, 119, 6, 0.25);
+    }
+
+    .status-badge.cancelled,
+    .status-badge.returned {
+      background: rgba(239, 68, 68, 0.14);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .action-view-btn {
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: color 0.15s ease, transform 0.15s ease;
+    }
+
+    .action-view-btn:hover {
+      color: #ffffff;
+      transform: scale(1.15);
+    }
+
+    .action-view-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* ==================================================
+       RIGHT COLUMN: EXPORT PANEL
+       ================================================== */
+    .export-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .export-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .export-card-icon {
+      width: 18px;
+      height: 18px;
+      stroke: var(--accent-coral);
+    }
+
+    .export-card-title {
+      font-family: var(--font-main);
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .export-card-desc {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-top: -6px;
+    }
+
+    .form-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-field-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--text-label);
+      text-transform: uppercase;
+    }
+
+    .form-select-box {
+      background-color: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: default;
+    }
+
+    .export-buttons-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    /* PDF Report Button (Soft salmon pink) */
+    .btn-action-pdf {
+      background-color: var(--btn-pdf-bg);
+      color: var(--btn-pdf-text);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .btn-action-pdf:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .btn-action-pdf svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--btn-pdf-text);
+      flex-shrink: 0;
+    }
+
+    /* Excel Export Button (Dark slate) */
+    .btn-action-excel {
+      background-color: var(--btn-excel-bg);
+      color: var(--btn-excel-text);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .btn-action-excel:hover {
+      background-color: #333333;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-excel svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--btn-excel-text);
+      flex-shrink: 0;
+    }
+
+    .btn-stacked-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+
+    .btn-word-1 {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .btn-word-2 {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    /* ==================================================
+       RESPONSIVE DESIGN BREAKPOINTS
+       ================================================== */
+    .mobile-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 45;
+    }
+
+    .mobile-backdrop.open {
+      display: block;
+    }
+
+    @media (max-width: 1280px) {
+      .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .main-workspace-grid {
+        grid-template-columns: 1fr;
+      }
+      .workspace-right-col {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .top-export-container {
+        display: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .admin-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+      }
+      .admin-sidebar.open {
+        transform: translateX(0);
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .page-main-title {
+        font-size: 16px;
+      }
+      .profile-text-block {
+        display: none;
+      }
+      .dashboard-viewport {
+        padding: 20px 16px 40px;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- Mobile Drawer Backdrop -->
+    <div class="mobile-backdrop" id="mobileBackdrop"></div>
+
+    <!-- ==================================================
+         SIDEBAR NAVIGATION
+         ================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+
+        <!-- Brand Title: ADMIN -->
+        <div class="brand-header">
+          <span class="brand-title">ADMIN</span>
+        </div>
+
+        <nav class="sidebar-nav">
+
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="{% url 'admin_coupon_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <a href="{% url 'admin_referral_offer_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="nav-group">
+            <span class="nav-group-label">CONTENT</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+              </svg>
+              <span>Banners</span>
+            </a>
+          </div>
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="{% url 'sales_revenue' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="#" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Bottom: Logout -->
+      <div class="sidebar-bottom">
+        <form method="POST" action="{% url 'admin_logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="logout-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>Logout</span>
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- ==================================================
+         MAIN CONTENT AREA
+         ================================================== -->
+    <main class="admin-main">
+
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="header-accent-bar"></div>
+          <h1 class="page-main-title">ADMIN DASHBOARD</h1>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Notification Bell -->
+          <button type="button" class="notification-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notification-dot"></span>
+          </button>
+
+          <!-- User Profile Badge -->
+          <div class="user-profile-badge">
+            <div class="profile-avatar-circle">
+              <span>{{ request.user.username|slice:":1"|upper|default:"A" }}</span>
+            </div>
+            <div class="profile-text-block">
+              <span class="profile-name">{{ request.user.username|default:"Admin User" }}</span>
+              <span class="profile-role">Fleet Manager</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Viewport -->
+      <div class="dashboard-viewport">
+
+        <!-- ==============================================
+             ROW 1: 6-METRIC CARDS GRID
+             ============================================== -->
+        <section class="metrics-grid">
+
+          <!-- Card 1: TOTAL SALES -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL<br>SALES</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+            </div>
+            <div class="metric-value">
+              {% if total_sales and total_sales > 0 %}
+                &#8377;{{ total_revenue|floatformat:2 }}
+              {% else %}
+                &#8377;2,45k
+              {% endif %}
+            </div>
+            <div class="metric-subtitle">+12% vs last month</div>
+          </div>
+
+          <!-- Card 2: REVENUE -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">REVENUE</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+            </div>
+            <div class="metric-value">
+              {% if total_revenue and total_revenue > 0 %}
+                &#8377;{{ total_revenue|floatformat:2 }}
+              {% else %}
+                &#8377;1,85k
+              {% endif %}
+            </div>
+            <div class="metric-subtitle">+8% vs last month</div>
+          </div>
+
+          <!-- Card 3: ORDERS -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">ORDERS</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <div class="metric-value">
+              {% if total_orders and total_orders > 0 %}
+                {{ total_orders }}
+              {% else %}
+                1,240
+              {% endif %}
+            </div>
+            <div class="metric-subtitle">+5% vs last month</div>
+          </div>
+
+          <!-- Card 4: CUSTOMERS -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">CUSTOMERS</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div class="metric-value">3,500</div>
+            <div class="metric-subtitle">+15% vs last month</div>
+          </div>
+
+          <!-- Card 5: PRODUCTS SOLD -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">PRODUCTS<br>SOLD</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="21" r="1"/>
+                <circle cx="19" cy="21" r="1"/>
+                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+              </svg>
+            </div>
+            <div class="metric-value">8,420</div>
+            <div class="metric-subtitle">Across 120 SKUs</div>
+          </div>
+
+          <!-- Card 6: PENDING (High-Visibility Crimson Red Card) -->
+          <div class="metric-card metric-card-pending">
+            <div class="metric-header">
+              <span class="metric-title">PENDING</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                <path d="M3 6h18"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+            <div class="metric-value">42</div>
+            <div class="metric-subtitle">Requires attention</div>
+          </div>
+
+        </section>
+
+        <!-- ==============================================
+             ROW 2: TWO-COLUMN MAIN WORKSPACE
+             Left: Analytics Chart & Activity Table
+             Right: Export Pill & Export Control Card
+             ============================================== -->
+        <section class="main-workspace-grid">
+
+          <!-- Left Column: Sales Analytics & Recent Activity -->
+          <div class="workspace-left-col">
+
+            <!-- Card 1: Sales Analytics (Bar Chart) -->
+            <div class="analytics-card">
+              <div class="analytics-header">
+                <h2 class="analytics-title">Sales Analytics</h2>
+
+                <!-- Segmented Control Pills -->
+                <div class="segmented-control" role="group" aria-label="Time Filter">
+                  <button type="button" class="segment-btn" data-range="daily">Daily</button>
+                  <button type="button" class="segment-btn" data-range="weekly">Weekly</button>
+                  <button type="button" class="segment-btn active" data-range="monthly">Monthly</button>
+                  <button type="button" class="segment-btn" data-range="yearly">Yearly</button>
+                </div>
+              </div>
+
+              <!-- Bar Chart SVG Canvas -->
+              <div class="chart-container">
+                <svg class="bar-chart-svg" viewBox="0 0 540 220" preserveAspectRatio="none">
+                  <!-- Bars matching exact heights and color accents from screenshot -->
+                  <!-- Base y = 190. Height goes upwards. -->
+                  <!-- Jan: Coral Highlight #d29590 -->
+                  <rect class="chart-bar coral" x="15" y="130" width="26" height="60" rx="3" title="Jan: &#8377;1,24,000"></rect>
+
+                  <!-- Feb: No bar / subtle baseline trace -->
+                  <rect class="chart-bar dark" x="59" y="188" width="26" height="2" rx="1" title="Feb: &#8377;0"></rect>
+
+                  <!-- Mar: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="103" y="105" width="26" height="85" rx="3" title="Mar: &#8377;1,70,000"></rect>
+
+                  <!-- Apr: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="147" y="125" width="26" height="65" rx="3" title="Apr: &#8377;1,30,000"></rect>
+
+                  <!-- May: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="191" y="80" width="26" height="110" rx="3" title="May: &#8377;2,20,000"></rect>
+
+                  <!-- Jun: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="235" y="65" width="26" height="125" rx="3" title="Jun: &#8377;2,50,000"></rect>
+
+                  <!-- Jul: Tall Coral Highlight #d29590 -->
+                  <rect class="chart-bar coral" x="279" y="30" width="26" height="160" rx="3" title="Jul: &#8377;3,20,000 (Peak)"></rect>
+
+                  <!-- Aug: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="323" y="90" width="26" height="100" rx="3" title="Aug: &#8377;2,00,000"></rect>
+
+                  <!-- Sep: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="367" y="80" width="26" height="110" rx="3" title="Sep: &#8377;2,20,000"></rect>
+
+                  <!-- Oct: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="411" y="125" width="26" height="65" rx="3" title="Oct: &#8377;1,30,000"></rect>
+
+                  <!-- Nov: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="455" y="70" width="26" height="120" rx="3" title="Nov: &#8377;2,40,000"></rect>
+
+                  <!-- Dec: Dark bar #313130 -->
+                  <rect class="chart-bar dark" x="499" y="70" width="26" height="120" rx="3" title="Dec: &#8377;2,40,000"></rect>
+
+                  <!-- Month Labels underneath each bar -->
+                  <text class="chart-axis-label" x="28" y="210">Jan</text>
+                  <text class="chart-axis-label" x="72" y="210">Feb</text>
+                  <text class="chart-axis-label" x="116" y="210">Mar</text>
+                  <text class="chart-axis-label" x="160" y="210">Apr</text>
+                  <text class="chart-axis-label" x="204" y="210">May</text>
+                  <text class="chart-axis-label" x="248" y="210">Jun</text>
+                  <text class="chart-axis-label" x="292" y="210">Jul</text>
+                  <text class="chart-axis-label" x="336" y="210">Aug</text>
+                  <text class="chart-axis-label" x="380" y="210">Sep</text>
+                  <text class="chart-axis-label" x="424" y="210">Oct</text>
+                  <text class="chart-axis-label" x="468" y="210">Nov</text>
+                  <text class="chart-axis-label" x="512" y="210">Dec</text>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Card 2: Recent Activity Table -->
+            <div class="activity-card">
+              <div class="activity-header">
+                <h2 class="activity-title">Recent Activity</h2>
+                <button type="button" class="btn-filter-trigger" id="btnFilterTrigger" title="Filter activity">
+                  <span>Filter</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="21" x2="4" y2="14"/>
+                    <line x1="4" y1="10" x2="4" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12" y2="3"/>
+                    <line x1="20" y1="21" x2="20" y2="16"/>
+                    <line x1="20" y1="12" x2="20" y2="3"/>
+                    <line x1="1" y1="14" x2="7" y2="14"/>
+                    <line x1="9" y1="8" x2="15" y2="8"/>
+                    <line x1="17" y1="16" x2="23" y2="16"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="table-container">
+                <table class="activity-table">
+                  <thead>
+                    <tr>
+                      <th>ORDER ID</th>
+                      <th>CUSTOMER</th>
+                      <th>DATE</th>
+                      <th>AMOUNT</th>
+                      <th>STATUS</th>
+                      <th>ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if orders %}
+                      {% for order in orders|slice:":6" %}
+                        <tr>
+                          <td class="order-id-cell">#{{ order.order_number }}</td>
+                          <td class="customer-cell">
+                            {% if order.user.first_name or order.user.last_name %}
+                              {{ order.user.first_name }} {{ order.user.last_name }}
+                            {% elif order.address and order.address.full_name %}
+                              {{ order.address.full_name }}
+                            {% else %}
+                              {{ order.user.username }}
+                            {% endif %}
+                          </td>
+                          <td class="date-cell">{{ order.created_at|date:"M d, H:i" }}</td>
+                          <td class="amount-cell">&#8377;{{ order.total_amount|floatformat:2 }}</td>
+                          <td>
+                            {% if order.status|lower == 'delivered' %}
+                              <span class="status-badge delivered">DELIVERED</span>
+                            {% elif order.status|lower == 'shipped' %}
+                              <span class="status-badge shipped">SHIPPED</span>
+                            {% elif order.status|lower == 'cancelled' %}
+                              <span class="status-badge cancelled">CANCELLED</span>
+                            {% elif order.status|lower == 'returned' %}
+                              <span class="status-badge returned">RETURNED</span>
+                            {% else %}
+                              <span class="status-badge processing">{{ order.status|upper }}</span>
+                            {% endif %}
+                          </td>
+                          <td>
+                            <a href="{% url 'admin_order_detail' order.order_number %}" class="action-view-btn" title="View details">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                            </a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    {% else %}
+                      <!-- Exact reference sample rows matching Figma screenshot -->
+                      <tr>
+                        <td class="order-id-cell">#ORD-9021</td>
+                        <td class="customer-cell">Aarav Patel</td>
+                        <td class="date-cell">Oct 24, 14:30</td>
+                        <td class="amount-cell">&#8377;4,250</td>
+                        <td><span class="status-badge processing">PROCESSING</span></td>
+                        <td>
+                          <span class="action-view-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="order-id-cell">#ORD-9020</td>
+                        <td class="customer-cell">Diya Sharma</td>
+                        <td class="date-cell">Oct 24, 11:15</td>
+                        <td class="amount-cell">&#8377;1,850</td>
+                        <td><span class="status-badge shipped">SHIPPED</span></td>
+                        <td>
+                          <span class="action-view-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="order-id-cell">#ORD-9019</td>
+                        <td class="customer-cell">Rohan Gupta</td>
+                        <td class="date-cell">Oct 23, 16:45</td>
+                        <td class="amount-cell">&#8377;12,400</td>
+                        <td><span class="status-badge shipped">SHIPPED</span></td>
+                        <td>
+                          <span class="action-view-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="order-id-cell">#ORD-9018</td>
+                        <td class="customer-cell">Kavya Singh</td>
+                        <td class="date-cell">Oct 23, 09:20</td>
+                        <td class="amount-cell">&#8377;850</td>
+                        <td><span class="status-badge delivered">DELIVERED</span></td>
+                        <td>
+                          <span class="action-view-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                          </span>
+                        </td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Top Export Button & Export Panel Card -->
+          <div class="workspace-right-col">
+
+            <!-- Top Export Pill Button -->
+            <div class="top-export-container">
+              <a href="{% url 'export_orders_excel' %}" class="btn-top-export" title="Export reports">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Export</span>
+              </a>
+            </div>
+
+            <!-- Export Form Card -->
+            <div class="export-card">
+              <div class="export-card-header">
+                <svg class="export-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <h3 class="export-card-title">Export</h3>
+              </div>
+
+              <p class="export-card-desc">
+                Generate and download comprehensive performance reports.
+              </p>
+
+              <!-- Report Type Selection -->
+              <div class="form-field-group">
+                <label class="form-field-label">REPORT TYPE</label>
+                <div class="form-select-box">
+                  <span>Sales Overview</span>
+                </div>
+              </div>
+
+              <!-- Date Range Selection -->
+              <div class="form-field-group">
+                <label class="form-field-label">DATE RANGE</label>
+                <div class="form-select-box">
+                  <span>Last 30 Days</span>
+                </div>
+              </div>
+
+              <!-- Export Buttons -->
+              <div class="export-buttons-group">
+                <!-- PDF Report -->
+                <a href="{% url 'export_orders_pdf' %}" class="btn-action-pdf" title="Generate PDF Report">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                  <div class="btn-stacked-text">
+                    <span class="btn-word-1">PDF</span>
+                    <span class="btn-word-2">REPORT</span>
+                  </div>
+                </a>
+
+                <!-- Excel Export -->
+                <a href="{% url 'export_orders_excel' %}" class="btn-action-excel" title="Generate Excel Export">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="3" y1="15" x2="21" y2="15"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                    <line x1="15" y1="3" x2="15" y2="21"/>
+                  </svg>
+                  <div class="btn-stacked-text">
+                    <span class="btn-word-1">EXCEL</span>
+                    <span class="btn-word-2">EXPORT</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Interactive JavaScript: Mobile Navigation & Segmented Filters -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 1. Mobile Sidebar Drawer toggle
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const adminSidebar = document.getElementById('adminSidebar');
+      const mobileBackdrop = document.getElementById('mobileBackdrop');
+
+      function toggleMobileMenu() {
+        if (adminSidebar && mobileBackdrop) {
+          adminSidebar.classList.toggle('open');
+          mobileBackdrop.classList.toggle('open');
+        }
+      }
+
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+      }
+      if (mobileBackdrop) {
+        mobileBackdrop.addEventListener('click', toggleMobileMenu);
+      }
+
+      // 2. Segmented Range Control for Sales Analytics Bar Chart
+      const segmentBtns = document.querySelectorAll('.segment-btn');
+      const chartBars = document.querySelectorAll('.chart-bar');
+
+      // Sample data profiles for dynamic visual feedback
+      const barProfiles = {
+        daily: [40, 70, 95, 60, 110, 140, 120, 85, 95, 110, 80, 130],
+        weekly: [80, 100, 130, 90, 150, 110, 140, 160, 120, 90, 140, 150],
+        monthly: [60, 2, 85, 65, 110, 125, 160, 100, 110, 65, 120, 120],
+        yearly: [90, 110, 120, 140, 130, 150, 165, 140, 135, 125, 150, 160]
+      };
+
+      segmentBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          segmentBtns.forEach(function (b) { b.classList.remove('active'); });
+          this.classList.add('active');
+
+          const range = this.getAttribute('data-range');
+          const profile = barProfiles[range] || barProfiles.monthly;
+
+          chartBars.forEach(function (bar, idx) {
+            if (profile[idx] !== undefined) {
+              const h = profile[idx];
+              const y = 190 - h;
+              bar.setAttribute('y', y);
+              bar.setAttribute('height', h);
+            }
+          });
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
+

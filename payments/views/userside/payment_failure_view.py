@@ -1,7 +1,6 @@
 
 import json
 import logging
-from datetime import timedelta
 from decimal import Decimal, ROUND_HALF_UP
 
 import razorpay
@@ -10,7 +9,6 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import JsonResponse
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from orders.models import Order
@@ -103,9 +101,16 @@ def record_razorpay_payment_failure(request):
             status=409,
         )
 
-    if payment.status not in ("created", "failed"):
+    if payment.status != "created":
         return JsonResponse(
-            {"error": "This payment cannot be marked as failed."},
+            {
+                "error": (
+                    "This payment has already been processed. "
+                    "Another payment attempt is not allowed."
+                ),
+                "payment_status": payment.status,
+                "retry_allowed": False,
+            },
             status=409,
         )
 
@@ -119,7 +124,7 @@ def record_razorpay_payment_failure(request):
             status=409,
         )
 
-    # Verify the actual payment status with Razorpay.
+    # Verify the payment status with Razorpay.
     try:
         client = razorpay.Client(
             auth=(key_id, key_secret)
@@ -135,19 +140,20 @@ def record_razorpay_payment_failure(request):
         return JsonResponse(
             {
                 "error": (
-                    "Unable to verify the payment status with Razorpay. "
-                    "Please try again."
+                    "Unable to verify the payment status with Razorpay."
                 )
             },
             status=502,
         )
 
+    # Ensure the payment belongs to this Razorpay order.
     if gateway_payment.get("order_id") != payment.razorpay_order_id:
         return JsonResponse(
             {"error": "The payment does not match this order."},
             status=400,
         )
 
+    # Verify the payment amount.
     try:
         gateway_amount = int(gateway_payment.get("amount"))
         expected_amount = int(
@@ -174,6 +180,7 @@ def record_razorpay_payment_failure(request):
             status=400,
         )
 
+    # Never mark a captured or authorized payment as failed.
     if gateway_payment.get("status") != "failed":
         return JsonResponse(
             {
@@ -186,6 +193,7 @@ def record_razorpay_payment_failure(request):
             status=409,
         )
 
+    # Lock and recheck the records before updating payment status.
     with transaction.atomic():
         locked_order = (
             Order.objects.select_for_update()
@@ -217,10 +225,23 @@ def record_razorpay_payment_failure(request):
                 status=404,
             )
 
+        # Check the payment state again while holding the locks.
         if locked_payment.status in ("paid", "success"):
             return JsonResponse(
                 {
                     "message": "Payment has already been confirmed.",
+                    "order_number": locked_order.order_number,
+                    "payment_status": "paid",
+                    "retry_allowed": False,
+                },
+                status=409,
+            )
+
+        if locked_payment.status != "created":
+            return JsonResponse(
+                {
+                    "error": "This payment has already been processed.",
+                    "payment_status": locked_payment.status,
                     "retry_allowed": False,
                 },
                 status=409,
@@ -230,61 +251,26 @@ def record_razorpay_payment_failure(request):
             return JsonResponse(
                 {
                     "error": "This order is no longer awaiting payment.",
+                    "order_status": locked_order.status,
                     "retry_allowed": False,
                 },
                 status=409,
             )
 
-        if locked_payment.status != "created":
-            return JsonResponse(
-                {
-                    "error": "This payment is no longer awaiting failure recording.",
-                    "retry_allowed": False,
-                },
-                status=409,
-            )
-
-        # Mark this attempt as failed.
+        # Razorpay stock was not deducted at checkout.
+        # Therefore, failed payment handling must not restore stock.
         locked_payment.status = "failed"
-        update_fields = ["status", "updated_at"]
-
-        # Start the five-minute window only once.
-        # Preserve the original deadline on subsequent retries.
-        if locked_payment.retry_deadline is None:
-            locked_payment.retry_deadline = (
-                timezone.now() + timedelta(minutes=5)
-            )
-            update_fields.append("retry_deadline")
-
-        locked_payment.save(update_fields=update_fields)
-
-        deadline = locked_payment.retry_deadline
-        retry_allowed = (
-            deadline is not None
-            and timezone.now() < deadline
+        locked_payment.save(
+            update_fields=["status", "updated_at"]
         )
-
-        if not retry_allowed:
-            return JsonResponse(
-                {
-                    "error": "The payment retry period has expired.",
-                    "order_number": locked_order.order_number,
-                    "retry_allowed": False,
-                    "retry_deadline": (
-                        deadline.isoformat() if deadline else None
-                    ),
-                },
-                status=409,
-            )
 
     return JsonResponse(
         {
-            "message": "Payment failed. You can retry payment.",
+            "message": "Payment failed. No stock was deducted.",
             "order_number": locked_order.order_number,
             "payment_status": "failed",
             "order_status": locked_order.status,
-            "retry_allowed": True,
-            "retry_deadline": deadline.isoformat(),
+            "retry_allowed": False,
         },
         status=200,
     )

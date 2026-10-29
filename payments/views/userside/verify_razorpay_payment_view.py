@@ -1,3 +1,4 @@
+
 import hashlib
 import hmac
 import json
@@ -13,7 +14,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from orders.models import Order, OrderStatusHistory
+from orders.models import Order, OrderItem, OrderStatusHistory
+from products.models import ProductVariant
 from payments.models import Payment
 
 logger = logging.getLogger(__name__)
@@ -22,8 +24,8 @@ logger = logging.getLogger(__name__)
 @login_required
 @require_POST
 def verify_razorpay_payment_view(request):
-    key_id = getattr(settings,"RAZORPAY_KEY_ID", "")
-    key_secret = getattr(settings,"RAZORPAY_KEY_SECRET", "")
+    key_id = getattr(settings, "RAZORPAY_KEY_ID", "")
+    key_secret = getattr(settings, "RAZORPAY_KEY_SECRET", "")
 
     if not key_id or not key_secret:
         return JsonResponse(
@@ -98,7 +100,6 @@ def verify_razorpay_payment_view(request):
     # Treat already verified requests as idempotent.
     if payment.status in ("paid", "success"):
         if payment.transaction_id == razorpay_payment_id:
-            # Normalize records written by the previous view version.
             if payment.status == "success":
                 payment.status = "paid"
                 payment.save(
@@ -130,7 +131,7 @@ def verify_razorpay_payment_view(request):
             status=409,
         )
 
-    # Use the gateway order ID stored in the database.
+    # Verify the Razorpay signature.
     generated_signature = hmac.new(
         key_secret.encode("utf-8"),
         (
@@ -149,7 +150,7 @@ def verify_razorpay_payment_view(request):
             status=400,
         )
 
-    # Fetch the payment from Razorpay and verify its actual status.
+    # Fetch the payment from Razorpay.
     try:
         client = razorpay.Client(
             auth=(key_id, key_secret)
@@ -176,7 +177,10 @@ def verify_razorpay_payment_view(request):
         )
 
     # Ensure the gateway payment belongs to this order.
-    if gateway_payment.get("order_id") != payment.razorpay_order_id:
+    if (
+        gateway_payment.get("order_id")
+        != payment.razorpay_order_id
+    ):
         return JsonResponse(
             {"error": "The payment does not match this order."},
             status=400,
@@ -210,7 +214,7 @@ def verify_razorpay_payment_view(request):
             status=400,
         )
 
-    # Do not confirm an order until Razorpay reports it as captured.
+    # Only proceed when Razorpay confirms that payment was captured.
     if gateway_payment.get("status") != "captured":
         return JsonResponse(
             {
@@ -222,7 +226,7 @@ def verify_razorpay_payment_view(request):
             status=409,
         )
 
-    # Re-lock and recheck state in case another request completed payment.
+    # Lock the order and payment before processing the stock.
     with transaction.atomic():
         locked_order = (
             Order.objects.select_for_update()
@@ -250,22 +254,15 @@ def verify_razorpay_payment_view(request):
                 status=404,
             )
 
+        # Handle repeated verification requests safely.
         if locked_payment.status in ("paid", "success"):
             if (
                 locked_payment.transaction_id
                 == razorpay_payment_id
             ):
-                if locked_payment.status == "success":
-                    locked_payment.status = "paid"
-                    locked_payment.save(
-                        update_fields=["status", "updated_at"]
-                    )
-
                 return JsonResponse(
                     {
-                        "message": (
-                            "Payment has already been verified."
-                        ),
+                        "message": "Payment has already been verified.",
                         "order_number": locked_order.order_number,
                     },
                     status=200,
@@ -285,6 +282,146 @@ def verify_razorpay_payment_view(request):
                 status=409,
             )
 
+        # Collect all order items.
+        order_items = list(
+            OrderItem.objects
+            .filter(order=locked_order)
+            .order_by("product_variant_id")
+        )
+
+        # Combine quantities if the same variant appears more than once.
+        required_quantities = {}
+
+        for item in order_items:
+            variant_id = item.product_variant_id
+            required_quantities[variant_id] = (
+                required_quantities.get(variant_id, 0)
+                + item.quantity
+            )
+
+        # Lock all variants in a consistent order.
+        variants = {}
+
+        for variant_id in sorted(required_quantities):
+            variant = (
+                ProductVariant.objects
+                .select_for_update()
+                .filter(pk=variant_id)
+                .first()
+            )
+
+            if variant is None:
+                logger.error(
+                    "Product variant missing after Razorpay capture. "
+                    "Order: %s, Variant: %s, Payment ID: %s",
+                    locked_order.order_number,
+                    variant_id,
+                    razorpay_payment_id,
+                )
+
+                # Record the captured payment for reconciliation.
+                locked_payment.transaction_id = razorpay_payment_id
+                locked_payment.status = "refund_required"
+                locked_payment.paid_at = timezone.now()
+                locked_payment.save(
+                    update_fields=[
+                        "transaction_id",
+                        "status",
+                        "paid_at",
+                        "updated_at",
+                    ]
+                )
+
+                locked_order.status = "payment_issue"
+                locked_order.save(
+                    update_fields=["status", "updated_at"]
+                )
+
+                OrderStatusHistory.objects.create(
+                    order=locked_order,
+                    status="payment_issue",
+                )
+
+                return JsonResponse(
+                    {
+                        "error": (
+                            "Payment was captured, but a product is "
+                            "unavailable. Your payment needs review."
+                        ),
+                        "order_number": locked_order.order_number,
+                    },
+                    status=409,
+                )
+
+            variants[variant_id] = variant
+
+        # Check every variant before deducting any stock.
+        insufficient_stock = []
+
+        for variant_id, required_quantity in required_quantities.items():
+            variant = variants[variant_id]
+
+            if variant.stock_quantity < required_quantity:
+                insufficient_stock.append(
+                    {
+                        "variant_id": variant_id,
+                        "required": required_quantity,
+                        "available": variant.stock_quantity,
+                    }
+                )
+
+        if insufficient_stock:
+            logger.error(
+                "Insufficient stock after Razorpay capture. "
+                "Order: %s, Details: %s, Payment ID: %s",
+                locked_order.order_number,
+                insufficient_stock,
+                razorpay_payment_id,
+            )
+
+            # Record the captured payment for refund review.
+            locked_payment.transaction_id = razorpay_payment_id
+            locked_payment.status = "refund_required"
+            locked_payment.paid_at = timezone.now()
+            locked_payment.save(
+                update_fields=[
+                    "transaction_id",
+                    "status",
+                    "paid_at",
+                    "updated_at",
+                ]
+            )
+
+            locked_order.status = "payment_issue"
+            locked_order.save(
+                update_fields=["status", "updated_at"]
+            )
+
+            OrderStatusHistory.objects.create(
+                order=locked_order,
+                status="payment_issue",
+            )
+
+            return JsonResponse(
+                {
+                    "error": (
+                        "Payment was captured, but stock is insufficient. "
+                        "Your payment requires refund review. "
+                        "Please contact support."
+                    ),
+                    "order_number": locked_order.order_number,
+                },
+                status=409,
+            )
+
+        # Deduct stock only after all variants pass the stock check.
+        for variant_id, required_quantity in required_quantities.items():
+            variant = variants[variant_id]
+            variant.stock_quantity -= required_quantity
+            variant.save(
+                update_fields=["stock_quantity", "updated_at"]
+            )
+
         # Record the verified and captured payment.
         locked_payment.transaction_id = razorpay_payment_id
         locked_payment.status = "paid"
@@ -298,13 +435,12 @@ def verify_razorpay_payment_view(request):
             ]
         )
 
-        # Confirm the order only after server-side verification.
+        # Confirm the order after successful verification and deduction.
         locked_order.status = "confirmed"
         locked_order.save(
             update_fields=["status", "updated_at"]
         )
 
-        # Keep the order's status history consistent.
         OrderStatusHistory.objects.create(
             order=locked_order,
             status="confirmed",

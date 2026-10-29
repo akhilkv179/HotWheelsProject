@@ -1,8 +1,9 @@
+
 import logging
 from decimal import Decimal, ROUND_HALF_UP
+from datetime import timedelta
 
 import razorpay
-
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -93,46 +94,37 @@ def create_razorpay_order(request, order_number):
                     status=409,
                 )
 
-            # Do not permit another attempt after the original
-            # retry deadline, even if the status is "created".
+            # Never reopen a failed Razorpay payment.
+            if existing_payment.status == "failed":
+                return JsonResponse(
+                    {
+                        "error": (
+                            "This payment has failed. "
+                            "Another payment attempt is not allowed."
+                        ),
+                        "retry_allowed": False,
+                    },
+                    status=409,
+                )
+
+            if existing_payment.status != "created":
+                return JsonResponse(
+                    {
+                        "error": "This payment cannot be started.",
+                        "retry_allowed": False,
+                    },
+                    status=409,
+                )
+
+            # Reuse the existing gateway order only while
+            # the original payment is still in the created state.
             if (
                 existing_payment.retry_deadline is not None
                 and timezone.now() >= existing_payment.retry_deadline
             ):
                 return JsonResponse(
                     {
-                        "error": "The payment retry period has expired.",
-                        "retry_allowed": False,
-                        "retry_deadline": (
-                            existing_payment.retry_deadline.isoformat()
-                        ),
-                    },
-                    status=409,
-                )
-
-            if existing_payment.status == "failed":
-                if existing_payment.retry_deadline is None:
-                    return JsonResponse(
-                        {
-                            "error": (
-                                "The payment retry deadline is missing. "
-                                "A new retry cannot be started."
-                            ),
-                            "retry_allowed": False,
-                        },
-                        status=409,
-                    )
-
-                # Preserve retry_deadline. Never extend the window here.
-                existing_payment.status = "created"
-                existing_payment.save(
-                    update_fields=["status", "updated_at"]
-                )
-
-            elif existing_payment.status != "created":
-                return JsonResponse(
-                    {
-                        "error": "This payment cannot be retried.",
+                        "error": "The payment period has expired.",
                         "retry_allowed": False,
                     },
                     status=409,
@@ -174,6 +166,7 @@ def create_razorpay_order(request, order_number):
                 status="created",
                 razorpay_order_id=gateway_order["id"],
                 transaction_id="",
+                retry_deadline=timezone.now() + timedelta(minutes=5),
             )
 
             return JsonResponse(

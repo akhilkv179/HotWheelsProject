@@ -8,7 +8,7 @@ from .views.userside.return_order_view import request_return
 from .views.userside.invoice_view import download_invoice
 from .views.adminside.admin_order_views import (admin_order_list,admin_order_detail,admin_update_order_status,)
 from orders.views.adminside.admin_return_views import (admin_return_list,admin_update_return_status,)
-
+from .views.adminside.sales_revenue_view import sales_revenue_view
 urlpatterns = [
     path("checkout/", checkout, name="checkout"),
     path("success/<str:order_number>/", order_success, name="order_success"),
@@ -22,4 +22,5 @@ urlpatterns = [
     path("admin/orders/<str:order_number>/status/",admin_update_order_status,name="admin_update_order_status",),
     path("admin/returns/", admin_return_list, name="admin_return_list"),
     path("admin/returns/<int:return_id>/status/",admin_update_return_status,name="admin_update_return_status",),
+    path("admin/sales-revenue/",sales_revenue_view,name="sales_revenue",),
 ]

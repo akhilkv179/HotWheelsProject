@@ -11,8 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Razorpay Checkout SDK -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <style>
     /* ==========================================================================
@@ -1566,7 +1564,7 @@
     }
 
     /* ==========================================================================
-       RAZORPAY PAYMENT ALERT & RETRY CARD
+       RAZORPAY PAYMENT ALERT CARD
        ========================================================================== */
     .razorpay-payment-alert-card {
       background: linear-gradient(180deg, #181418 0%, #15151a 100%);
@@ -1626,73 +1624,13 @@
       line-height: 1.45;
     }
 
-    .payment-countdown-container {
-      background: rgba(10, 10, 13, 0.7);
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      border-radius: var(--radius-sm);
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .countdown-label-group {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .countdown-badge-label {
-      font-size: 10.5px;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #fca5a5;
-    }
-
-    .countdown-warning-text {
-      font-size: 12px;
-      color: #9ca3af;
-    }
-
-    .countdown-digits-wrapper {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      padding: 6px 14px;
-      border-radius: 6px;
-      color: #f87171;
-    }
-
-    .countdown-clock-digits {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      color: #ffffff;
-    }
-
-    .payment-retry-error-box {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      color: #fca5a5;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-
     .payment-alert-actions {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .btn-retry-payment-action {
+    .btn-continue-shopping-action {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1700,6 +1638,7 @@
       padding: 12px 24px;
       background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
       color: #ffffff;
+      text-decoration: none;
       border: none;
       border-radius: var(--radius-sm);
       font-family: var(--font-display);
@@ -1709,24 +1648,17 @@
       text-transform: uppercase;
       cursor: pointer;
       box-shadow: 0 4px 16px rgba(229, 27, 36, 0.35);
-      transition: background 0.2s, transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
     }
 
-    .btn-retry-payment-action:hover:not(:disabled) {
+    .btn-continue-shopping-action:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 20px rgba(229, 27, 36, 0.5);
+      color: #ffffff;
     }
 
-    .btn-retry-payment-action:active:not(:disabled) {
+    .btn-continue-shopping-action:active {
       transform: translateY(0);
-    }
-
-    .btn-retry-payment-action:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: #374151;
-      box-shadow: none;
-      transform: none;
     }
   </style>
 </head>
@@ -1871,10 +1803,9 @@
 
         {% if order.delivery_method == "Razorpay" and order.status == "pending" %}
           {% with payment=order.payments.last %}
-            <!-- Razorpay Payment Status & Retry Card -->
-            <section class="content-card razorpay-payment-alert-card" id="razorpayRetryCard"
+            <!-- Razorpay Payment Status Alert Card -->
+            <section class="content-card razorpay-payment-alert-card" id="razorpayPaymentAlertCard"
                      data-order-number="{{ order.order_number }}"
-                     data-retry-deadline="{{ payment.retry_deadline|date:'c'|default:'' }}"
                      data-payment-status="{{ payment.status|default:'created' }}"
                      data-total-amount="{{ order.total_amount }}">
               <div class="payment-alert-header">
@@ -1886,46 +1817,27 @@
                   </svg>
                 </div>
                 <div class="payment-alert-title-box">
-                  <h3 class="payment-alert-title" id="retryCardTitle">
-                    {% if payment.status == "failed" %}PAYMENT FAILED &bull; ACTION REQUIRED{% else %}PAYMENT PENDING &bull; ACTION REQUIRED{% endif %}
+                  <h3 class="payment-alert-title" id="paymentAlertTitle">
+                    {% if payment.status == "failed" %}PAYMENT FAILED{% else %}PAYMENT PENDING{% endif %}
                   </h3>
-                  <p class="payment-alert-subtitle" id="retryCardSubtitle">
+                  <p class="payment-alert-subtitle" id="paymentAlertSubtitle">
                     {% if payment.status == "failed" %}
-                      Your payment attempt failed at the gateway. You can retry your payment below within the 5-minute window before your order is cancelled.
+                      Your Razorpay payment failed. The stock has been restored. Please place a new order if you wish to purchase these items.
                     {% else %}
-                      Your online payment has not been confirmed yet. Please complete payment within the 5-minute retry window to confirm your order.
+                      Your online payment was not completed. If you wish to purchase these items, please place a new order.
                     {% endif %}
                   </p>
                 </div>
               </div>
 
-              <!-- Live 5-Minute Retry Countdown Box -->
-              <div class="payment-countdown-container" id="orderRetryCountdownBox" {% if not payment.retry_deadline %}style="display: none;"{% endif %}>
-                <div class="countdown-label-group">
-                  <span class="countdown-badge-label">5-MINUTE RETRY WINDOW</span>
-                  <span class="countdown-warning-text" id="orderRetryWarningText">Order will be automatically cancelled if payment is not completed</span>
-                </div>
-                <div class="countdown-digits-wrapper">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                  <span class="countdown-clock-digits" id="orderRetryCountdownDigits">05:00</span>
-                </div>
-              </div>
-
-              <!-- Retry Error Notification Box -->
-              <div class="payment-retry-error-box" id="orderRetryErrorBox" style="display: none;"></div>
-
               <!-- Action Buttons Row -->
               <div class="payment-alert-actions" id="paymentAlertActions">
-                <button type="button" class="btn-retry-payment-action" id="btnOrderDetailRetryPayment">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="23 4 23 10 17 10"></polyline>
-                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                <a href="{% url 'user_product_list' %}" class="btn-continue-shopping-action" id="btnOrderDetailContinueShopping">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+                    <polyline points="15 18 9 12 15 6"></polyline>
                   </svg>
-                  <span id="btnOrderDetailRetryText">RETRY PAYMENT NOW</span>
-                </button>
+                  CONTINUE SHOPPING
+                </a>
               </div>
             </section>
           {% endwith %}
@@ -3039,306 +2951,6 @@
 
     // Indian Thousands Formatting (e.g. 5,548.00)
     document.addEventListener('DOMContentLoaded', function() {
-      // ==========================================================================
-      // RAZORPAY PAYMENT RETRY & EXPIRATION CONTROLLER
-      // ==========================================================================
-      (function initRazorpayDetailController() {
-        const retryCard = document.getElementById('razorpayRetryCard');
-        if (!retryCard) return;
-
-        const orderNumber = retryCard.getAttribute('data-order-number');
-        let retryDeadline = retryCard.getAttribute('data-retry-deadline');
-        const retryBtn = document.getElementById('btnOrderDetailRetryPayment');
-        const retryBtnText = document.getElementById('btnOrderDetailRetryText');
-        const errorBox = document.getElementById('orderRetryErrorBox');
-        const countdownBox = document.getElementById('orderRetryCountdownBox');
-        const digitsEl = document.getElementById('orderRetryCountdownDigits');
-        let countdownTimer = null;
-        let isExpiring = false;
-
-        function getCsrfToken() {
-          const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
-          if (tokenInput && tokenInput.value) return tokenInput.value;
-          const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
-          return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
-        }
-
-        function showError(msg) {
-          if (!errorBox) return;
-          errorBox.textContent = msg;
-          errorBox.style.display = 'block';
-          errorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        function hideError() {
-          if (!errorBox) return;
-          errorBox.textContent = '';
-          errorBox.style.display = 'none';
-        }
-
-        function startCountdown(deadlineIso) {
-          if (countdownTimer) clearInterval(countdownTimer);
-          if (!deadlineIso) return;
-
-          const deadlineMs = new Date(deadlineIso).getTime();
-          if (isNaN(deadlineMs)) return;
-
-          if (countdownBox) countdownBox.style.display = 'flex';
-
-          function updateTimer() {
-            const diff = deadlineMs - Date.now();
-            if (diff <= 0) {
-              clearInterval(countdownTimer);
-              if (digitsEl) digitsEl.textContent = '00:00 (EXPIRED)';
-              if (retryBtn) {
-                retryBtn.disabled = true;
-                retryBtn.classList.add('disabled');
-                retryBtn.setAttribute('aria-disabled', 'true');
-              }
-              if (retryBtnText) retryBtnText.textContent = 'RETRY WINDOW EXPIRED';
-              triggerExpiration();
-              return;
-            }
-
-            const totalSec = Math.floor(diff / 1000);
-            const m = Math.floor(totalSec / 60);
-            const s = totalSec % 60;
-            if (digitsEl) {
-              digitsEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-            }
-          }
-
-          updateTimer();
-          countdownTimer = setInterval(updateTimer, 1000);
-        }
-
-        async function triggerExpiration() {
-          if (isExpiring) return;
-          isExpiring = true;
-
-          try {
-            const res = await fetch(`/payments/orders/${orderNumber}/expire-payment/`, {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-                'X-Requested-With': 'XMLHttpRequest'
-              }
-            });
-            const data = await res.json().catch(() => ({}));
-            if (res.ok && data && (data.order_status === 'cancelled' || data.retry_allowed === false)) {
-              // Backend confirmed order cancellation!
-              applyCancelledUI(data.message || 'Payment retry period expired. Order cancelled.');
-            } else if (res.status === 409 && data && data.retry_allowed === true && data.retry_deadline) {
-              isExpiring = false;
-              startCountdown(data.retry_deadline);
-            } else if (data && data.error) {
-              showError(data.error);
-            }
-          } catch (err) {
-            console.error('Failed to expire order payment:', err);
-          } finally {
-            isExpiring = false;
-          }
-        }
-
-        function applyCancelledUI(message) {
-          // 1. Update status badge at top
-          const topBadge = document.getElementById('orderTopStatusBadge');
-          if (topBadge) {
-            topBadge.className = 'order-status-badge cancelled';
-            topBadge.textContent = 'CANCELLED';
-          }
-          // 2. Update card title and subtitle
-          const titleEl = document.getElementById('retryCardTitle');
-          const subtitleEl = document.getElementById('retryCardSubtitle');
-          if (titleEl) titleEl.textContent = 'ORDER CANCELLED';
-          if (subtitleEl) subtitleEl.textContent = message;
-          // 3. Hide countdown box and error box
-          if (countdownBox) countdownBox.style.display = 'none';
-          hideError();
-          // 4. Update actions
-          const actionsEl = document.getElementById('paymentAlertActions');
-          if (actionsEl) {
-            actionsEl.innerHTML = `
-              <a href="/products/" class="btn-retry-payment-action" style="background: #374151; box-shadow: none; text-decoration: none;">
-                CONTINUE SHOPPING
-              </a>
-            `;
-          }
-          // 5. Update summary payment box
-          const paymentExtra = document.getElementById('paymentBoxStatusExtra');
-          if (paymentExtra) {
-            paymentExtra.style.color = '#ef4444';
-            paymentExtra.textContent = 'Payment Cancelled';
-          }
-          // 6. Update tracking stepper
-          const stepperFill = document.querySelector('.stepper-fill-line');
-          if (stepperFill) stepperFill.style.width = '0';
-          // 7. Remove cancel item header button if present
-          const cancelBtn = document.querySelector('.header-action-container .btn-top-action');
-          if (cancelBtn) cancelBtn.remove();
-        }
-
-        // Initialize countdown if deadline exists on load (e.g. after refresh)
-        if (retryDeadline) {
-          startCountdown(retryDeadline);
-        }
-
-        // Handle Retry Payment button click
-        if (retryBtn) {
-          retryBtn.addEventListener('click', async function () {
-            if (typeof Razorpay === 'undefined') {
-              showError('Razorpay checkout SDK failed to load. Please disable ad-blockers and refresh the page.');
-              return;
-            }
-
-            hideError();
-            retryBtn.disabled = true;
-            const origBtnText = 'RETRY PAYMENT NOW';
-            if (retryBtnText) retryBtnText.textContent = 'CONNECTING TO RAZORPAY...';
-
-            try {
-              const rzpRes = await fetch(`/payments/orders/${orderNumber}/create-order/`, {
-                method: 'POST',
-                headers: {
-                  'Accept': 'application/json',
-                  'X-CSRFToken': getCsrfToken(),
-                  'X-Requested-With': 'XMLHttpRequest'
-                }
-              });
-              const rzpData = await rzpRes.json().catch(() => ({}));
-
-              if (!rzpRes.ok || !rzpData.key_id) {
-                const errMsg = (rzpData && rzpData.error) ? rzpData.error : 'Payment retry was rejected.';
-                showError(errMsg);
-                if (rzpData && rzpData.retry_allowed === false) {
-                  retryBtn.disabled = true;
-                  if (retryBtnText) retryBtnText.textContent = 'RETRY NOT ALLOWED';
-                  triggerExpiration();
-                } else {
-                  retryBtn.disabled = false;
-                  if (retryBtnText) retryBtnText.textContent = origBtnText;
-                }
-                return;
-              }
-
-              const rzpOptions = {
-                key: rzpData.key_id,
-                amount: rzpData.amount,
-                currency: rzpData.currency || 'INR',
-                name: 'Hot Wheels HUB',
-                description: `Order #${orderNumber}`,
-                order_id: rzpData.razorpay_order_id,
-                prefill: {
-                  name: '{{ order.order_address.full_name|default:order.user.get_full_name|default:order.user.username|escapejs }}',
-                  email: '{{ order.user.email|escapejs }}',
-                  contact: '{{ order.order_address.phone|default:order.user.phone|default:""|escapejs }}'
-                },
-                theme: {
-                  color: '#e51b24'
-                },
-                handler: async function (paymentResponse) {
-                  if (retryBtnText) retryBtnText.textContent = 'VERIFYING PAYMENT...';
-                  retryBtn.disabled = true;
-
-                  try {
-                    const verifyRes = await fetch('/payments/verify-razorpay-payment/', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRFToken': getCsrfToken(),
-                        'X-Requested-With': 'XMLHttpRequest'
-                      },
-                      body: JSON.stringify({
-                        order_number: orderNumber,
-                        razorpay_order_id: paymentResponse.razorpay_order_id,
-                        razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                        razorpay_signature: paymentResponse.razorpay_signature
-                      })
-                    });
-
-                    const verifyData = await verifyRes.json().catch(() => ({}));
-
-                    if (verifyRes.ok && (verifyRes.status === 200 || (verifyData && verifyData.order_number))) {
-                      window.location.href = `/orders/success/${orderNumber}/`;
-                    } else {
-                      const verifyError = (verifyData && verifyData.error) ? verifyData.error : 'Payment verification failed.';
-                      showError(verifyError);
-                      retryBtn.disabled = false;
-                      if (retryBtnText) retryBtnText.textContent = origBtnText;
-                    }
-                  } catch (verifyErr) {
-                    console.error('Payment verification error:', verifyErr);
-                    showError('Network error while verifying payment with server. Please try again.');
-                    retryBtn.disabled = false;
-                    if (retryBtnText) retryBtnText.textContent = origBtnText;
-                  }
-                },
-                modal: {
-                  ondismiss: function () {
-                    retryBtn.disabled = false;
-                    if (retryBtnText) retryBtnText.textContent = origBtnText;
-                    showError('Payment modal was closed before completing payment. You can retry anytime within the countdown window.');
-                  }
-                }
-              };
-
-              const rzpInstance = new Razorpay(rzpOptions);
-
-              rzpInstance.on('payment.failed', async function (failedResponse) {
-                retryBtn.disabled = false;
-                if (retryBtnText) retryBtnText.textContent = origBtnText;
-
-                const meta = (failedResponse && failedResponse.error && failedResponse.error.metadata) || {};
-                if (meta.payment_id) {
-                  try {
-                    const failRes = await fetch('/payments/payment-failure/', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRFToken': getCsrfToken(),
-                        'X-Requested-With': 'XMLHttpRequest'
-                      },
-                      body: JSON.stringify({
-                        order_number: orderNumber,
-                        razorpay_order_id: meta.order_id || rzpData.razorpay_order_id,
-                        razorpay_payment_id: meta.payment_id
-                      })
-                    });
-                    const failData = await failRes.json().catch(() => ({}));
-                    if (failData && failData.retry_deadline) {
-                      retryDeadline = failData.retry_deadline;
-                      startCountdown(failData.retry_deadline);
-                    }
-                    if (failData && failData.message) {
-                      showError(failData.message);
-                    }
-                  } catch (failReportErr) {
-                    console.error('Failed to report payment failure:', failReportErr);
-                  }
-                }
-
-                const failDesc = (failedResponse && failedResponse.error && failedResponse.error.description)
-                  ? failedResponse.error.description
-                  : 'Payment failed at the gateway. Please retry.';
-                showError(failDesc);
-              });
-
-              rzpInstance.open();
-
-            } catch (err) {
-              console.error('Razorpay retry error:', err);
-              showError('Network error while connecting to payment gateway. Please try again.');
-              retryBtn.disabled = false;
-              if (retryBtnText) retryBtnText.textContent = origBtnText;
-            }
-          });
-        }
-      })();
-
       // Check for persisted review success message
       try {
         const storedSuccess = sessionStorage.getItem('review_success_message');

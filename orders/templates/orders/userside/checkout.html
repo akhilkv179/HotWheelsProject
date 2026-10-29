@@ -1618,7 +1618,7 @@
     }
 
     /* ==========================================================================
-       PAYMENT FAILED / RETRY MODAL
+       PAYMENT FAILED MODAL
        ========================================================================== */
     .order-payment-failed-modal-card {
       width: 100%;
@@ -1691,41 +1691,6 @@
       max-width: 420px;
     }
 
-    .modal-timer-box {
-      width: 100%;
-      background: rgba(239, 68, 68, 0.08);
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .timer-label {
-      font-size: 10.5px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #fca5a5;
-    }
-
-    .timer-digits {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      color: #ffffff;
-      text-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
-    }
-
-    .timer-subtext {
-      font-size: 11.5px;
-      color: #9ca3af;
-    }
-
     .modal-row-value.badge-failed {
       display: inline-flex;
       align-items: center;
@@ -1760,10 +1725,11 @@
       text-align: left;
     }
 
-    .btn-retry-payment-modal {
+    .btn-continue-shopping-modal {
       width: 100%;
       background: linear-gradient(135deg, #ff4d00 0%, #e51b24 100%);
       color: #ffffff;
+      text-decoration: none;
       border: none;
       padding: 14px 22px;
       border-radius: 9px;
@@ -1772,29 +1738,25 @@
       font-weight: 800;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       box-shadow: 0 4px 20px rgba(229, 27, 36, 0.4);
-      transition: background 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .btn-retry-payment-modal:hover:not(:disabled) {
+    .btn-continue-shopping-modal:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 24px rgba(229, 27, 36, 0.55);
+      color: #ffffff;
     }
 
-    .btn-retry-payment-modal:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-      background: #374151;
-      box-shadow: none;
+    .btn-continue-shopping-modal:active {
+      transform: translateY(0);
     }
 
-    .btn-retry-payment-modal svg {
+    .btn-continue-shopping-modal svg {
       width: 16px;
       height: 16px;
     }
@@ -2405,7 +2367,7 @@
     </div>
   </div>
 
-  <!-- Order Payment Failed / Retry Modal Overlay -->
+  <!-- Order Payment Failed Modal Overlay -->
   <div class="order-success-modal-overlay" id="orderPaymentFailedModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="paymentFailedModalTitle">
     <div class="order-payment-failed-modal-card">
       <!-- Close button (links to order detail) -->
@@ -2431,15 +2393,8 @@
       <!-- Title & Subtitle -->
       <h2 class="failed-modal-title" id="paymentFailedModalTitle">PAYMENT FAILED</h2>
       <p class="failed-modal-desc" id="paymentFailedDesc">
-        Your online payment could not be processed. Your order has been placed in pending status. You have 5 minutes to retry payment before the order is automatically cancelled.
+        Your Razorpay payment failed. The stock has been restored. Please place a new order if you wish to purchase these items.
       </p>
-
-      <!-- 5-Minute Retry Countdown Box -->
-      <div class="modal-timer-box" id="modalTimerBox">
-        <span class="timer-label">PAYMENT RETRY WINDOW</span>
-        <span class="timer-digits" id="modalRetryCountdownDigits">05:00</span>
-        <span class="timer-subtext" id="modalTimerSubtext">Order will be cancelled if not completed in time</span>
-      </div>
 
       <!-- Order Summary Recap Box -->
       <div class="modal-order-summary-box">
@@ -2451,7 +2406,7 @@
         <div class="modal-summary-row">
           <span class="modal-row-label">STATUS</span>
           <span class="modal-row-value badge-failed" id="modalFailedOrderStatus">
-            <span class="dot-indicator"></span> <span id="modalFailedStatusText">Pending Payment</span>
+            <span class="dot-indicator"></span> <span id="modalFailedStatusText">Payment Failed</span>
           </span>
         </div>
 
@@ -2468,13 +2423,12 @@
 
       <!-- Actions Group -->
       <div class="modal-actions-group" id="modalFailedActionsGroup">
-        <button type="button" class="btn-retry-payment-modal" id="btnModalRetryPayment">
+        <a href="{% url 'user_product_list' %}" class="btn-continue-shopping-modal" id="btnModalContinueShopping">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
-          <span id="btnModalRetryText">RETRY PAYMENT NOW</span>
-        </button>
+          CONTINUE SHOPPING
+        </a>
 
         <a href="#" class="btn-modal-secondary" id="btnModalViewOrderDetail">
           VIEW ORDER DETAILS
@@ -2849,13 +2803,11 @@
         }
       }
 
-      // Razorpay Payment Failure & Retry Modal Controller
+      // Razorpay Payment Failure Modal Controller
       let activeOrderNumber = null;
       let activeOrderTotal = null;
-      let retryDeadlineTimer = null;
-      let isExpiredHandling = false;
 
-      function showPaymentFailedModal(orderNumber, totalAmount, reasonText, deadlineIso) {
+      function showPaymentFailedModal(orderNumber, totalAmount, reasonText, orderStatusText) {
         activeOrderNumber = orderNumber;
         activeOrderTotal = totalAmount;
 
@@ -2863,309 +2815,35 @@
         const numEl = document.getElementById('modalFailedOrderNumber');
         const totalEl = document.getElementById('modalFailedTotalVal');
         const descEl = document.getElementById('paymentFailedDesc');
+        const statusTextEl = document.getElementById('modalFailedStatusText');
         const closeBtn = document.getElementById('modalFailedCloseBtn');
         const viewDetailBtn = document.getElementById('btnModalViewOrderDetail');
         const alertEl = document.getElementById('modalFailedAlert');
-        const retryBtn = document.getElementById('btnModalRetryPayment');
-        const retryBtnText = document.getElementById('btnModalRetryText');
 
         if (numEl) numEl.textContent = '#' + orderNumber;
         if (totalEl) {
           const num = parseFloat(totalAmount);
           totalEl.textContent = !isNaN(num) ? num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalAmount;
         }
-        if (descEl && reasonText) descEl.textContent = reasonText;
+        if (descEl) {
+          descEl.textContent = 'Your Razorpay payment failed. The stock has been restored. Please place a new order if you wish to purchase these items.';
+        }
+        if (statusTextEl) {
+          statusTextEl.textContent = orderStatusText ? (orderStatusText === 'pending' ? 'Pending Payment (Failed)' : orderStatusText) : 'Payment Failed';
+        }
         if (closeBtn) closeBtn.href = `/orders/my-orders/${orderNumber}/`;
         if (viewDetailBtn) viewDetailBtn.href = `/orders/my-orders/${orderNumber}/`;
         if (alertEl) {
-          alertEl.style.display = 'none';
-          alertEl.textContent = '';
-        }
-        if (retryBtn) {
-          retryBtn.disabled = false;
-          retryBtn.classList.remove('disabled');
-        }
-        if (retryBtnText) retryBtnText.textContent = 'RETRY PAYMENT NOW';
-
-        if (deadlineIso) {
-          startCheckoutRetryCountdown(orderNumber, deadlineIso);
+          if (reasonText && !reasonText.toLowerCase().includes('failed at the gateway')) {
+            alertEl.textContent = reasonText;
+            alertEl.style.display = 'block';
+          } else {
+            alertEl.style.display = 'none';
+            alertEl.textContent = '';
+          }
         }
 
         if (modal) modal.style.display = 'flex';
-      }
-
-      function startCheckoutRetryCountdown(orderNumber, deadlineIso) {
-        if (retryDeadlineTimer) clearInterval(retryDeadlineTimer);
-
-        const deadlineMs = new Date(deadlineIso).getTime();
-        const timerBox = document.getElementById('modalTimerBox');
-        const digitsEl = document.getElementById('modalRetryCountdownDigits');
-        const retryBtn = document.getElementById('btnModalRetryPayment');
-        const retryBtnText = document.getElementById('btnModalRetryText');
-
-        if (timerBox) timerBox.style.display = 'flex';
-
-        function tick() {
-          const diff = deadlineMs - Date.now();
-          if (diff <= 0) {
-            clearInterval(retryDeadlineTimer);
-            if (digitsEl) digitsEl.textContent = '00:00 (EXPIRED)';
-            if (retryBtn) {
-              retryBtn.disabled = true;
-              retryBtn.classList.add('disabled');
-              retryBtn.setAttribute('aria-disabled', 'true');
-            }
-            if (retryBtnText) retryBtnText.textContent = 'RETRY WINDOW EXPIRED';
-            expirePaymentForOrder(orderNumber);
-            return;
-          }
-
-          const totalSec = Math.floor(diff / 1000);
-          const m = Math.floor(totalSec / 60);
-          const s = totalSec % 60;
-          if (digitsEl) {
-            digitsEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-          }
-        }
-
-        tick();
-        retryDeadlineTimer = setInterval(tick, 1000);
-      }
-
-      async function expirePaymentForOrder(orderNumber) {
-        if (isExpiredHandling) return;
-        isExpiredHandling = true;
-
-        const csrfToken = (function() {
-          const tokenInput = checkoutForm ? checkoutForm.querySelector('[name=csrfmiddlewaretoken]') : null;
-          if (tokenInput && tokenInput.value) return tokenInput.value;
-          const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
-          return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
-        })();
-
-        try {
-          const res = await fetch(`/payments/orders/${orderNumber}/expire-payment/`, {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'X-CSRFToken': csrfToken,
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          });
-          const data = await res.json().catch(() => ({}));
-          if (res.ok && data && (data.order_status === 'cancelled' || data.retry_allowed === false)) {
-            const statusText = document.getElementById('modalFailedStatusText');
-            const modalStatus = document.getElementById('modalFailedOrderStatus');
-            const titleEl = document.getElementById('paymentFailedModalTitle');
-            const descEl = document.getElementById('paymentFailedDesc');
-            const timerBox = document.getElementById('modalTimerBox');
-            const actionsGroup = document.getElementById('modalFailedActionsGroup');
-
-            if (titleEl) titleEl.textContent = 'ORDER CANCELLED';
-            if (statusText) statusText.textContent = 'Order Cancelled';
-            if (modalStatus) {
-              modalStatus.style.background = 'rgba(239, 68, 68, 0.2)';
-              modalStatus.style.color = '#ef4444';
-            }
-            if (descEl) descEl.textContent = data.message || 'Payment retry period expired. Your order has been cancelled.';
-            if (timerBox) timerBox.style.display = 'none';
-
-            if (actionsGroup) {
-              actionsGroup.innerHTML = `
-                <a href="/products/" class="btn-retry-payment-modal" style="text-decoration: none; justify-content: center;">
-                  CONTINUE SHOPPING
-                </a>
-                <a href="/orders/my-orders/${orderNumber}/" class="btn-modal-secondary" style="justify-content: center;">
-                  VIEW ORDER DETAILS
-                </a>
-              `;
-            }
-          } else if (res.status === 409 && data && data.retry_allowed === true && data.retry_deadline) {
-            isExpiredHandling = false;
-            startCheckoutRetryCountdown(orderNumber, data.retry_deadline);
-          }
-        } catch (err) {
-          console.error('Failed to expire order payment:', err);
-        } finally {
-          isExpiredHandling = false;
-        }
-      }
-
-      // Hook up modal retry button
-      const btnModalRetryPayment = document.getElementById('btnModalRetryPayment');
-      if (btnModalRetryPayment) {
-        btnModalRetryPayment.addEventListener('click', async function () {
-          if (!activeOrderNumber) return;
-          const retryBtn = btnModalRetryPayment;
-          const retryBtnText = document.getElementById('btnModalRetryText');
-          const alertEl = document.getElementById('modalFailedAlert');
-
-          if (alertEl) alertEl.style.display = 'none';
-          retryBtn.disabled = true;
-          const origText = 'RETRY PAYMENT NOW';
-          if (retryBtnText) retryBtnText.textContent = 'CONNECTING TO RAZORPAY...';
-
-          const csrfToken = (function() {
-            const tokenInput = checkoutForm ? checkoutForm.querySelector('[name=csrfmiddlewaretoken]') : null;
-            if (tokenInput && tokenInput.value) return tokenInput.value;
-            const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
-            return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
-          })();
-
-          try {
-            const rzpRes = await fetch(`/payments/orders/${activeOrderNumber}/create-order/`, {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-              }
-            });
-            const rzpData = await rzpRes.json().catch(() => ({}));
-
-            if (!rzpRes.ok || !rzpData.key_id) {
-              const errorMsg = (rzpData && rzpData.error) ? rzpData.error : 'Payment retry rejected.';
-              if (alertEl) {
-                alertEl.textContent = errorMsg;
-                alertEl.style.display = 'block';
-              }
-              if (rzpData && rzpData.retry_allowed === false) {
-                retryBtn.disabled = true;
-                if (retryBtnText) retryBtnText.textContent = 'RETRY NOT ALLOWED';
-                expirePaymentForOrder(activeOrderNumber);
-              } else {
-                retryBtn.disabled = false;
-                if (retryBtnText) retryBtnText.textContent = origText;
-              }
-              return;
-            }
-
-            // Hide failed modal while Razorpay is open
-            const failedModal = document.getElementById('orderPaymentFailedModal');
-            if (failedModal) failedModal.style.display = 'none';
-
-            let custName = '{{ user.get_full_name|default:user.username|escapejs }}';
-            let custPhone = '{{ user.phone|default:""|escapejs }}';
-            const selectedAddrCard = document.querySelector('.address-card-choice.selected');
-            if (selectedAddrCard) {
-              const nameEl = selectedAddrCard.querySelector('.address-recipient-name');
-              if (nameEl && nameEl.textContent.trim()) custName = nameEl.textContent.trim();
-              const phoneEl = selectedAddrCard.querySelector('.address-phone-text');
-              if (phoneEl && phoneEl.textContent.trim()) custPhone = phoneEl.textContent.replace(/[^0-9+]/g, '');
-            }
-
-            const retryRzpOptions = {
-              key: rzpData.key_id,
-              amount: rzpData.amount,
-              currency: rzpData.currency || 'INR',
-              name: 'Hot Wheels HUB',
-              description: `Order #${activeOrderNumber}`,
-              order_id: rzpData.razorpay_order_id,
-              prefill: {
-                name: custName,
-                email: '{{ user.email|escapejs }}',
-                contact: custPhone
-              },
-              theme: {
-                color: '#e51b24'
-              },
-              handler: async function (paymentResponse) {
-                if (retryBtnText) retryBtnText.textContent = 'VERIFYING PAYMENT...';
-                retryBtn.disabled = true;
-
-                try {
-                  const verifyRes = await fetch('/payments/verify-razorpay-payment/', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Accept': 'application/json',
-                      'X-CSRFToken': csrfToken,
-                      'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                      order_number: activeOrderNumber,
-                      razorpay_order_id: paymentResponse.razorpay_order_id,
-                      razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                      razorpay_signature: paymentResponse.razorpay_signature
-                    })
-                  });
-                  const verifyData = await verifyRes.json().catch(() => ({}));
-                  if (verifyRes.ok && (verifyRes.status === 200 || (verifyData && verifyData.order_number))) {
-                    window.location.href = `/orders/success/${activeOrderNumber}/`;
-                  } else {
-                    const verifyError = (verifyData && verifyData.error) ? verifyData.error : 'Payment verification failed.';
-                    showPaymentFailedModal(activeOrderNumber, activeOrderTotal, verifyError);
-                    if (alertEl) {
-                      alertEl.textContent = verifyError;
-                      alertEl.style.display = 'block';
-                    }
-                    retryBtn.disabled = false;
-                    if (retryBtnText) retryBtnText.textContent = origText;
-                  }
-                } catch (verifyErr) {
-                  showPaymentFailedModal(activeOrderNumber, activeOrderTotal, 'Network error while verifying payment.');
-                  retryBtn.disabled = false;
-                  if (retryBtnText) retryBtnText.textContent = origText;
-                }
-              },
-              modal: {
-                ondismiss: function () {
-                  retryBtn.disabled = false;
-                  if (retryBtnText) retryBtnText.textContent = origText;
-                  showPaymentFailedModal(activeOrderNumber, activeOrderTotal, 'Payment cancelled or modal closed. You can retry payment below.');
-                }
-              }
-            };
-
-            const retryRzpInstance = new Razorpay(retryRzpOptions);
-            retryRzpInstance.on('payment.failed', async function (failedResponse) {
-              retryBtn.disabled = false;
-              if (retryBtnText) retryBtnText.textContent = origText;
-
-              const meta = (failedResponse && failedResponse.error && failedResponse.error.metadata) || {};
-              let deadlineReturned = null;
-              if (meta.payment_id) {
-                try {
-                  const failRes = await fetch('/payments/payment-failure/', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Accept': 'application/json',
-                      'X-CSRFToken': csrfToken,
-                      'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                      order_number: activeOrderNumber,
-                      razorpay_order_id: meta.order_id || rzpData.razorpay_order_id,
-                      razorpay_payment_id: meta.payment_id
-                    })
-                  });
-                  const failData = await failRes.json().catch(() => ({}));
-                  if (failData && failData.retry_deadline) {
-                    deadlineReturned = failData.retry_deadline;
-                  }
-                } catch (e) {
-                  console.error('Failed to report failure:', e);
-                }
-              }
-              const failDesc = (failedResponse && failedResponse.error && failedResponse.error.description)
-                ? failedResponse.error.description
-                : 'Payment failed at the gateway. Please retry.';
-              showPaymentFailedModal(activeOrderNumber, activeOrderTotal, failDesc, deadlineReturned);
-            });
-
-            retryRzpInstance.open();
-
-          } catch (err) {
-            console.error('Retry error:', err);
-            if (alertEl) {
-              alertEl.textContent = 'Network error while contacting payment gateway.';
-              alertEl.style.display = 'block';
-            }
-            retryBtn.disabled = false;
-            if (retryBtnText) retryBtnText.textContent = origText;
-          }
-        });
       }
 
       if (submitBtn) {
@@ -3246,16 +2924,19 @@
           let isRazorpayFlow = false;
 
           try {
-            const formData = new FormData(checkoutForm);
-            if (selectedPaymentMethod) {
-              formData.set('payment_method', selectedPaymentMethod);
-            }
             const csrfToken = (function() {
               const tokenInput = checkoutForm.querySelector('[name=csrfmiddlewaretoken]');
               if (tokenInput && tokenInput.value) return tokenInput.value;
               const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
-              return cookie ? cookie.split('=')[1] : '';
+              return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
             })();
+
+            let data = null;
+
+            const formData = new FormData(checkoutForm);
+            if (selectedPaymentMethod) {
+              formData.set('payment_method', selectedPaymentMethod);
+            }
 
             const response = await fetch(checkoutForm.action || window.location.href, {
               method: 'POST',
@@ -3267,15 +2948,31 @@
               }
             });
 
-            let data = null;
             try {
               data = await response.json();
             } catch (jsonErr) {}
 
-            if (response.status === 201 || (response.ok && data && data.order_number)) {
+            if (!response.ok && response.status !== 201 && !(data && data.order_number)) {
+              let errorMsg = 'An error occurred while placing your order. Please review your details and try again.';
+              if (data && data.error) {
+                errorMsg = data.error;
+              }
+              if (stockWarningEl && warningTextEl) {
+                warningTextEl.textContent = errorMsg;
+                stockWarningEl.style.display = 'flex';
+                stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+              submitBtn.disabled = false;
+              if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
+              return;
+            }
+
+            if (data && data.order_number) {
               // 1. Razorpay Payment Flow
-              if (data && (data.payment_required || data.payment_method === 'razorpay')) {
+              if (data.payment_required || data.payment_method === 'razorpay') {
                 isRazorpayFlow = true;
+                activeOrderNumber = data.order_number;
+                activeOrderTotal = data.total_amount || 0;
 
                 if (typeof Razorpay === 'undefined') {
                   if (stockWarningEl && warningTextEl) {
@@ -3378,6 +3075,7 @@
                       const verifyData = await verifyRes.json().catch(() => ({}));
 
                       if (verifyRes.ok && (verifyRes.status === 200 || (verifyData && verifyData.order_number))) {
+                        activePendingOrder = null;
                         window.location.href = `/orders/success/${data.order_number}/`;
                       } else {
                         const verifyError = (verifyData && verifyData.error)
@@ -3409,7 +3107,15 @@
                     ondismiss: function () {
                       submitBtn.disabled = false;
                       if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
-                      showPaymentFailedModal(data.order_number, data.total_amount || 0, 'Payment cancelled or modal closed. Your order was saved as pending. You can retry payment below.', null);
+
+                      const failedModal = document.getElementById('orderPaymentFailedModal');
+                      if (failedModal) failedModal.style.display = 'none';
+
+                      if (stockWarningEl && warningTextEl) {
+                        warningTextEl.textContent = 'Payment was not completed. If you wish to purchase these items, please place a new order.';
+                        stockWarningEl.style.display = 'flex';
+                        stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
                     }
                   }
                 };
@@ -3420,7 +3126,7 @@
                   submitBtn.disabled = false;
                   if (submitBtnTextSpan) submitBtnTextSpan.textContent = origText;
 
-                  let deadlineReturned = null;
+                  let backendOrderStatus = 'pending';
                   try {
                     if (failedResponse && failedResponse.error && failedResponse.error.metadata) {
                       const meta = failedResponse.error.metadata;
@@ -3439,8 +3145,8 @@
                         })
                       });
                       const failData = await failRes.json().catch(() => ({}));
-                      if (failData && failData.retry_deadline) {
-                        deadlineReturned = failData.retry_deadline;
+                      if (failData && failData.order_status) {
+                        backendOrderStatus = failData.order_status;
                       }
                     }
                   } catch (failReportErr) {
@@ -3449,14 +3155,14 @@
 
                   const failDesc = (failedResponse && failedResponse.error && failedResponse.error.description)
                     ? failedResponse.error.description
-                    : 'Payment failed at the gateway. Please try again.';
+                    : 'Payment failed at the gateway.';
 
                   if (stockWarningEl && warningTextEl) {
-                    warningTextEl.textContent = failDesc;
+                    warningTextEl.textContent = 'Your Razorpay payment failed. The stock has been restored. Please place a new order if you wish to purchase these items.';
                     stockWarningEl.style.display = 'flex';
                     stockWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }
-                  showPaymentFailedModal(data.order_number, data.total_amount || 0, failDesc, deadlineReturned);
+                  showPaymentFailedModal(data.order_number, data.total_amount || 0, failDesc, backendOrderStatus);
                 });
 
                 rzpInstance.open();

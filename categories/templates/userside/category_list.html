@@ -851,6 +851,59 @@
       pointer-events: none;
     }
 
+    /* ==================================================
+       CATEGORY OFFER BADGE
+       ================================================== */
+    .category-offers-wrapper {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      pointer-events: none;
+    }
+
+    /* Display only the highest active offer badge if multiple exist */
+    .category-offers-wrapper > .category-offer-badge ~ .category-offer-badge {
+      display: none !important;
+    }
+
+    .category-offer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #e51b24 0%, #ff4722 100%);
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 4px 16px rgba(229, 27, 36, 0.45), 0 2px 6px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      pointer-events: auto;
+      user-select: none;
+    }
+
+    .category-card:hover .category-offer-badge {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 6px 20px rgba(229, 27, 36, 0.65), 0 3px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .category-offer-badge .offer-badge-icon {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      stroke: #ffffff;
+    }
+
     /* Card Content */
     .category-card-content {
       position: relative;
@@ -1235,6 +1288,20 @@
       .footer-top-grid {
         grid-template-columns: 1fr;
       }
+      .category-offers-wrapper {
+        top: 12px;
+        right: 12px;
+      }
+      .category-offer-badge {
+        padding: 5px 10px;
+        font-size: 10px;
+        gap: 4px;
+        border-radius: 999px;
+      }
+      .category-offer-badge .offer-badge-icon {
+        width: 10px;
+        height: 10px;
+      }
     }
   </style>
 </head>
@@ -1545,6 +1612,7 @@
     </div>
 
     <!-- 2-Column Categories Grid -->
+    {% now "Y-m-d H:i:s" as current_time %}
     <div class="categories-grid">
       {% for category in page_obj %}
         <a href="{% url 'user_product_list' %}?category={{ category.id }}" class="category-card" title="Explore {{ category.name }}">
@@ -1567,6 +1635,45 @@
 
           <!-- Dark Atmospheric Gradient Overlay -->
           <div class="card-overlay-gradient"></div>
+
+          <!-- Category Offer Badge (displayed when an active applicable offer exists) -->
+          {% if category.current_offer and category.current_offer.is_active and category.current_offer.start_date|date:"Y-m-d H:i:s" <= current_time and category.current_offer.end_date|date:"Y-m-d H:i:s" >= current_time %}
+            <div class="category-offers-wrapper">
+              <div class="category-offer-badge" title="{{ category.current_offer.offer_name }}{% if category.current_offer.discount_value %} - {{ category.current_offer.discount_value|floatformat:0 }}% OFF{% endif %}">
+                <svg class="offer-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+                <span>
+                  {% if category.current_offer.discount_value and category.current_offer.discount_value > 0 %}
+                    {{ category.current_offer.discount_value|floatformat:0 }}% OFF
+                  {% else %}
+                    Special Offer
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+          {% else %}
+            <div class="category-offers-wrapper">
+              {% for offer in category.offers.all|dictsortreversed:"discount_value" %}
+                {% if offer.is_active and offer.start_date|date:"Y-m-d H:i:s" <= current_time and offer.end_date|date:"Y-m-d H:i:s" >= current_time %}
+                  <div class="category-offer-badge" title="{{ offer.offer_name }}{% if offer.discount_value %} - {{ offer.discount_value|floatformat:0 }}% OFF{% endif %}">
+                    <svg class="offer-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                      <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                    </svg>
+                    <span>
+                      {% if offer.discount_value and offer.discount_value > 0 %}
+                        {{ offer.discount_value|floatformat:0 }}% OFF
+                      {% else %}
+                        Special Offer
+                      {% endif %}
+                    </span>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
 
           <!-- Bottom Card Content Area -->
           <div class="category-card-content">

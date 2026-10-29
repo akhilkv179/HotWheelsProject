@@ -13,9 +13,9 @@ from payments.views.userside.verify_razorpay_payment_view import (
 from payments.views.userside.payment_failure_view import (
     record_razorpay_payment_failure,
 )
-from payments.views.userside.expire_razorpay_payment_view import (
-    expire_razorpay_payment,
-)
+# from payments.views.userside.expire_razorpay_payment_view import (
+#     expire_razorpay_payment,
+# )
 
 
 urlpatterns = [
@@ -24,11 +24,11 @@ urlpatterns = [
         create_razorpay_order,
         name="create_razorpay_order",
     ),
-    path(
-        "orders/<str:order_number>/expire-payment/",
-        expire_razorpay_payment,
-        name="expire_razorpay_payment",
-    ),
+    # path(
+    #     "orders/<str:order_number>/expire-payment/",
+    #     expire_razorpay_payment,
+    #     name="expire_razorpay_payment",
+    # ),
     path(
         "verify-razorpay-payment/",
         verify_razorpay_payment_view,
