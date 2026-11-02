@@ -1,5 +1,7 @@
+
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect
+from django.contrib.sessions.models import Session
 
 from accounts.models import User
 from admin_panel.decorators import admin_required
@@ -25,6 +27,15 @@ def toggle_user_status(request, user_id):
 
     user.is_active = not user.is_active
     user.save(update_fields=["is_active"])
+
+    # Delete all existing sessions when the user is blocked.
+    if not user.is_active:
+
+        for session in Session.objects.all().iterator():
+            session_data = session.get_decoded()
+
+            if session_data.get("_auth_user_id") == str(user.id):
+                session.delete()
 
     if "application/json" in request.headers.get("Accept", ""):
         return JsonResponse(

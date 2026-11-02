@@ -282,6 +282,12 @@
       box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.25) !important;
     }
 
+    .address-type-selector.is-invalid .type-box {
+      border-color: var(--accent-red) !important;
+      background-color: #171720 !important;
+      box-shadow: 0 0 0 3px rgba(229, 27, 36, 0.25) !important;
+    }
+
     .field-error-text {
       color: var(--accent-red);
       font-size: 12px;
@@ -424,7 +430,7 @@
     /* Address Type Selection Cards */
     .address-type-selector {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 14px;
     }
 
@@ -1024,38 +1030,51 @@
           </label>
 
           <div class="address-type-selector">
-            <label class="type-option">
-              <input type="radio" name="address_type" value="home" checked>
-              <div class="type-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                <span>Home</span>
-              </div>
-            </label>
-
-            <label class="type-option">
-              <input type="radio" name="address_type" value="work">
-              <div class="type-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                </svg>
-                <span>Work</span>
-              </div>
-            </label>
-
-            <label class="type-option">
-              <input type="radio" name="address_type" value="other">
-              <div class="type-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                <span>Other</span>
-              </div>
-            </label>
+            {% for val, label in form.fields.address_type.choices %}
+              <label class="type-option">
+                <input type="radio" name="address_type" value="{{ val }}"{% if val == 'home' %} checked{% endif %}>
+                <div class="type-box">
+                  {% if val == 'home' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                      <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                  {% elif val == 'work' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                  {% else %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polygon points="12 8 8 12 12 16 12 8"/>
+                    </svg>
+                  {% endif %}
+                  <span>{{ label }}</span>
+                </div>
+              </label>
+            {% empty %}
+              <label class="type-option">
+                <input type="radio" name="address_type" value="home" checked>
+                <div class="type-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                  <span>Home</span>
+                </div>
+              </label>
+              <label class="type-option">
+                <input type="radio" name="address_type" value="work">
+                <div class="type-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                  </svg>
+                  <span>Work</span>
+                </div>
+              </label>
+            {% endfor %}
           </div>
         </div>
 
@@ -1267,6 +1286,21 @@
         input.addEventListener('change', clearInputError);
       });
 
+      // Auto-clear invalid state when an address type is selected
+      form.querySelectorAll('input[name="address_type"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          const selector = form.querySelector('.address-type-selector');
+          if (selector && selector.classList.contains('is-invalid')) {
+            selector.classList.remove('is-invalid');
+            const group = selector.closest('.form-group');
+            if (group) {
+              const errText = group.querySelector('.field-error-text');
+              if (errText) errText.remove();
+            }
+          }
+        });
+      });
+
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
         if (submitBtn && submitBtn.disabled) return;
@@ -1339,22 +1373,42 @@
                 const errObj = errorList[0];
                 const errMsg = (errObj && errObj.message) ? errObj.message : String(errObj);
 
-                const inputEl = form.querySelector(`[name="${fieldName}"]`);
-                if (inputEl) {
-                  inputEl.classList.add('is-invalid');
-                  if (!firstInvalidField) {
-                    firstInvalidField = inputEl;
+                if (fieldName === 'address_type') {
+                  const selector = form.querySelector('.address-type-selector');
+                  if (selector) {
+                    selector.classList.add('is-invalid');
+                    if (!firstInvalidField) {
+                      firstInvalidField = selector;
+                    }
+                    const group = selector.closest('.form-group');
+                    if (group) {
+                      const existingErr = group.querySelector('.field-error-text');
+                      if (existingErr) existingErr.remove();
+
+                      const errSpan = document.createElement('span');
+                      errSpan.className = 'field-error-text';
+                      errSpan.textContent = errMsg;
+                      group.appendChild(errSpan);
+                    }
                   }
+                } else {
+                  const inputEl = form.querySelector(`[name="${fieldName}"]`);
+                  if (inputEl) {
+                    inputEl.classList.add('is-invalid');
+                    if (!firstInvalidField) {
+                      firstInvalidField = inputEl;
+                    }
 
-                  const group = inputEl.closest('.form-group');
-                  if (group) {
-                    const existingErr = group.querySelector('.field-error-text');
-                    if (existingErr) existingErr.remove();
+                    const group = inputEl.closest('.form-group');
+                    if (group) {
+                      const existingErr = group.querySelector('.field-error-text');
+                      if (existingErr) existingErr.remove();
 
-                    const errSpan = document.createElement('span');
-                    errSpan.className = 'field-error-text';
-                    errSpan.textContent = errMsg;
-                    group.appendChild(errSpan);
+                      const errSpan = document.createElement('span');
+                      errSpan.className = 'field-error-text';
+                      errSpan.textContent = errMsg;
+                      group.appendChild(errSpan);
+                    }
                   }
                 }
               }
@@ -1367,7 +1421,12 @@
           showTopAlert(topMessage, 'error');
 
           if (firstInvalidField) {
-            firstInvalidField.focus();
+            if (typeof firstInvalidField.focus === 'function') {
+              firstInvalidField.focus();
+            } else if (firstInvalidField.classList.contains('address-type-selector')) {
+              const radio = firstInvalidField.querySelector('input[type="radio"]:checked') || firstInvalidField.querySelector('input[type="radio"]');
+              if (radio) radio.focus();
+            }
           }
 
           setSubmitting(false);

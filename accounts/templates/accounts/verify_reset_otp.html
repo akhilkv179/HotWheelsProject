@@ -157,6 +157,12 @@
       margin-bottom: 28px;
     }
 
+    .email-highlight {
+      color: #ffffff;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
     /* Alert Container */
     .alert-container {
       width: 100%;
@@ -164,6 +170,11 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    .alert-container:empty {
+      display: none;
+      margin-bottom: 0;
     }
 
     .alert-box {
@@ -192,6 +203,23 @@
       height: 16px;
       flex-shrink: 0;
       stroke: currentColor;
+    }
+
+    .alert-close-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: inherit;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.7;
+      padding: 0 4px;
+      transition: opacity 0.15s ease;
+    }
+
+    .alert-close-btn:hover {
+      opacity: 1;
     }
 
     /* Form Styles */
@@ -291,6 +319,12 @@
       color: #ffffff;
     }
 
+    .resend-link[data-sending="true"] {
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
     /* Verify & Proceed Button */
     .btn-verify {
       width: 100%;
@@ -310,6 +344,13 @@
       justify-content: center;
       box-shadow: 0 4px 18px rgba(229, 27, 36, 0.45);
       transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-verify:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     .btn-verify:hover {
@@ -383,11 +424,14 @@
 
       <!-- Title & Subtitle -->
       <h1 class="card-title">Verify Your Email</h1>
-      <p class="card-subtitle">We've sent a 6-digit verification code to your registered email</p>
+      <p class="card-subtitle">
+        We've sent a 6-digit verification code to
+        <span id="userEmailDisplay" class="email-highlight">{% if request.session.reset_email %}{{ request.session.reset_email }}{% else %}your registered email{% endif %}</span>
+      </p>
 
-      <!-- Django Messages -->
-      {% if messages %}
-        <div class="alert-container">
+      <!-- Messages / Alert Container -->
+      <div id="alertContainer" class="alert-container">
+        {% if messages %}
           {% for message in messages %}
             <div class="alert-box {% if message.tags == 'success' %}success{% endif %}">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -396,10 +440,11 @@
                 <line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
               <span>{{ message }}</span>
+              <button type="button" class="alert-close-btn" aria-label="Dismiss alert" onclick="this.closest('.alert-box').remove();">&times;</button>
             </div>
           {% endfor %}
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
 
       <!-- OTP Form connected to Django POST action -->
       <form method="POST" action="{% url 'verify_reset_otp' %}" class="otp-form" id="otpForm">
@@ -456,6 +501,61 @@
       const boxes = Array.from(document.querySelectorAll('.otp-digit-box'));
       const realInput = document.getElementById('realOtpInput');
       const form = document.getElementById('otpForm');
+      const alertContainer = document.getElementById('alertContainer');
+      const timerDisplay = document.getElementById("timer");
+      const timerContainer = document.getElementById("timerTextContainer");
+      const resendLink = document.getElementById("resendLink");
+
+      // Retain and display email address throughout the flow
+      const serverEmail = "{{ request.session.reset_email|default:''|escapejs }}";
+      let resetEmail = serverEmail;
+      if (!resetEmail) {
+        try {
+          resetEmail = sessionStorage.getItem('reset_email') || '';
+        } catch (e) {}
+      } else {
+        try {
+          sessionStorage.setItem('reset_email', resetEmail);
+        } catch (e) {}
+      }
+
+      const emailDisplay = document.getElementById('userEmailDisplay');
+      if (emailDisplay && resetEmail && (!serverEmail || emailDisplay.textContent.includes('your registered email'))) {
+        emailDisplay.textContent = resetEmail;
+      }
+
+      function clearAlerts() {
+        if (alertContainer) {
+          alertContainer.innerHTML = '';
+        }
+      }
+
+      function showAlert(message, type) {
+        if (!alertContainer) return;
+        alertContainer.innerHTML = '';
+
+        const alertBox = document.createElement('div');
+        alertBox.className = 'alert-box' + (type === 'success' ? ' success' : '');
+
+        const iconSvg = type === 'success'
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: #22c55e !important;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+        alertBox.innerHTML = `
+          ${iconSvg}
+          <span>${message}</span>
+          <button type="button" class="alert-close-btn" aria-label="Dismiss alert">&times;</button>
+        `;
+
+        const closeBtn = alertBox.querySelector('.alert-close-btn');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function() {
+            clearAlerts();
+          });
+        }
+
+        alertContainer.appendChild(alertBox);
+      }
 
       function syncRealInput() {
         realInput.value = boxes.map(b => b.value).join('');
@@ -515,21 +615,8 @@
         });
       });
 
-      // Form validation before submit
-      form.addEventListener('submit', function(e) {
-        syncRealInput();
-        if (realInput.value.length !== 6) {
-          e.preventDefault();
-          const firstEmpty = boxes.find(b => !b.value);
-          if (firstEmpty) firstEmpty.focus();
-        }
-      });
-
       // Countdown Timer Logic
-      let totalSeconds = 58;
-      const timerDisplay = document.getElementById("timer");
-      const timerContainer = document.getElementById("timerTextContainer");
-      const resendLink = document.getElementById("resendLink");
+      let countdownInterval = null;
 
       function formatTime(sec) {
         const m = Math.floor(sec / 60);
@@ -537,22 +624,209 @@
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       }
 
-      function updateTimer() {
-        if (totalSeconds <= 0) {
-          if (timerContainer) timerContainer.style.display = "none";
-          if (resendLink) resendLink.style.display = "inline";
+      function startTimer(seconds) {
+        if (countdownInterval) {
           clearInterval(countdownInterval);
-          return;
         }
 
-        if (timerDisplay) {
-          timerDisplay.textContent = formatTime(totalSeconds);
+        let remaining = seconds;
+        if (timerContainer) timerContainer.style.display = "inline";
+        if (resendLink) {
+          resendLink.style.display = "none";
+          resendLink.textContent = "Resend Code";
         }
-        totalSeconds--;
+
+        function tick() {
+          if (remaining <= 0) {
+            if (timerContainer) timerContainer.style.display = "none";
+            if (resendLink) resendLink.style.display = "inline";
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            return;
+          }
+
+          if (timerDisplay) {
+            timerDisplay.textContent = formatTime(remaining);
+          }
+          remaining--;
+        }
+
+        tick();
+        countdownInterval = setInterval(tick, 1000);
       }
 
-      updateTimer();
-      const countdownInterval = setInterval(updateTimer, 1000);
+      startTimer(58);
+
+      // Resend OTP Click Handler
+      if (resendLink) {
+        resendLink.addEventListener('click', async function(e) {
+          e.preventDefault();
+
+          if (resendLink.dataset.sending === 'true') {
+            return;
+          }
+
+          clearAlerts();
+
+          let currentEmail = resetEmail;
+          if (!currentEmail) {
+            try {
+              currentEmail = sessionStorage.getItem('reset_email') || '';
+            } catch (err) {}
+          }
+
+          if (!currentEmail) {
+            showAlert('Password-reset email session not found. Please re-enter your email on the Forgot Password page.', 'error');
+            return;
+          }
+
+          resendLink.dataset.sending = 'true';
+          const originalLinkText = resendLink.textContent;
+          resendLink.textContent = 'Sending...';
+
+          const csrfToken = (function() {
+            const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (tokenInput && tokenInput.value) return tokenInput.value;
+            const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return cookie ? cookie.split('=')[1] : '';
+          })();
+
+          const formData = new FormData();
+          formData.append('email', currentEmail);
+          formData.append('csrfmiddlewaretoken', csrfToken);
+
+          try {
+            const response = await fetch("{% url 'forgot_password' %}", {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRFToken': csrfToken
+              }
+            });
+
+            let data = null;
+            try {
+              data = await response.json();
+            } catch (jsonErr) {
+              console.error('Failed to parse resend OTP response:', jsonErr);
+            }
+
+            if (response.ok && data && data.success) {
+              const successMsg = data.message || 'A new verification code has been sent to your email.';
+              showAlert(successMsg, 'success');
+
+              // Clear digits in the visual boxes
+              boxes.forEach(function(box) {
+                box.value = '';
+                box.classList.remove('filled');
+              });
+              syncRealInput();
+              if (boxes[0]) boxes[0].focus();
+
+              // Restart countdown timer
+              startTimer(58);
+            } else {
+              let errorMsg = (data && data.message) ? data.message : 'Unable to resend OTP. Please try again.';
+              showAlert(errorMsg, 'error');
+              resendLink.textContent = originalLinkText;
+            }
+          } catch (netErr) {
+            console.error('Network error during resend OTP:', netErr);
+            showAlert('A network error occurred while resending the code. Please try again.', 'error');
+            resendLink.textContent = originalLinkText;
+          } finally {
+            delete resendLink.dataset.sending;
+          }
+        });
+      }
+
+      // Form validation & submit handling
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          syncRealInput();
+          if (realInput.value.length !== 6) {
+            e.preventDefault();
+            const firstEmpty = boxes.find(b => !b.value);
+            if (firstEmpty) firstEmpty.focus();
+            showAlert('Please enter the complete 6-digit verification code.', 'error');
+            return;
+          }
+
+          e.preventDefault();
+
+          const verifyBtn = form.querySelector('.btn-verify');
+          const originalBtnText = verifyBtn ? verifyBtn.textContent : 'VERIFY & PROCEED';
+          if (verifyBtn) {
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'VERIFYING...';
+          }
+
+          clearAlerts();
+
+          const formData = new FormData(form);
+          const actionUrl = form.getAttribute('action') || window.location.pathname;
+          const csrfToken = (function() {
+            const tokenInput = form.querySelector('[name=csrfmiddlewaretoken]');
+            if (tokenInput && tokenInput.value) return tokenInput.value;
+            const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return cookie ? cookie.split('=')[1] : '';
+          })();
+
+          try {
+            const response = await fetch(actionUrl, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRFToken': csrfToken
+              }
+            });
+
+            let data = null;
+            try {
+              data = await response.json();
+            } catch (jsonErr) {
+              console.error('Failed to parse OTP verify response JSON:', jsonErr);
+            }
+
+            if (response.ok && data && data.success) {
+              showAlert(data.message || 'OTP verified successfully.', 'success');
+              if (verifyBtn) {
+                verifyBtn.textContent = 'REDIRECTING...';
+              }
+              const redirectUrl = data.redirect_url || "{% url 'reset_password' %}";
+              setTimeout(function() {
+                window.location.href = redirectUrl;
+              }, 400);
+            } else {
+              let errorMsg = (data && data.message) ? data.message : 'Invalid OTP. Please check the code and try again.';
+              showAlert(errorMsg, 'error');
+
+              if (data && data.redirect_url && response.status === 410) {
+                setTimeout(function() {
+                  window.location.href = data.redirect_url;
+                }, 1500);
+                return;
+              }
+
+              if (verifyBtn) {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = originalBtnText;
+              }
+            }
+          } catch (netErr) {
+            console.error('Network error during OTP verify:', netErr);
+            showAlert('A network error occurred. Please try again.', 'error');
+            if (verifyBtn) {
+              verifyBtn.disabled = false;
+              verifyBtn.textContent = originalBtnText;
+            }
+          }
+        });
+      }
     });
   </script>
 </body>

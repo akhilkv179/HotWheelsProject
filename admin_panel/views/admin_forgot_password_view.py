@@ -1,112 +1,83 @@
-from django.contrib import messages
-from django.http import JsonResponse, HttpResponseNotAllowed
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
 
+from accounts.forms import ForgotPasswordForm
 from accounts.models import User
 from accounts.services.otp_service import generate_otp, get_otp_expiry
 from accounts.services.email_service import send_otp_email
 
 
-# Check whether the client expects a JSON response.
-def wants_json(request):
-    return "application/json" in request.headers.get("Accept", "")
+@never_cache
+def admin_forgot_password_view(request):
 
-
-# Send a password reset OTP to an administrator's email.
-def admin_forgot_password(request):
-
+    # Allow only GET and POST requests.
     if request.method not in ["GET", "POST"]:
-        if wants_json(request):
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Method not allowed."
-                },
-                status=405
-            )
+        return JsonResponse({
+            "success": False,
+            "message": "Method not allowed."
+        }, status=405)
 
-        return HttpResponseNotAllowed(["GET", "POST"])
+    if request.method == "POST":
 
-    if request.method == "GET":
-        if wants_json(request):
-            return JsonResponse(
-                {
+        form = ForgotPasswordForm(request.POST)
+
+        if form.is_valid():
+
+            email = form.cleaned_data["email"]
+
+            # Find an active admin account using the submitted email.
+            user = User.objects.filter(
+                email__iexact=email,
+                is_staff=True,
+                is_active=True
+            ).first()
+
+            # Return a generic response to avoid revealing account existence.
+            if user is None:
+                return JsonResponse({
                     "success": True,
-                    "message": "Submit the administrator email to request a password reset OTP."
-                },
-                status=200
-            )
+                    "message": "If an admin account exists with this email, an OTP has been sent."
+                }, status=200)
 
-        return render(
-            request,
-            "admin_panel/admin_forgot_password.html"
-        )
+            # Store the admin email in the session.
+            request.session["admin_reset_email"] = user.email
 
-    email = request.POST.get("email", "").strip()
+            # Generate OTP and expiry time.
+            otp = generate_otp()
+            otp_expiry = get_otp_expiry()
 
-    if not email:
-        if wants_json(request):
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Email is required."
-                },
-                status=400
-            )
+            request.session["admin_reset_otp"] = otp
+            request.session["admin_reset_otp_expiry"] = otp_expiry.isoformat()
 
-        messages.error(request, "Email is required.")
-        return render(
-            request,
-            "admin_panel/admin_forgot_password.html"
-        )
+            # Start the 30-second resend cooldown.
+            request.session["admin_reset_last_otp_resend"] = timezone.now().isoformat()
 
-    user = User.objects.filter(
-        email__iexact=email,
-        is_staff=True
-    ).first()
+            # Clear any previous OTP verification status.
+            request.session.pop("admin_reset_otp_verified", None)
 
-    if not user:
-        if wants_json(request):
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "No admin account found with this email."
-                },
-                status=404
-            )
+            # Send OTP to the admin's registered email.
+            send_otp_email(user.email, otp)
 
-        messages.error(
-            request,
-            "No admin account found with this email."
-        )
-        return render(
-            request,
-            "admin_panel/admin_forgot_password.html"
-        )
-
-    otp = generate_otp()
-    expiry = get_otp_expiry()
-
-    request.session["admin_forgot_password_email"] = email
-    request.session["admin_forgot_password_otp"] = otp
-    request.session["admin_forgot_password_otp_expiry"] = expiry.isoformat()
-
-    send_otp_email(email, otp)
-
-    if wants_json(request):
-        return JsonResponse(
-            {
+            return JsonResponse({
                 "success": True,
-                "message": "OTP has been sent to your email address.",
+                "message": "If an admin account exists with this email, an OTP has been sent.",
                 "redirect_url": reverse("admin_verify_forgot_password_otp")
-            },
-            status=202
-        )
+            }, status=200)
 
-    messages.success(
+        return JsonResponse({
+            "success": False,
+            "message": "Please enter a valid email address.",
+            "errors": form.errors.get_json_data()
+        }, status=400)
+
+    # Display the forgot-password page.
+    form = ForgotPasswordForm()
+
+    return render(
         request,
-        "OTP has been sent to your email address."
+        "admin_panel/admin_forgot_password.html",
+        {"form": form}
     )
-
-    return redirect("admin_verify_forgot_password_otp")

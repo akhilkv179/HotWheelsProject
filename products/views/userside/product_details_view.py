@@ -1,10 +1,10 @@
-
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.db.models import Avg, Count
 from django.http import JsonResponse
 from decimal import Decimal, ROUND_HALF_UP
 from django.contrib.auth.decorators import login_required
+
 from products.models import Product
 from reviews.models import Review
 from wishlist.models import WishlistItem
@@ -35,6 +35,7 @@ def product_details(request, product_id):
         .prefetch_related(
             "variants__images",
             "offers",
+            "category__offers",
         )
         .first()
     )
@@ -77,18 +78,45 @@ def product_details(request, product_id):
 
     current_time = timezone.now()
 
-    # Find the currently active product offer.
-    offer = product.offers.filter(
+    # Find the best active offer directly assigned to this product.
+    product_offer = product.offers.filter(
         is_active=True,
         start_date__lte=current_time,
         end_date__gte=current_time,
     ).order_by("-discount_value").first()
 
-    # Calculate the sale price when an active offer exists.
-    if offer:
+    # Find the best active offer assigned to this product's category.
+    category_offer = None
+
+    if product.category_id:
+        category_offer = product.category.offers.filter(
+            is_active=True,
+            start_date__lte=current_time,
+            end_date__gte=current_time,
+        ).order_by("-discount_value").first()
+
+    # Store both offers separately so the template can display them.
+    product.product_offer = product_offer
+    product.category_offer = category_offer
+
+    # Compare both offers and select the one with the larger discount.
+    available_offers = [
+        offer
+        for offer in [product_offer, category_offer]
+        if offer is not None
+    ]
+
+    best_offer = max(
+        available_offers,
+        key=lambda offer: offer.discount_value,
+        default=None,
+    )
+
+    # Calculate the sale price using the best available offer.
+    if best_offer:
         discount_amount = (
             product.regular_price
-            * offer.discount_value
+            * best_offer.discount_value
             / Decimal("100")
         )
 
@@ -100,8 +128,8 @@ def product_details(request, product_id):
         )
 
         product.sale_price = sale_price
-        product.offer_percentage = offer.discount_value
-        product.offer_name = offer.offer_name
+        product.offer_percentage = best_offer.discount_value
+        product.offer_name = best_offer.offer_name
 
     else:
         product.sale_price = product.regular_price
@@ -167,6 +195,7 @@ def product_details(request, product_id):
     ).prefetch_related(
         "variants__images",
         "offers",
+        "category__offers",
     ).distinct()[:4]
 
     # Build breadcrumb information for the product page.
@@ -220,12 +249,37 @@ def product_details(request, product_id):
                     "name": product.name,
                     "regular_price": str(product.regular_price),
                     "sale_price": str(product.sale_price),
+
+                    # The offer actually used for the sale price.
                     "offer_percentage": (
                         str(product.offer_percentage)
                         if product.offer_percentage is not None
                         else None
                     ),
                     "offer_name": product.offer_name,
+
+                    # Return both offers separately for display.
+                    "product_offer": (
+                        {
+                            "name": product.product_offer.offer_name,
+                            "discount_percentage": str(
+                                product.product_offer.discount_value
+                            ),
+                        }
+                        if product.product_offer
+                        else None
+                    ),
+                    "category_offer": (
+                        {
+                            "name": product.category_offer.offer_name,
+                            "discount_percentage": str(
+                                product.category_offer.discount_value
+                            ),
+                        }
+                        if product.category_offer
+                        else None
+                    ),
+
                     "is_active": product.is_active,
                     "category_is_active": category_is_active,
                     "product_unavailable": product_unavailable,

@@ -1,0 +1,1783 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Profile | Hot Wheels Hub</title>
+
+  <!-- Google Fonts: Montserrat for bold headers, Inter for clean UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Design Tokens matching Figma Screenshot */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+    .loading-pulse {
+      animation: pulse-subtle 1.2s ease-in-out infinite;
+    }
+
+    :root {
+      --bg-body: #0b0b0e;
+      --bg-sidebar: #08080a;
+      --bg-card: #131419;
+      --bg-card-inner: #1b1b23;
+      --bg-input: #1b1b23;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-coral-card: rgba(245, 165, 150, 0.35);
+      --border-coral-glow: rgba(229, 27, 36, 0.06);
+
+      --accent-red: #e51b24;
+      --accent-red-hover: #ff232d;
+      --accent-coral: #f5a596;
+      --accent-coral-bright: #f87171;
+      --accent-green: #22c55e;
+      --accent-emerald: #34d399;
+      --accent-gold: #fbbf24;
+
+      --text-white: #ffffff;
+      --text-muted: #8e8f9c;
+      --text-dim: #6b7280;
+      --text-dark: #0b0b0e;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-heading: 'Montserrat', var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Overall Layout: Sidebar + Main Content */
+    .admin-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ==========================================================================
+       1. SIDEBAR NAVIGATION
+       ========================================================================== */
+    .admin-sidebar {
+      width: 250px;
+      min-width: 250px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 18px 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 50;
+      transition: transform 0.25s ease;
+    }
+
+    .admin-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .admin-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand-header {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #555765;
+      text-transform: uppercase;
+      padding: 0 10px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      stroke: var(--text-dim);
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-item:hover svg {
+      stroke: #ffffff;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background-color: #16161d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-red);
+    }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .logout-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #8c8d98;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .logout-item:hover {
+      color: #f87171;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .logout-item svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* ==========================================================================
+       2. MAIN CONTENT AREA & TOPBAR
+       ========================================================================== */
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-body);
+      background-image: radial-gradient(ellipse 70% 35% at 50% 0%, rgba(229, 27, 36, 0.03), transparent 70%);
+    }
+
+    .admin-topbar {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 4vw, 56px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      background: rgba(11, 11, 14, 0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 40;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    .topbar-brand-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-vertical-bar {
+      width: 3.5px;
+      height: 17px;
+      background-color: var(--accent-red);
+      border-radius: 2px;
+    }
+
+    .topbar-brand-title {
+      font-family: var(--font-heading);
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .topbar-icon-btn {
+      background: transparent;
+      border: none;
+      color: #8a8b98;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      transition: color 0.15s, background-color 0.15s;
+    }
+
+    .topbar-icon-btn:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .topbar-icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .topbar-avatar-wrap {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #171821;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .topbar-avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .topbar-profile-info {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+    }
+
+    .topbar-admin-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .topbar-admin-role {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    /* ==========================================================================
+       3. PROFILE VIEWPORT & MAIN CARDS
+       ========================================================================== */
+    .profile-viewport {
+      padding: 32px clamp(20px, 4vw, 56px) 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Page Header: Title, Subtitle & Sign Out Button */
+    .profile-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .profile-header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .profile-page-title {
+      font-family: var(--font-heading);
+      font-size: clamp(24px, 2.5vw, 30px);
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      color: #ffffff;
+      text-transform: uppercase;
+      line-height: 1.15;
+    }
+
+    .profile-page-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .btn-sign-out-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn-sign-out-header:hover {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      transform: translateY(-1px);
+    }
+
+    .btn-sign-out-header svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Top Identity Card */
+    .profile-identity-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .identity-left-group {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .identity-avatar-container {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      overflow: visible;
+      flex-shrink: 0;
+    }
+
+    .identity-avatar-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #1e1f29;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .identity-avatar-badge {
+      position: absolute;
+      bottom: -3px;
+      right: -3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #f87171;
+      border: 2px solid var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .identity-avatar-badge svg {
+      width: 9px;
+      height: 9px;
+    }
+
+    .identity-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .identity-name {
+      font-size: 19px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .identity-badges-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge-super-admin {
+      display: inline-flex;
+      align-items: center;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.28);
+      border-radius: 4px;
+      padding: 2.5px 8px;
+    }
+
+    .badge-active-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .status-dot-green {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-emerald);
+      display: inline-block;
+    }
+
+    .identity-email-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #171821;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 7px;
+      padding: 9px 16px;
+      color: #d1d5db;
+      font-size: 12.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .identity-email-pill svg {
+      width: 15px;
+      height: 15px;
+      color: #8e8f9c;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       4. TWO-COLUMN FORM SECTION (PERSONAL INFORMATION & SECURITY)
+       ========================================================================== */
+    .profile-grid-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    /* Card Panels Base */
+    .profile-card-panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+
+    /* Left Personal Information Card with Coral Glow Border */
+    .personal-info-card {
+      border: 1px solid var(--border-coral-card);
+      box-shadow: 0 0 24px var(--border-coral-glow);
+    }
+
+    .card-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding-bottom: 2px;
+    }
+
+    .card-header-icon {
+      width: 15px;
+      height: 15px;
+      color: var(--accent-coral);
+      flex-shrink: 0;
+    }
+
+    .card-header-icon.gold {
+      color: var(--accent-gold);
+    }
+
+    .card-panel-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    /* Form Field Layouts */
+    .form-group-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .field-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .field-action-link {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-coral);
+      text-decoration: none;
+      transition: color 0.15s ease;
+      cursor: pointer;
+    }
+
+    .field-action-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .field-input-wrap {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .profile-input {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 11px 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .profile-input::placeholder {
+      color: #525361;
+      font-weight: 400;
+    }
+
+    .profile-input:focus {
+      border-color: rgba(245, 165, 150, 0.45);
+      background-color: #21212b;
+    }
+
+    .profile-input.has-toggle {
+      padding-right: 40px;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: #636474;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      transition: color 0.15s;
+    }
+
+    .password-toggle-btn:hover {
+      color: #ffffff;
+    }
+
+    .password-toggle-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .btn-change-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 6px;
+      padding: 6px 14px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-change-pill:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Actions Row */
+    .card-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .btn-cancel-link {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .btn-cancel-link:hover {
+      color: #ffffff;
+    }
+
+    .btn-save-primary {
+      background: var(--accent-coral);
+      background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(248, 113, 113, 0.25);
+      transition: transform 0.1s ease, box-shadow 0.15s ease, opacity 0.15s;
+    }
+
+    .btn-save-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(248, 113, 113, 0.35);
+    }
+
+    .btn-save-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-update-password {
+      background: #1c1d25;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 10px 18px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      align-self: flex-end;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .btn-update-password:hover {
+      background: #242530;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Right Column Stacking */
+    .right-column-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* ==========================================================================
+       5. RECENT ACTIVITY CARD (FULL WIDTH)
+       ========================================================================== */
+    .recent-activity-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .activity-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .activity-item-row:last-child {
+      border-bottom: none;
+      padding-bottom: 4px;
+    }
+
+    .activity-item-row:first-child {
+      padding-top: 4px;
+    }
+
+    .activity-left-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .activity-icon-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    .activity-icon-badge svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .activity-details-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .activity-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .activity-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .activity-timestamp {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    .btn-view-activity-log {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin: 10px auto 0 auto;
+      transition: color 0.15s;
+    }
+
+    .btn-view-activity-log:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    /* ==========================================================================
+       6. TOAST NOTIFICATIONS & LOADING SKELETON
+       ========================================================================== */
+    .profile-toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .profile-toast {
+      background: #171822;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 12px 18px;
+      color: #ffffff;
+      font-size: 12.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: auto;
+    }
+
+    .profile-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .profile-toast.success {
+      border-color: rgba(34, 197, 94, 0.35);
+      background: #111d17;
+      color: #4ade80;
+    }
+
+    .profile-toast.error {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: #1e1315;
+      color: #f87171;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .profile-grid-cols {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .admin-sidebar {
+        position: fixed;
+        left: -260px;
+      }
+      .admin-sidebar.mobile-open {
+        transform: translateX(260px);
+      }
+      .mobile-menu-btn {
+        display: flex;
+      }
+      .admin-topbar {
+        padding: 0 20px;
+      }
+      .profile-viewport {
+        padding: 24px 20px 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+
+    <!-- ==========================================================================
+         SIDEBAR NAVIGATION
+         ========================================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-top">
+        <div class="brand-header">
+          <span class="brand-title">ADMIN</span>
+        </div>
+
+        <nav class="sidebar-nav">
+
+          <!-- OVERVIEW -->
+          <div class="nav-group">
+            <span class="nav-group-label">OVERVIEW</span>
+            <a href="{% url 'admin_dashboard' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <!-- CATALOG -->
+          <div class="nav-group">
+            <span class="nav-group-label">CATALOG</span>
+            <a href="{% url 'admin_product_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m7.5 4.27 9 5.15"/>
+                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span>Products</span>
+            </a>
+            <a href="{% url 'admin_category_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9"/>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </div>
+
+          <!-- SALES -->
+          <div class="nav-group">
+            <span class="nav-group-label">SALES</span>
+            <a href="{% url 'admin_order_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Orders</span>
+            </a>
+            <a href="{% url 'admin_coupon_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span>Coupons</span>
+            </a>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="nav-group">
+            <span class="nav-group-label">CUSTOMERS</span>
+            <a href="{% url 'user_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>Users</span>
+            </a>
+            <a href="{% url 'admin_referral_offer_list' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+              </svg>
+              <span>Referrals</span>
+            </a>
+          </div>
+
+
+          <!-- ANALYTICS -->
+          <div class="nav-group">
+            <span class="nav-group-label">ANALYTICS</span>
+            <a href="{% url 'sales_revenue' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="{% url 'admin_profile' %}" class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Logout Item at Bottom -->
+      <div class="sidebar-bottom">
+        <a href="{% url 'admin_logout' %}" class="logout-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==========================================================================
+         MAIN CONTENT CANVAS
+         ========================================================================== -->
+    <main class="admin-main">
+
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="topbar-brand-indicator">
+            <span class="brand-vertical-bar"></span>
+            <span class="topbar-brand-title">ADMIN DASHBOARD</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Notification Bell -->
+          <button type="button" class="topbar-icon-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+
+          <!-- User Profile -->
+          <a href="{% url 'admin_profile' %}" class="topbar-profile" title="View Admin Profile">
+            <div class="topbar-avatar-wrap" id="topbarAvatar">
+              <span id="topbarAvatarInitial">{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}</span>
+            </div>
+            <div class="topbar-profile-info">
+              <span class="topbar-admin-name" id="topbarAdminName">{{ request.user.get_full_name|default:request.user.username|default:"Admin User" }}</span>
+              <span class="topbar-admin-role">Head Manager</span>
+            </div>
+          </a>
+        </div>
+      </header>
+
+      <!-- Viewport Content Area -->
+      <div class="profile-viewport">
+
+        <!-- Page Header Row -->
+        <div class="profile-header-row">
+          <div class="profile-header-text">
+            <h1 class="profile-page-title">ADMIN PROFILE</h1>
+            <p class="profile-page-subtitle">Manage your administrator account, personal information, and security settings.</p>
+          </div>
+          <a href="{% url 'admin_logout' %}" class="btn-sign-out-header" title="Sign out of admin console">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>SIGN OUT</span>
+          </a>
+        </div>
+
+        <!-- 1. Top Identity Card -->
+        <section class="profile-identity-card" id="profileIdentityCard">
+          <div class="identity-left-group">
+            <div class="identity-avatar-container">
+              <div class="identity-avatar-img" id="identityAvatarWrap">
+                <span id="identityAvatarInitial">{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}</span>
+              </div>
+              <div class="identity-avatar-badge" title="Administrator account verified">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+            <div class="identity-text-group">
+              <h2 class="identity-name" id="identityDisplayName">{{ request.user.first_name|default:request.user.username|default:"Akhil" }}</h2>
+              <div class="identity-badges-row">
+                <span class="badge-super-admin" id="identitySuperuserBadge">
+                  {% if request.user.is_superuser %}SUPER ADMINISTRATOR{% else %}ADMINISTRATOR{% endif %}
+                </span>
+                <span class="badge-active-status">
+                  <span class="status-dot-green"></span>
+                  <span>Active</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="identity-email-pill" id="identityEmailPill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+            <span id="identityEmailText">{{ request.user.email|default:"admin@hotwheelshub.com" }}</span>
+          </div>
+        </section>
+
+        <!-- 2. Two-Column Middle Section -->
+        <div class="profile-grid-cols">
+
+          <!-- Left Column: PERSONAL INFORMATION -->
+          <div class="profile-card-panel personal-info-card">
+            <div class="card-panel-header">
+              <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <h3 class="card-panel-title">PERSONAL INFORMATION</h3>
+            </div>
+
+            <form id="personalInfoForm" method="POST" action="{% url 'admin_edit_profile' %}">
+              {% csrf_token %}
+              <div class="form-group-stack">
+
+                <!-- Full Name -->
+                <div class="form-field">
+                  <div class="field-label-row">
+                    <label class="field-label" for="profileFullNameInput">FULL NAME</label>
+                  </div>
+                  <div class="field-input-wrap">
+                    <input
+                      type="text"
+                      class="profile-input"
+                      id="profileFullNameInput"
+                      name="username"
+                      value="{{ request.user.first_name|default:request.user.username|default:"Akhil" }}"
+                      placeholder="Enter full name"
+                      required
+                    >
+                  </div>
+                </div>
+
+                <!-- Email Address -->
+                <div class="form-field">
+                  <div class="field-label-row">
+                    <label class="field-label" for="profileEmailInput">EMAIL ADDRESS</label>
+                    <a href="{% url 'admin_edit_profile' %}" class="field-action-link" id="linkChangeEmail">Change</a>
+                  </div>
+                  <div class="field-input-wrap">
+                    <input
+                      type="email"
+                      class="profile-input"
+                      id="profileEmailInput"
+                      name="email"
+                      value="{{ request.user.email|default:"admin@hotwheelshub.com" }}"
+                      placeholder="Enter email address"
+                      required
+                    >
+                  </div>
+                </div>
+
+                <!-- Phone Number -->
+                <div class="form-field">
+                  <div class="field-label-row">
+                    <label class="field-label" for="profilePhoneInput">PHONE NUMBER</label>
+                  </div>
+                  <div class="field-input-wrap">
+                    <input
+                      type="text"
+                      class="profile-input"
+                      id="profilePhoneInput"
+                      name="phone"
+                      value="{{ request.user.phone|default:"+91 8660 000 000" }}"
+                      placeholder="+91 8660 000 000"
+                      required
+                    >
+                  </div>
+                </div>
+
+                <!-- Actions: Cancel & Save Changes -->
+                <div class="card-actions-row">
+                  <button type="button" class="btn-cancel-link" id="btnCancelProfile">CANCEL</button>
+                  <button type="submit" class="btn-save-primary" id="btnSaveProfile">SAVE CHANGES</button>
+                </div>
+
+              </div>
+            </form>
+          </div>
+
+          <!-- Right Column: SECURITY -->
+          <div class="right-column-stack">
+
+            <!-- Security Card -->
+            <div class="profile-card-panel">
+              <div class="card-panel-header">
+                <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <h3 class="card-panel-title">SECURITY</h3>
+              </div>
+
+              <form id="securityPasswordForm" method="POST" action="{% url 'admin_change_password' %}">
+                {% csrf_token %}
+                <div class="form-group-stack">
+
+                  <!-- Current Password -->
+                  <div class="form-field">
+                    <label class="field-label" for="inputCurrentPassword">CURRENT PASSWORD</label>
+                    <div class="field-input-wrap">
+                      <input
+                        type="password"
+                        class="profile-input has-toggle"
+                        id="inputCurrentPassword"
+                        value="••••••••"
+                        placeholder="Current password"
+                        readonly
+                      >
+                      <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                        <svg class="eye-open-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="eye-closed-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                          <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                          <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                          <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                          <line x1="2" y1="2" x2="22" y2="22"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Update Password Action -->
+                  <div class="card-actions-row">
+                    <button type="submit" class="btn-update-password" id="btnUpdatePassword">UPDATE PASSWORD</button>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 3. Bottom Card: RECENT ACTIVITY -->
+        <section class="recent-activity-card">
+          <div class="card-panel-header">
+            <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <h3 class="card-panel-title">RECENT ACTIVITY</h3>
+          </div>
+
+          <div class="activity-list">
+
+            <!-- Item 1: Inventory Update -->
+            <div class="activity-item-row">
+              <div class="activity-left-wrap">
+                <div class="activity-icon-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                </div>
+                <div class="activity-details-meta">
+                  <h4 class="activity-title">Updated Product Inventory</h4>
+                  <p class="activity-subtitle">Modified stock count for Lamborghini Huracán Super Trofeo EVO from 12 to 45.</p>
+                </div>
+              </div>
+              <span class="activity-timestamp">2 MIN AGO</span>
+            </div>
+
+            <!-- Item 2: Order Processed -->
+            <div class="activity-item-row">
+              <div class="activity-left-wrap">
+                <div class="activity-icon-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                  </svg>
+                </div>
+                <div class="activity-details-meta">
+                  <h4 class="activity-title">Order Processed</h4>
+                  <p class="activity-subtitle">Marked order #ORD-12567 as shipped. Tracking info emailed to customer.</p>
+                </div>
+              </div>
+              <span class="activity-timestamp">1 HOUR AGO</span>
+            </div>
+
+            <!-- Item 3: System Configuration Changed -->
+            <div class="activity-item-row">
+              <div class="activity-left-wrap">
+                <div class="activity-icon-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  </svg>
+                </div>
+                <div class="activity-details-meta">
+                  <h4 class="activity-title">System Configuration Changed</h4>
+                  <p class="activity-subtitle">Updated global shipping rates for international zones.</p>
+                </div>
+              </div>
+              <span class="activity-timestamp">3 HOURS AGO</span>
+            </div>
+
+          </div>
+
+          <button type="button" class="btn-view-activity-log" id="btnViewActivityLog">
+            VIEW FULL ACTIVITY LOG
+          </button>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="profile-toast-container" id="profileToastContainer"></div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT: Dynamic Backend Profile Integration & Interactions
+       ========================================================================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 1. Mobile Menu Toggle
+      const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+      const adminSidebar = document.getElementById('adminSidebar');
+
+      if (mobileMenuToggle && adminSidebar) {
+        mobileMenuToggle.addEventListener('click', function () {
+          adminSidebar.classList.toggle('mobile-open');
+        });
+
+        document.addEventListener('click', function (e) {
+          if (window.innerWidth <= 900 && adminSidebar.classList.contains('mobile-open')) {
+            if (!adminSidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+              adminSidebar.classList.remove('mobile-open');
+            }
+          }
+        });
+      }
+
+      // 2. Toast Notification Helper
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('profileToastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `profile-toast ${type}`;
+        toast.textContent = message;
+
+        container.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+          toast.classList.add('show');
+        });
+
+        // Auto remove
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 300);
+        }, 4000);
+      }
+
+      // 3. Password Visibility Toggles
+      const toggleBtns = document.querySelectorAll('.password-toggle-btn');
+      toggleBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+          const input = this.closest('.field-input-wrap')?.querySelector('input');
+          if (!input) return;
+
+          const openIcon = this.querySelector('.eye-open-icon');
+          const closedIcon = this.querySelector('.eye-closed-icon');
+
+          if (input.type === 'password') {
+            input.type = 'text';
+            this.style.color = '#ffffff';
+            if (openIcon) openIcon.style.display = 'none';
+            if (closedIcon) closedIcon.style.display = 'block';
+          } else {
+            input.type = 'password';
+            this.style.color = '#636474';
+            if (openIcon) openIcon.style.display = 'block';
+            if (closedIcon) closedIcon.style.display = 'none';
+          }
+        });
+      });
+
+      // 4. Initial Values Cache for Cancel Action
+      let initialProfileData = {
+        fullName: document.getElementById('profileFullNameInput')?.value || '',
+        email: document.getElementById('profileEmailInput')?.value || '',
+        phone: document.getElementById('profilePhoneInput')?.value || ''
+      };
+
+      // 5. Dynamic Profile Loading from Endpoint (admin_profile)
+      async function loadAdminProfile() {
+        const dynamicTargets = [
+          document.getElementById('identityDisplayName'),
+          document.getElementById('identityEmailText'),
+          document.getElementById('profileFullNameInput'),
+          document.getElementById('profileEmailInput'),
+          document.getElementById('profilePhoneInput')
+        ].filter(Boolean);
+
+        // Apply loading pulse
+        dynamicTargets.forEach(el => el.classList.add('loading-pulse'));
+
+        try {
+          const response = await fetch("{% url 'admin_profile' %}", {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Profile endpoint returned status ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data && data.success && data.profile) {
+            const p = data.profile;
+
+            // Formulate display full name
+            const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.username || 'Admin';
+
+            // Update Topbar
+            const topbarName = document.getElementById('topbarAdminName');
+            if (topbarName) topbarName.textContent = fullName;
+
+            // Update Identity Card
+            const heroName = document.getElementById('identityDisplayName');
+            if (heroName) heroName.textContent = p.first_name || p.username || fullName;
+
+            const heroEmail = document.getElementById('identityEmailText');
+            if (heroEmail) heroEmail.textContent = p.email || 'admin@hotwheelshub.com';
+
+            const heroBadge = document.getElementById('identitySuperuserBadge');
+            if (heroBadge) {
+              heroBadge.textContent = p.is_superuser ? 'SUPER ADMINISTRATOR' : 'ADMINISTRATOR';
+            }
+
+            // Update Form Inputs
+            const inputFullName = document.getElementById('profileFullNameInput');
+            if (inputFullName) inputFullName.value = fullName;
+
+            const inputEmail = document.getElementById('profileEmailInput');
+            if (inputEmail) inputEmail.value = p.email || '';
+
+            const inputPhone = document.getElementById('profilePhoneInput');
+            if (inputPhone) {
+              const digits = (p.phone || '').replace(/\D/g, '');
+              inputPhone.value = digits.length === 10 ? `+91 ${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}` : (p.phone || '+91 8660 000 000');
+            }
+
+            // Update avatar initials
+            const initial = (p.first_name || p.username || 'A').slice(0, 1).toUpperCase();
+            updateAvatarInitials(initial);
+
+            // Save cache for Cancel button
+            initialProfileData = {
+              fullName: fullName,
+              email: p.email || '',
+              phone: inputPhone ? inputPhone.value : (p.phone || '')
+            };
+          }
+        } catch (err) {
+          console.warn('Could not load profile from JSON endpoint:', err);
+          // Graceful fallback to server-rendered request.user context
+        } finally {
+          dynamicTargets.forEach(el => el.classList.remove('loading-pulse'));
+        }
+      }
+
+      function updateAvatarInitials(initial) {
+        const idInit = document.getElementById('identityAvatarInitial');
+        if (idInit) idInit.textContent = initial;
+
+        const topInit = document.getElementById('topbarAvatarInitial');
+        if (topInit) topInit.textContent = initial;
+      }
+
+      // 6. Cancel Button restores initial values
+      const btnCancel = document.getElementById('btnCancelProfile');
+      if (btnCancel) {
+        btnCancel.addEventListener('click', function () {
+          const inputFullName = document.getElementById('profileFullNameInput');
+          if (inputFullName) inputFullName.value = initialProfileData.fullName;
+
+          const inputEmail = document.getElementById('profileEmailInput');
+          if (inputEmail) inputEmail.value = initialProfileData.email;
+
+          const inputPhone = document.getElementById('profilePhoneInput');
+          if (inputPhone) inputPhone.value = initialProfileData.phone;
+
+          showToast('Changes discarded.', 'info');
+        });
+      }
+
+      // 7. Save Profile Form Submission
+      const personalInfoForm = document.getElementById('personalInfoForm');
+      const btnSaveProfile = document.getElementById('btnSaveProfile');
+
+      if (personalInfoForm) {
+        personalInfoForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          if (btnSaveProfile) {
+            btnSaveProfile.disabled = true;
+            btnSaveProfile.textContent = 'SAVING...';
+          }
+
+          try {
+            const formData = new FormData(personalInfoForm);
+
+            // Clean phone to 10 digits for ProfileForm backend validation
+            const rawPhone = (formData.get('phone') || '').replace(/\D/g, '').slice(-10);
+            if (rawPhone.length === 10) {
+              formData.set('phone', rawPhone);
+            }
+
+            // Ensure username is alphanumeric for ProfileForm backend validation
+            let cleanUsername = (formData.get('username') || '').trim().replace(/[^A-Za-z0-9]/g, '');
+            if (cleanUsername) {
+              formData.set('username', cleanUsername);
+            }
+
+            const actionUrl = personalInfoForm.action || "{% url 'admin_edit_profile' %}";
+
+            const response = await fetch(actionUrl, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok && data.success) {
+              showToast(data.message || 'Admin profile updated successfully.', 'success');
+
+              // If email changed and requires OTP verification
+              if (data.requires_otp && data.redirect_url) {
+                setTimeout(() => {
+                  window.location.href = data.redirect_url;
+                }, 1000);
+                return;
+              }
+
+              // Update cache and display name
+              initialProfileData.fullName = document.getElementById('profileFullNameInput')?.value || '';
+              initialProfileData.email = document.getElementById('profileEmailInput')?.value || '';
+              initialProfileData.phone = document.getElementById('profilePhoneInput')?.value || '';
+
+              const heroName = document.getElementById('identityDisplayName');
+              if (heroName) heroName.textContent = initialProfileData.fullName;
+
+              const heroEmail = document.getElementById('identityEmailText');
+              if (heroEmail) heroEmail.textContent = initialProfileData.email;
+            } else {
+              let errorMsg = data.message || 'Please correct the errors and try again.';
+              if (data.errors) {
+                const firstKey = Object.keys(data.errors)[0];
+                if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                  errorMsg = data.errors[firstKey][0].message || data.errors[firstKey][0];
+                }
+              }
+              showToast(errorMsg, 'error');
+            }
+          } catch (networkErr) {
+            showToast('Unable to save profile changes. Please try again.', 'error');
+          } finally {
+            if (btnSaveProfile) {
+              btnSaveProfile.disabled = false;
+              btnSaveProfile.textContent = 'SAVE CHANGES';
+            }
+          }
+        });
+      }
+
+      // 8. Update Password Form
+      const securityForm = document.getElementById('securityPasswordForm');
+      if (securityForm) {
+        securityForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const btnUpdate = document.getElementById('btnUpdatePassword');
+          if (btnUpdate) {
+            btnUpdate.disabled = true;
+            btnUpdate.textContent = 'PROCESSING...';
+          }
+
+          try {
+            const formData = new FormData(securityForm);
+            const response = await fetch(securityForm.action || "{% url 'admin_change_password' %}", {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok && data.success) {
+              showToast(data.message || 'OTP sent for password change.', 'success');
+              if (data.redirect_url) {
+                setTimeout(() => {
+                  window.location.href = data.redirect_url;
+                }, 1000);
+              }
+            } else {
+              showToast(data.message || 'Could not initiate password change.', 'error');
+            }
+          } catch (err) {
+            showToast('Unable to update password. Please try again.', 'error');
+          } finally {
+            if (btnUpdate) {
+              btnUpdate.disabled = false;
+              btnUpdate.textContent = 'UPDATE PASSWORD';
+            }
+          }
+        });
+      }
+
+      // 9. View Full Activity Log Mock Action
+      const btnViewActivityLog = document.getElementById('btnViewActivityLog');
+      if (btnViewActivityLog) {
+        btnViewActivityLog.addEventListener('click', function () {
+          showToast('Opening complete administrator audit log...', 'info');
+        });
+      }
+
+      // Kick off profile loading from backend
+      loadAdminProfile();
+    });
+  </script>
+</body>
+</html>

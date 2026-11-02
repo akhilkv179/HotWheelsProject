@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -6,6 +5,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from django.contrib.auth.decorators import login_required
+
 from products.models import Product
 from categories.models import Category
 from wishlist.models import WishlistItem
@@ -44,6 +44,7 @@ def product_list(request):
     ).prefetch_related(
         "variants__images",
         "offers",
+        "category__offers",
     ).distinct()
 
     # Retrieve active categories for the catalog filter.
@@ -67,18 +68,49 @@ def product_list(request):
 
     current_time = timezone.now()
 
-    # Calculate the sale price using the best currently active offer.
+    # Calculate the sale price using the best active product
+    # or category offer while keeping both offers available.
     for product in products:
-        offer = product.offers.filter(
+
+        # Find the best active offer directly assigned to this product.
+        product_offer = product.offers.filter(
             is_active=True,
             start_date__lte=current_time,
             end_date__gte=current_time,
         ).order_by("-discount_value").first()
 
-        if offer:
+        # Find the best active offer assigned to this product's category.
+        category_offer = None
+
+        if product.category_id:
+            category_offer = product.category.offers.filter(
+                is_active=True,
+                start_date__lte=current_time,
+                end_date__gte=current_time,
+            ).order_by("-discount_value").first()
+
+        # Store both offers separately so the template can display them.
+        product.product_offer = product_offer
+        product.category_offer = category_offer
+
+        # Compare both offers and select the one with the larger discount.
+        available_offers = [
+            offer
+            for offer in [product_offer, category_offer]
+            if offer is not None
+        ]
+
+        best_offer = max(
+            available_offers,
+            key=lambda offer: offer.discount_value,
+            default=None,
+        )
+
+        # Calculate the sale price using the best available offer.
+        if best_offer:
             discount_amount = (
                 product.regular_price
-                * offer.discount_value
+                * best_offer.discount_value
                 / Decimal("100")
             )
 
@@ -90,8 +122,8 @@ def product_list(request):
             )
 
             product.sale_price = sale_price
-            product.offer_percentage = offer.discount_value
-            product.offer_name = offer.offer_name
+            product.offer_percentage = best_offer.discount_value
+            product.offer_name = best_offer.offer_name
 
         else:
             product.sale_price = product.regular_price
@@ -214,12 +246,37 @@ def product_list(request):
                         ),
                         "regular_price": str(product.regular_price),
                         "sale_price": str(product.sale_price),
+
+                        # The offer actually used for the sale price.
                         "offer_percentage": (
                             str(product.offer_percentage)
                             if product.offer_percentage is not None
                             else None
                         ),
                         "offer_name": product.offer_name,
+
+                        # Product and category offers are returned separately.
+                        "product_offer": (
+                            {
+                                "name": product.product_offer.offer_name,
+                                "discount_percentage": str(
+                                    product.product_offer.discount_value
+                                ),
+                            }
+                            if product.product_offer
+                            else None
+                        ),
+                        "category_offer": (
+                            {
+                                "name": product.category_offer.offer_name,
+                                "discount_percentage": str(
+                                    product.category_offer.discount_value
+                                ),
+                            }
+                            if product.category_offer
+                            else None
+                        ),
+
                         "variants": [
                             {
                                 "id": variant.id,

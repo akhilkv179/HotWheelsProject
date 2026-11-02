@@ -512,6 +512,37 @@
       background-color: rgba(239, 68, 68, 0.05);
     }
 
+    /* Disabled Form Input Box & Field */
+    .form-group.field-disabled label {
+      color: #7b7d8d;
+    }
+
+    .form-input-box.disabled-box {
+      cursor: not-allowed;
+      background-color: #121217;
+      border-radius: 4px;
+    }
+
+    .form-input-box input:disabled,
+    .form-input-box input[disabled],
+    .form-input-box input.is-disabled {
+      background-color: #121217 !important;
+      border-color: rgba(255, 255, 255, 0.05) !important;
+      color: #6a6b79 !important;
+      cursor: not-allowed !important;
+      opacity: 0.75;
+      user-select: none;
+      -webkit-user-select: none;
+      pointer-events: none;
+    }
+
+    .form-input-box input:disabled:focus,
+    .form-input-box input[disabled]:focus,
+    .form-input-box input.is-disabled:focus {
+      border-color: rgba(255, 255, 255, 0.05) !important;
+      box-shadow: none !important;
+    }
+
     .field-error-msg {
       font-size: 11.5px;
       color: #f87171;
@@ -706,26 +737,27 @@
             </a>
           </div>
 
-          <!-- CONTENT -->
-          <div class="nav-group">
-            <span class="nav-group-label">CONTENT</span>
-            <a href="#" class="nav-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <line x1="3" y1="9" x2="21" y2="9"/>
-              </svg>
-              <span>Banners</span>
-            </a>
-          </div>
 
           <!-- ANALYTICS -->
           <div class="nav-group">
             <span class="nav-group-label">ANALYTICS</span>
-            <a href="#" class="nav-item">
+            <a href="{% url 'sales_revenue' %}" class="nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
               <span>Sales &amp; Revenue</span>
+            </a>
+          </div>
+
+          <!-- SYSTEM -->
+          <div class="nav-group">
+            <span class="nav-group-label">SYSTEM</span>
+            <a href="{% url 'admin_profile' %}" class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Settings</span>
             </a>
           </div>
 
@@ -934,15 +966,28 @@
                 {% endfor %}
               </div>
 
-              <!-- Maximum Discount -->
-              <div class="form-group {% if form.maximum_discount.errors %}has-error{% endif %}">
+              <!-- Maximum Discount (Disabled) -->
+              <div class="form-group field-disabled {% if form.maximum_discount.errors %}has-error{% endif %}">
                 <label class="form-label" for="{{ form.maximum_discount.id_for_label }}">
                   {{ form.maximum_discount.label }} <span class="required-star">*</span>
                 </label>
-                <div class="form-input-box">
-                  {{ form.maximum_discount }}
+                <div class="form-input-box disabled-box">
+                  <input type="number"
+                         id="{{ form.maximum_discount.id_for_label }}"
+                         value="{{ form.maximum_discount.value|default:'0' }}"
+                         class="is-disabled"
+                         disabled
+                         readonly
+                         tabindex="-1"
+                         aria-disabled="true"
+                         title="Maximum Discount is disabled">
+                  <!-- Hidden input to reliably submit value to backend without validation errors -->
+                  <input type="hidden"
+                         name="maximum_discount"
+                         id="hidden_maximum_discount"
+                         value="{{ form.maximum_discount.value|default:'0' }}">
                 </div>
-                <span class="field-help-text">Max limit for percentage discounts (set 0 for flat discounts).</span>
+                <span class="field-help-text">Maximum discount limit is disabled for coupons.</span>
                 {% for error in form.maximum_discount.errors %}
                   <span class="field-error-msg">{{ error }}</span>
                 {% endfor %}
@@ -1033,6 +1078,16 @@
         toggleBtn.addEventListener('click', function() {
           sidebar.classList.toggle('open');
         });
+      }
+
+      // Ensure Maximum Discount field cannot be focused or modified via keyboard or mouse
+      const maxDiscountInput = document.getElementById('{{ form.maximum_discount.id_for_label }}');
+      if (maxDiscountInput) {
+        maxDiscountInput.disabled = true;
+        maxDiscountInput.readOnly = true;
+        maxDiscountInput.setAttribute('tabindex', '-1');
+        maxDiscountInput.addEventListener('keydown', function(e) { e.preventDefault(); });
+        maxDiscountInput.addEventListener('mousedown', function(e) { e.preventDefault(); });
       }
     });
   </script>

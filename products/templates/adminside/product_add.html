@@ -694,6 +694,48 @@
       box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
     }
 
+    .variant-images-box.has-error {
+      border-color: rgba(239, 68, 68, 0.7) !important;
+      background-color: rgba(239, 68, 68, 0.04) !important;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.2) !important;
+    }
+
+    .form-group.has-error .form-input,
+    .form-group.has-error .form-select,
+    .form-group.has-error .form-textarea,
+    .form-input.has-error,
+    .form-select.has-error,
+    .form-textarea.has-error {
+      border-color: rgba(239, 68, 68, 0.8) !important;
+      background-color: rgba(239, 68, 68, 0.06) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+    }
+
+    .form-group.has-error .form-label {
+      color: #fca5a5;
+    }
+
+    .field-error-msg {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #f87171;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .field-error-msg svg {
+      flex-shrink: 0;
+      stroke: #f87171;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     .variant-card-header {
       display: flex;
       align-items: center;
@@ -1737,7 +1779,7 @@
               <a href="{% url 'admin_product_list' %}" class="btn-cancel">
                 Cancel
               </a>
-              <button type="submit" form="productAddForm" class="btn-save-primary">
+              <button type="submit" form="productAddForm" class="btn-save-primary" id="submitProductBtn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
                   <polyline points="17 21 17 13 7 13 7 21"/>
@@ -2266,6 +2308,17 @@
 
         updateSlotUI(vId, slotIdx);
         updateVariantBadge(vId);
+
+        const card = document.querySelector(`.variant-card[data-variant-id="${vId}"]`);
+        if (card) {
+          card.classList.remove("has-error");
+          const imgBox = card.querySelector(".variant-images-box");
+          if (imgBox) {
+            imgBox.classList.remove("has-error");
+            const err = imgBox.querySelector(".field-error-msg");
+            if (err) err.remove();
+          }
+        }
       }
 
       function updateSlotUI(vId, slotIdx) {
@@ -2320,6 +2373,17 @@
         variant.slots[slotIdx] = null;
         updateSlotUI(vId, slotIdx);
         updateVariantBadge(vId);
+
+        const card = document.querySelector(`.variant-card[data-variant-id="${vId}"]`);
+        if (card) {
+          card.classList.remove("has-error");
+          const imgBox = card.querySelector(".variant-images-box");
+          if (imgBox) {
+            imgBox.classList.remove("has-error");
+            const err = imgBox.querySelector(".field-error-msg");
+            if (err) err.remove();
+          }
+        }
       };
 
       // ----------------------------------------------------------------
@@ -2429,133 +2493,245 @@
       // ----------------------------------------------------------------
       // Form Submission Validation & File Assembly
       // ----------------------------------------------------------------
-      productForm.addEventListener("submit", function (e) {
+      const submitBtn = document.getElementById("submitProductBtn") || document.querySelector(".btn-save-primary");
+
+      function setSubmittingState(isSubmitting) {
+        if (!submitBtn) return;
+        submitBtn.disabled = isSubmitting;
+        if (isSubmitting) {
+          submitBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;">
+              <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+              <path d="M12 2a10 10 0 0 1 10 10"/>
+            </svg>
+            <span>Saving Product...</span>
+          `;
+        } else {
+          submitBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            <span>Save Product</span>
+          `;
+        }
+      }
+
+      function getCsrfToken() {
+        const tokenInput = productForm.querySelector('[name=csrfmiddlewaretoken]');
+        if (tokenInput && tokenInput.value) return tokenInput.value;
+        const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+        return cookieMatch ? cookieMatch[1] : "";
+      }
+
+      function clearAllErrors() {
         hideError();
+        document.querySelectorAll(".has-error").forEach((el) => {
+          el.classList.remove("has-error");
+        });
+        document.querySelectorAll(".field-error-msg").forEach((el) => {
+          el.remove();
+        });
+      }
 
-        // 1. Validate Product Information
-        const name = document.getElementById("productName").value.trim();
-        const category = document.getElementById("categorySelect").value.trim();
-        const price = parseFloat(document.getElementById("basePrice").value);
-        const threshold = parseInt(document.getElementById("lowStockThreshold").value, 10);
-        const desc = document.getElementById("productDescription").value.trim();
+      function showFieldError(field, message) {
+        clearAllErrors();
 
-        if (!name) {
-          e.preventDefault();
-          showError("Product title is required.");
+        if (!field) {
+          showError(message || "Validation error occurred.");
           return;
         }
 
-        if (!category) {
-          e.preventDefault();
-          showError("Please select a catalog category.");
-          return;
-        }
+        let targetInput = null;
+        let targetGroup = null;
 
-        if (isNaN(price) || price <= 0) {
-          e.preventDefault();
-          showError("Please enter a valid regular price greater than zero.");
-          return;
-        }
-
-        if (isNaN(threshold) || threshold < 0) {
-          e.preventDefault();
-          showError("Low stock threshold cannot be negative.");
-          return;
-        }
-
-        if (!desc) {
-          e.preventDefault();
-          showError("Product description and collector notes are required.");
-          return;
-        }
-
-        // 2. Validate Variants
         const cards = variantsContainer.querySelectorAll(".variant-card");
-        if (cards.length === 0) {
-          e.preventDefault();
-          showError("Please add at least one product variant.");
-          return;
+
+        if (field === "name") {
+          targetInput = document.getElementById("productName");
+          targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+        } else if (field === "description") {
+          targetInput = document.getElementById("productDescription");
+          targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+        } else if (field === "regular_price") {
+          targetInput = document.getElementById("basePrice");
+          targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+        } else if (field === "low_stock_threshold") {
+          targetInput = document.getElementById("lowStockThreshold");
+          targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+        } else if (field === "category") {
+          targetInput = document.getElementById("categorySelect");
+          targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+        } else if (field === "variants") {
+          targetGroup = document.getElementById("variantsContainer");
+        } else {
+          // Dynamic variant fields: variant_color_0, variant_size_1, variant_price_0, variant_stock_0, variant_images_0, etc.
+          const match = field.match(/^variant_(color|size|price|stock|images)(?:_(\d+))?$/);
+          if (match) {
+            const subType = match[1];
+            const vIndex = match[2] !== undefined ? parseInt(match[2], 10) : 0;
+            const card = cards[vIndex];
+
+            if (card) {
+              if (subType === "color") {
+                targetInput = card.querySelector("[name='variant_color[]']");
+                targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+              } else if (subType === "size") {
+                targetInput = card.querySelector("[name='variant_size[]']");
+                targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+              } else if (subType === "price") {
+                targetInput = card.querySelector("[name='variant_price[]']");
+                targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+              } else if (subType === "stock") {
+                targetInput = card.querySelector("[name='variant_stock[]']");
+                targetGroup = targetInput ? targetInput.closest(".form-group") : null;
+              } else if (subType === "images") {
+                card.classList.add("has-error");
+                targetGroup = card.querySelector(".variant-images-box") || card;
+              }
+            }
+          }
         }
 
-        for (let idx = 0; idx < cards.length; idx++) {
-          const card = cards[idx];
-          const colorInput = card.querySelector("[name='variant_color[]']");
-          const sizeInput = card.querySelector("[name='variant_size[]']");
-          const priceInput = card.querySelector("[name='variant_price[]']");
-          const stockInput = card.querySelector("[name='variant_stock[]']");
-
-          const colorVal = colorInput.value.trim();
-          const sizeVal = sizeInput.value.trim();
-          const priceVal = parseFloat(priceInput.value);
-          const stockVal = parseInt(stockInput.value, 10);
-
-          if (!colorVal) {
-            e.preventDefault();
-            showError(`Variant ${idx + 1} colour is required.`);
-            colorInput.focus();
-            return;
-          }
-          if (!sizeVal) {
-            e.preventDefault();
-            showError(`Variant ${idx + 1} size is required.`);
-            sizeInput.focus();
-            return;
-          }
-          if (isNaN(priceVal) || priceVal <= 0) {
-            e.preventDefault();
-            showError(`Variant ${idx + 1} price must be greater than zero.`);
-            priceInput.focus();
-            return;
-          }
-          if (isNaN(stockVal) || stockVal < 0) {
-            e.preventDefault();
-            showError(`Variant ${idx + 1} stock units cannot be negative.`);
-            stockInput.focus();
-            return;
+        if (targetGroup) {
+          targetGroup.classList.add("has-error");
+          if (targetInput) {
+            targetInput.classList.add("has-error");
           }
 
-          // Check that this variant has EXACTLY 3 images
+          // Create or update field-specific error element
+          let errorEl = targetGroup.querySelector(".field-error-msg");
+          if (!errorEl) {
+            errorEl = document.createElement("span");
+            errorEl.className = "field-error-msg";
+            targetGroup.appendChild(errorEl);
+          }
+          errorEl.innerHTML = `
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>${escapeHtml(message)}</span>
+          `;
+
+          // Scroll into view & focus matching input
+          targetGroup.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (targetInput && typeof targetInput.focus === "function") {
+            targetInput.focus();
+          }
+        } else {
+          // Fallback if no matching input was found
+          showError(message);
+        }
+      }
+
+      // Real-time clearing of error styling when user interacts with an invalid input
+      productForm.addEventListener("input", function (e) {
+        const target = e.target;
+        if (!target) return;
+        const group = target.closest(".form-group");
+        if (group && group.classList.contains("has-error")) {
+          group.classList.remove("has-error");
+          target.classList.remove("has-error");
+          const errorEl = group.querySelector(".field-error-msg");
+          if (errorEl) errorEl.remove();
+        }
+      });
+
+      productForm.addEventListener("change", function (e) {
+        const target = e.target;
+        if (!target) return;
+        const group = target.closest(".form-group");
+        if (group && group.classList.contains("has-error")) {
+          group.classList.remove("has-error");
+          target.classList.remove("has-error");
+          const errorEl = group.querySelector(".field-error-msg");
+          if (errorEl) errorEl.remove();
+        }
+      });
+
+      productForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        clearAllErrors();
+
+        // Assemble files from memory slots into hidden file inputs and FormData
+        const cards = variantsContainer.querySelectorAll(".variant-card");
+        const formData = new FormData(productForm);
+
+        cards.forEach((card, idx) => {
           const vId = card.getAttribute("data-variant-id");
           const variantObj = variants.find((v) => v.id === vId);
+          const fieldName = `variant_images_${idx}`;
 
-          const has3 = variantObj && variantObj.slots[0] && variantObj.slots[1] && variantObj.slots[2];
-          if (!has3) {
-            e.preventDefault();
-            card.classList.add("has-error");
-            showError(`Variant ${idx + 1} must have exactly 3 images.`);
-            card.scrollIntoView({ behavior: "smooth", block: "center" });
-            return;
-          } else {
-            card.classList.remove("has-error");
-          }
-
-          // Assemble DataTransfer for this variant (exactly 3 files)
           const dt = new DataTransfer();
-          for (let s = 0; s < 3; s++) {
-            const slotData = variantObj.slots[s];
-            const blob = slotData.croppedBlob || slotData.file;
-            const originalName = slotData.file.name || `image_${s + 1}.jpg`;
-            const ext = slotData.croppedBlob ? ".jpg" : (originalName.match(/\.[^/.]+$/) || [".jpg"])[0];
-            const base = originalName.replace(/\.[^/.]+$/, "");
-            const filename = `${base}_slot${s + 1}${ext}`;
+          formData.delete(fieldName);
 
-            const fileObj = new File([blob], filename, {
-              type: blob.type || "image/jpeg",
-              lastModified: Date.now(),
-            });
-            dt.items.add(fileObj);
+          if (variantObj && variantObj.slots) {
+            for (let s = 0; s < 3; s++) {
+              const slotData = variantObj.slots[s];
+              if (slotData) {
+                const blob = slotData.croppedBlob || slotData.file;
+                const originalName = (slotData.file && slotData.file.name) ? slotData.file.name : `image_${s + 1}.jpg`;
+                const ext = slotData.croppedBlob ? ".jpg" : (originalName.match(/\.[^/.]+$/) || [".jpg"])[0];
+                const base = originalName.replace(/\.[^/.]+$/, "");
+                const filename = `${base}_slot${s + 1}${ext}`;
+
+                const fileObj = new File([blob], filename, {
+                  type: blob.type || "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                dt.items.add(fileObj);
+                formData.append(fieldName, fileObj);
+              }
+            }
           }
 
-          const hiddenInput = card.querySelector(".variant-hidden-file-input");
-          hiddenInput.name = `variant_images_${idx}`;
+          let hiddenInput = card.querySelector(".variant-hidden-file-input");
+          if (!hiddenInput) {
+            hiddenInput = document.createElement("input");
+            hiddenInput.type = "file";
+            hiddenInput.multiple = true;
+            hiddenInput.className = "variant-hidden-file-input";
+            hiddenInput.style.display = "none";
+            card.appendChild(hiddenInput);
+          }
+          hiddenInput.name = fieldName;
           hiddenInput.files = dt.files;
-        }
+        });
 
-        // Submit state
-        const submitBtn = document.getElementById("submitBtn");
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = `<span>Saving Product...</span>`;
+        setSubmittingState(true);
+
+        try {
+          const response = await fetch(productForm.action || window.location.href, {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "X-Requested-With": "XMLHttpRequest",
+              "X-CSRFToken": getCsrfToken(),
+            },
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (data && data.success) {
+            const redirectUrl = data.redirect_url || "{% url 'admin_product_list' %}";
+            window.location.href = redirectUrl;
+            return;
+          }
+
+          // Handle field-specific validation error from backend
+          setSubmittingState(false);
+          const errorField = data && data.field ? data.field : null;
+          const errorMessage = data && data.message ? data.message : "Validation error occurred.";
+          showFieldError(errorField, errorMessage);
+
+        } catch (err) {
+          console.error("Product add error:", err);
+          setSubmittingState(false);
+          showError("An unexpected error occurred while saving the product. Please try again.");
         }
       });
 

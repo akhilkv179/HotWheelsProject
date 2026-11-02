@@ -2622,6 +2622,8 @@
       const baseTotalAmount = parseFloat("{{ total_amount|default:0 }}");
 
       let currentAppliedDiscount = 0;
+      let appliedCouponCode = null;
+      let availableCouponsCache = null;
 
       function formatCurrency(num) {
         return num.toLocaleString('en-IN', {
@@ -2630,20 +2632,77 @@
         });
       }
 
-      function estimateCouponDiscount(code, eligibleSubtotal) {
-        if (!code || eligibleSubtotal <= 0) return 0;
-        const upperCode = code.toUpperCase();
+      function parseCouponsFromHtml(htmlText) {
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlText, 'text/html');
+          const cards = doc.querySelectorAll('.coupon-card');
+          const list = [];
+          cards.forEach(card => {
+            const code = (card.getAttribute('data-code') || card.querySelector('.coupon-code-text')?.textContent || '').trim().toUpperCase();
+            if (!code) return;
 
-        const numMatch = upperCode.match(/\d+/);
-        if (numMatch) {
-          const val = parseFloat(numMatch[0]);
-          if (upperCode.includes('FLAT') || upperCode.includes('FIXED') || val > 100) {
-            return Math.min(val, eligibleSubtotal);
-          } else if (val > 0 && val <= 100) {
-            return Math.round((eligibleSubtotal * (val / 100)) * 100) / 100;
-          }
+            const stubVal = card.querySelector('.stub-discount-val')?.textContent || '';
+            const isPercent = stubVal.includes('%');
+            const discountVal = parseFloat(stubVal.replace(/[^0-9.]/g, '') || 0);
+
+            let minSpend = 0;
+            let maxDiscount = 0;
+            const details = card.querySelectorAll('.coupon-detail-item');
+            details.forEach(item => {
+              const text = item.textContent || '';
+              const minMatch = text.match(/Min\s*Order:\s*₹?\s*([\d,]+)/i);
+              if (minMatch) minSpend = parseFloat(minMatch[1].replace(/,/g, ''));
+              const maxMatch = text.match(/Max\s*Discount:\s*₹?\s*([\d,]+)/i);
+              if (maxMatch) maxDiscount = parseFloat(maxMatch[1].replace(/,/g, ''));
+            });
+
+            list.push({
+              code: code,
+              discountType: isPercent ? 'percentage' : 'fixed',
+              discountValue: discountVal,
+              minimumSpend: minSpend,
+              maximumDiscount: maxDiscount
+            });
+          });
+          return list;
+        } catch (e) {
+          console.warn('Error parsing available coupons HTML:', e);
+          return [];
         }
-        return Math.round((eligibleSubtotal * 0.10) * 100) / 100;
+      }
+
+      async function fetchAvailableCoupons() {
+        try {
+          const res = await fetch("{% url 'user_coupon_list' %}", {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          });
+          if (res.ok) {
+            const htmlText = await res.text();
+            availableCouponsCache = parseCouponsFromHtml(htmlText);
+            return availableCouponsCache;
+          }
+        } catch (err) {
+          console.warn('Failed to fetch available coupons list:', err);
+        }
+        return availableCouponsCache || [];
+      }
+
+      // Prefetch available coupons on load
+      fetchAvailableCoupons();
+
+      function computeCouponDiscount(coupon, eligibleSubtotal) {
+        let discount = 0;
+        if (coupon.discountType === 'percentage') {
+          discount = Math.round((eligibleSubtotal * (coupon.discountValue / 100)) * 100) / 100;
+          if (coupon.maximumDiscount > 0) {
+            discount = Math.min(discount, coupon.maximumDiscount);
+          }
+        } else {
+          discount = coupon.discountValue;
+        }
+        discount = Math.min(discount, eligibleSubtotal);
+        return Math.round(discount * 100) / 100;
       }
 
       function showCouponMessage(text, isError = false) {
@@ -2687,7 +2746,7 @@
         }
       }
 
-      function applyCouponAction() {
+      async function applyCouponAction() {
         if (!couponInput) return;
         const code = couponInput.value.trim().toUpperCase();
         clearCouponMessage();
@@ -2702,28 +2761,97 @@
 
         setCouponApplyingState(true);
 
-        setTimeout(() => {
-          couponInput.value = code;
-          if (couponActionInput) couponActionInput.value = 'apply';
+        try {
+          // 1. Check against the user's available active coupons
+          const coupons = await fetchAvailableCoupons();
+          const matched = coupons.find(c => c.code === code);
 
-          const discount = estimateCouponDiscount(code, baseDiscountedSubtotal);
-          refreshDisplayedTotals(code, discount);
+          if (matched) {
+            // Check minimum spend requirement
+            if (baseDiscountedSubtotal < matched.minimumSpend) {
+              couponInput.classList.add('has-error');
+              showCouponMessage(`Minimum spend of ₹${formatCurrency(matched.minimumSpend)} is required.`, true);
+              setCouponApplyingState(false);
+              return;
+            }
 
-          if (appliedCouponCodeBadge) appliedCouponCodeBadge.textContent = code;
-          if (appliedCouponStatusText) {
-            appliedCouponStatusText.textContent = discount > 0
-              ? `Applied (-₹${formatCurrency(discount)})`
-              : 'Coupon applied';
+            const discount = computeCouponDiscount(matched, baseDiscountedSubtotal);
+            if (discount <= 0) {
+              couponInput.classList.add('has-error');
+              showCouponMessage('This coupon does not provide a valid discount.', true);
+              setCouponApplyingState(false);
+              return;
+            }
+
+            appliedCouponCode = code;
+            couponInput.value = code;
+            if (couponActionInput) couponActionInput.value = 'apply';
+
+            refreshDisplayedTotals(code, discount);
+
+            if (appliedCouponCodeBadge) appliedCouponCodeBadge.textContent = code;
+            if (appliedCouponStatusText) {
+              appliedCouponStatusText.textContent = `Applied (-₹${formatCurrency(discount)})`;
+            }
+            if (couponInputGroup) couponInputGroup.style.display = 'none';
+            if (appliedCouponCard) appliedCouponCard.style.display = 'flex';
+
+            showCouponMessage(`Coupon "${code}" applied. ₹${formatCurrency(discount)} discount reflected in total.`, false);
+            setCouponApplyingState(false);
+            return;
           }
-          if (couponInputGroup) couponInputGroup.style.display = 'none';
-          if (appliedCouponCard) appliedCouponCard.style.display = 'flex';
 
-          showCouponMessage(`Coupon "${code}" applied. ₹${formatCurrency(discount)} discount reflected in total.`, false);
+          // 2. Coupon is NOT in available coupons (e.g. expired, inactive, limit reached, or invalid).
+          // Send request to backend checkout endpoint to obtain the exact backend validation error.
+          const csrfToken = (function() {
+            const tokenInput = checkoutForm ? checkoutForm.querySelector('[name=csrfmiddlewaretoken]') : null;
+            if (tokenInput && tokenInput.value) return tokenInput.value;
+            const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
+          })();
+
+          const testFormData = new FormData();
+          testFormData.set('csrfmiddlewaretoken', csrfToken);
+          testFormData.set('coupon_code', code);
+          const selPayment = document.querySelector('.payment-option-card.selected:not(.disabled)');
+          testFormData.set('payment_method', selPayment ? selPayment.getAttribute('data-method') : 'cod');
+
+          const addrRadio = document.querySelector('input[name="address_id"]:checked') || document.querySelector('input[name="address_id"]');
+          if (addrRadio && addrRadio.value) {
+            testFormData.set('address_id', addrRadio.value);
+          }
+
+          const res = await fetch(checkoutForm ? (checkoutForm.action || window.location.href) : window.location.href, {
+            method: 'POST',
+            body: testFormData,
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrfToken
+            }
+          });
+
+          const data = await res.json().catch(() => ({}));
+          let errorMsg = 'Invalid coupon code.';
+          if (data && data.error) {
+            const errLower = data.error.toLowerCase();
+            if (errLower.includes('coupon') || errLower.includes('expired') || errLower.includes('spend') || errLower.includes('discount') || errLower.includes('active') || errLower.includes('limit')) {
+              errorMsg = data.error;
+            }
+          }
+
+          couponInput.classList.add('has-error');
+          showCouponMessage(errorMsg, true);
+        } catch (err) {
+          couponInput.classList.add('has-error');
+          showCouponMessage('Invalid coupon code.', true);
+        } finally {
           setCouponApplyingState(false);
-        }, 120);
+        }
       }
 
       function removeCouponAction() {
+        appliedCouponCode = null;
         clearCouponMessage();
         refreshDisplayedTotals('', 0);
 

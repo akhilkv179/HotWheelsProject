@@ -1918,9 +1918,9 @@
             <span class="unavailable-pill-tag">Unavailable</span>
           {% elif stock_status == 'sold_out' %}
             <span class="unavailable-pill-tag">Sold Out</span>
-          {% elif product.offer_percentage and product.offer_percentage > 0 %}
+          {% elif product.offer_percentage and product.offer_percentage > 0 or product.sale_price and product.sale_price < product.regular_price %}
             <span class="discount-ribbon-pill">
-              {{ product.offer_name|default:"Limited Sale" }} &bull; {{ product.offer_percentage|floatformat:0 }}% OFF
+              {{ product.offer_name|default:"Limited Sale" }}{% if product.offer_percentage and product.offer_percentage > 0 %} &bull; {{ product.offer_percentage|floatformat:0 }}% OFF{% endif %}
             </span>
           {% endif %}
         </div>
@@ -1952,24 +1952,26 @@
             <span class="price-sale-huge" id="displayedPrice">
               ₹{{ product.sale_price }}
             </span>
-            {% if product.offer_percentage and product.offer_percentage > 0 %}
+            {% if product.offer_percentage and product.offer_percentage > 0 or product.sale_price and product.sale_price < product.regular_price %}
               <span class="price-regular-strike" id="displayedRegularPrice">
                 ₹{{ product.regular_price }}
               </span>
-              <span class="price-discount-tag" id="discountBadge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="19" y1="5" x2="5" y2="19"/>
-                  <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
-                  <circle cx="17.5" cy="17.5" r="2.5" fill="currentColor"/>
-                </svg>
-                <span>{{ product.offer_percentage|floatformat:0 }}% OFF</span>
-              </span>
+              {% if product.offer_percentage and product.offer_percentage > 0 %}
+                <span class="price-discount-tag" id="discountBadge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="5" x2="5" y2="19"/>
+                    <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
+                    <circle cx="17.5" cy="17.5" r="2.5" fill="currentColor"/>
+                  </svg>
+                  <span>{{ product.offer_percentage|floatformat:0 }}% OFF</span>
+                </span>
+              {% endif %}
             {% endif %}
           </div>
 
           <div class="price-tax-note">
             <span class="tax-text">Inclusive of all taxes</span>
-            {% if product.offer_percentage and product.offer_percentage > 0 %}
+            {% if product.offer_percentage and product.offer_percentage > 0 or product.sale_price and product.sale_price < product.regular_price %}
               <span class="offer-savings-text">
                 {% if product.offer_name %}{{ product.offer_name }}{% else %}Special Offer Applied{% endif %}
               </span>

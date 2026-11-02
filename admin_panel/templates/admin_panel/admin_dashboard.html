@@ -349,7 +349,7 @@
       gap: 20px;
     }
 
-    /* Header Row: Good morning, Hot Wheels Admin. + Date Filter & Export */
+    /* Header Row: Good morning, Hot Wheels Admin. + Date Filter */
     .dashboard-header-row {
       display: flex;
       align-items: flex-start;
@@ -419,101 +419,25 @@
       stroke: var(--text-muted);
     }
 
-    /* Export Pill Button with Dropdown */
-    .export-dropdown-wrap {
-      position: relative;
-    }
-
-    .btn-export {
-      background: var(--accent-red);
-      color: #ffffff;
-      border: none;
-      border-radius: 9999px;
-      padding: 10px 22px;
-      font-size: 12.5px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      box-shadow: 0 4px 18px var(--accent-red-glow);
-      transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
-    }
-
-    .btn-export:hover {
-      background-color: var(--accent-red-hover);
-      box-shadow: 0 6px 24px rgba(229, 27, 36, 0.55);
-      transform: translateY(-1px);
-    }
-
-    .btn-export svg {
-      width: 15px;
-      height: 15px;
-    }
-
-    .export-menu {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      background: #181820;
-      border: 1px solid var(--border-card);
-      border-radius: 10px;
-      padding: 6px;
-      min-width: 180px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-      display: none;
-      flex-direction: column;
-      gap: 2px;
-      z-index: 100;
-    }
-
-    .export-menu.open {
-      display: flex;
-      animation: fadeInDropdown 0.2s ease;
-    }
-
-    @keyframes fadeInDropdown {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .export-option {
-      padding: 9px 14px;
-      color: #d1d2dc;
-      text-decoration: none;
-      font-size: 12.5px;
-      font-weight: 600;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: background-color 0.15s, color 0.15s;
-    }
-
-    .export-option:hover {
-      background-color: rgba(229, 27, 36, 0.14);
-      color: #ffffff;
-    }
-
     /* ==================================================
-       ROW 1: METRICS 4-CARD GRID
+       ROW 1: METRICS 10-CARD GRID (SALES, REVENUE, CATALOG)
        ================================================== */
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
     }
 
     .metric-card {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
       border-radius: 12px;
-      padding: 20px 22px;
+      padding: 18px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
+      min-height: 120px;
       transition: border-color 0.2s, transform 0.2s;
     }
 
@@ -529,48 +453,70 @@
     }
 
     .metric-title {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 800;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #7a7b8a;
     }
 
+    .metric-icon-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
     .metric-icon-wrap svg {
-      width: 17px;
-      height: 17px;
-      stroke: #5d5e6d;
+      width: 15px;
+      height: 15px;
+      stroke: #8e8f9c;
     }
 
     .metric-value {
-      font-size: 26px;
+      font-size: clamp(19px, 1.6vw, 23px);
       font-weight: 800;
       color: #ffffff;
-      line-height: 1.1;
+      line-height: 1.15;
       font-feature-settings: "tnum";
+      letter-spacing: -0.01em;
     }
 
     .metric-trend {
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .metric-trend.trend-positive {
+      color: var(--accent-green);
+    }
+
+    .metric-trend.trend-info {
       color: var(--accent-gold);
     }
 
+    .metric-trend.trend-coral {
+      color: var(--accent-coral);
+    }
+
     .metric-trend svg {
-      width: 13px;
-      height: 13px;
-      stroke: var(--accent-gold);
+      width: 12px;
+      height: 12px;
     }
 
     /* ==================================================
-       ROW 2: SALES PERFORMANCE (65%) & REVENUE BREAKDOWN (35%)
+       DASHBOARD TWO COLUMN GRID (REVENUE & PAYMENTS)
        ================================================== */
     .dashboard-two-col {
       display: grid;
-      grid-template-columns: 1.8fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
 
@@ -596,87 +542,6 @@
       font-weight: 700;
       color: #ffffff;
       letter-spacing: -0.01em;
-    }
-
-    /* Segmented Control (Week / Month / Year) */
-    .segmented-control {
-      background: #0f0f13;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 7px;
-      padding: 3px;
-      display: flex;
-      gap: 2px;
-    }
-
-    .segment-btn {
-      background: transparent;
-      border: none;
-      color: #7a7b8b;
-      font-size: 11.5px;
-      font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: color 0.15s, background-color 0.15s;
-    }
-
-    .segment-btn:hover {
-      color: #ffffff;
-    }
-
-    .segment-btn.active {
-      background: #202029;
-      color: #ffffff;
-      font-weight: 700;
-    }
-
-    /* SVG Sales Performance Curved Line Chart */
-    .chart-container {
-      width: 100%;
-      height: 200px;
-      position: relative;
-      margin-top: 10px;
-    }
-
-    .chart-svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-
-    .chart-grid-line {
-      stroke: rgba(255, 255, 255, 0.04);
-      stroke-width: 1;
-      stroke-dasharray: 4 4;
-    }
-
-    .chart-glow-path {
-      fill: url(#redAreaGradient);
-      opacity: 0.85;
-      transition: d 0.4s ease;
-    }
-
-    .chart-line-path {
-      fill: none;
-      stroke: var(--accent-red);
-      stroke-width: 3.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      filter: drop-shadow(0 0 10px rgba(229, 27, 36, 0.6));
-      transition: d 0.4s ease;
-    }
-
-    .chart-point {
-      fill: var(--accent-red);
-      stroke: #ffffff;
-      stroke-width: 2.5;
-      cursor: pointer;
-      transition: r 0.15s ease;
-    }
-
-    .chart-point:hover {
-      r: 6;
-      filter: drop-shadow(0 0 12px rgba(229, 27, 36, 0.9));
     }
 
     /* Revenue Breakdown List */
@@ -738,130 +603,81 @@
       font-feature-settings: "tnum";
     }
 
-    /* ==================================================
-       ROW 3: BEST SELLING PRODUCTS & OPERATIONS / PAYMENTS
-       ================================================== */
-    .products-list {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .product-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    .product-item:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .product-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .product-thumb {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      background: #171821;
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .product-thumb svg {
-      width: 22px;
-      height: 22px;
-      stroke: #666778;
-    }
-
-    .product-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .product-name {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: #ffffff;
-      line-height: 1.2;
-    }
-
-    .product-sold {
-      font-size: 12px;
-      color: #828392;
-    }
-
-    .product-right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-    }
-
-    .product-price {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: #ffffff;
-      font-feature-settings: "tnum";
-    }
-
-    .product-badge {
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .product-badge.gold {
-      color: var(--accent-gold);
-    }
-
-    .product-badge.blue {
-      color: var(--accent-blue);
-    }
-
-    .product-badge.green {
-      color: var(--accent-lime);
-    }
-
-    /* Stacked Right Column: Operations + Payments */
-    .stacked-col {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+    /* Operations Status Grid */
 
     .ops-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
     }
 
     .ops-box {
       background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 8px;
       padding: 12px 14px;
       display: flex;
       flex-direction: column;
       gap: 6px;
+      transition: border-color 0.15s ease, transform 0.15s ease;
     }
 
-    .ops-box.highlight-returns {
-      border: 1px solid rgba(239, 68, 68, 0.25);
+    .ops-box:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .status-box-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .dot-pending { background-color: #eab308; box-shadow: 0 0 6px rgba(234, 179, 8, 0.5); }
+    .dot-confirmed { background-color: #38bdf8; box-shadow: 0 0 6px rgba(56, 189, 248, 0.5); }
+    .dot-processing { background-color: #818cf8; box-shadow: 0 0 6px rgba(129, 140, 248, 0.5); }
+    .dot-shipped { background-color: #c084fc; box-shadow: 0 0 6px rgba(192, 132, 252, 0.5); }
+    .dot-delivered { background-color: #22c55e; box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
+    .dot-cancelled { background-color: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+    .dot-returned { background-color: #f97316; box-shadow: 0 0 6px rgba(249, 115, 22, 0.5); }
+
+    .status-card-delivered { border-left: 3px solid #22c55e; }
+    .status-card-pending { border-left: 3px solid #eab308; }
+    .status-card-processing { border-left: 3px solid #818cf8; }
+    .status-card-confirmed { border-left: 3px solid #38bdf8; }
+    .status-card-shipped { border-left: 3px solid #c084fc; }
+    .status-card-cancelled { border-left: 3px solid #ef4444; }
+    .status-card-returned { border-left: 3px solid #f97316; }
+
+    .status-empty-box {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg-card-inner);
+      border-radius: 8px;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+    .status-summary-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px 8px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .ops-label {
@@ -870,6 +686,9 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: #717282;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .ops-value {
@@ -878,10 +697,6 @@
       color: #ffffff;
       line-height: 1.1;
       font-feature-settings: "tnum";
-    }
-
-    .ops-box.highlight-returns .ops-value {
-      color: #f87171;
     }
 
     /* Payments Progress Rows */
@@ -897,7 +712,7 @@
     .payments-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
 
     .payment-row {
@@ -925,38 +740,52 @@
 
     .progress-track {
       flex: 1;
-      height: 4px;
+      height: 5px;
       background: #1a1a24;
-      border-radius: 2px;
+      border-radius: 3px;
       overflow: hidden;
       position: relative;
     }
 
     .progress-fill {
       height: 100%;
-      border-radius: 2px;
+      border-radius: 3px;
+      transition: width 0.4s ease;
     }
 
     .fill-razorpay {
       background-color: #eab308;
-      width: 65%;
     }
 
     .fill-wallet {
       background-color: #f87171;
-      width: 25%;
     }
 
     .fill-cod {
-      background-color: #9ca3af;
-      width: 10%;
+      background-color: #60a5fa;
+    }
+
+    .payment-stat-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 95px;
+      justify-content: flex-end;
+    }
+
+    .payment-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      font-feature-settings: "tnum";
     }
 
     .payment-pct {
-      font-size: 12px;
-      font-weight: 600;
-      color: #8c8d99;
-      width: 32px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      min-width: 30px;
       text-align: right;
       font-feature-settings: "tnum";
     }
@@ -1087,7 +916,18 @@
       border: 1px solid rgba(34, 197, 94, 0.3);
     }
 
-    .status-badge.processing,
+    .status-badge.confirmed {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .status-badge.processing {
+      background: rgba(129, 140, 248, 0.12);
+      color: #818cf8;
+      border: 1px solid rgba(129, 140, 248, 0.3);
+    }
+
     .status-badge.pending {
       background: rgba(234, 179, 8, 0.12);
       color: #eab308;
@@ -1095,15 +935,71 @@
     }
 
     .status-badge.shipped {
-      background: rgba(234, 179, 8, 0.12);
-      color: #eab308;
-      border: 1px solid rgba(234, 179, 8, 0.3);
+      background: rgba(192, 132, 252, 0.12);
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.3);
+    }
+
+    .status-badge.cancelled {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-badge.returned {
+      background: rgba(249, 115, 22, 0.12);
+      color: #f97316;
+      border: 1px solid rgba(249, 115, 22, 0.3);
     }
 
     .status-badge.neutral {
       background: rgba(156, 163, 175, 0.12);
       color: #9ca3af;
       border: 1px solid rgba(156, 163, 175, 0.3);
+    }
+
+    /* Live Sync Pill & Alert Box */
+    .dashboard-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      padding: 4px 10px;
+      border-radius: 9999px;
+    }
+
+    .live-pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #22c55e;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+      animation: pulseLive 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseLive {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .dashboard-alert-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 12.5px;
+      color: #fca5a5;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
     /* Table Pagination */
@@ -1162,7 +1058,13 @@
       display: block;
     }
 
-    @media (max-width: 1200px) {
+    @media (max-width: 1400px) {
+      .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 1100px) {
       .metrics-grid {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -1308,22 +1210,11 @@
             </a>
           </div>
 
-          <!-- CONTENT -->
-          <div class="nav-group">
-            <span class="nav-group-label">CONTENT</span>
-            <a href="#" class="nav-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <line x1="3" y1="9" x2="21" y2="9"/>
-              </svg>
-              <span>Banners</span>
-            </a>
-          </div>
 
           <!-- ANALYTICS -->
           <div class="nav-group">
             <span class="nav-group-label">ANALYTICS</span>
-            <a href="#" class="nav-item">
+            <a href="{% url 'sales_revenue' %}" class="nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
@@ -1334,7 +1225,7 @@
           <!-- SYSTEM -->
           <div class="nav-group">
             <span class="nav-group-label">SYSTEM</span>
-            <a href="#" class="nav-item">
+            <a href="{% url 'admin_profile' %}" class="nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -1411,92 +1302,94 @@
           <div class="header-greeting-block">
             <h1 class="greeting-title">
               Good morning,
-              <span class="accent-name">Hot Wheels Admin.</span>
+              <span class="accent-name">{{ request.user.username|default:"Hot Wheels Admin" }}.</span>
             </h1>
-            <p class="greeting-subtitle">Detailed financial performance and sales analysis.</p>
+            <p class="greeting-subtitle">Detailed financial performance, live revenue metrics, and operational overview.</p>
           </div>
 
           <div class="header-actions-block">
-            <!-- Date Filter Pill -->
-            <button type="button" class="date-filter-btn" id="dateFilterBtn">
+            <!-- Date Filter Pill linking to Sales & Revenue -->
+            <a href="{% url 'sales_revenue' %}" class="date-filter-btn" id="dateFilterBtn" style="text-decoration: none;" title="Open detailed Sales & Revenue filter">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                 <line x1="16" y1="2" x2="16" y2="6"/>
                 <line x1="8" y1="2" x2="8" y2="6"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              <span id="currentDateDisplay">August 2026</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-
-            <!-- Export Pill Button with Dropdown (Preserves PDF & Excel Endpoints) -->
-            <div class="export-dropdown-wrap">
-              <button type="button" class="btn-export" id="exportBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                <span>Export</span>
-              </button>
-
-              <div class="export-menu" id="exportMenu">
-                <a href="{% url 'export_orders_pdf' %}" class="export-option">
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                  <span>Export as PDF</span>
-                </a>
-                <a href="{% url 'export_orders_excel' %}" class="export-option">
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <line x1="3" y1="9" x2="21" y2="9"/>
-                    <line x1="9" y1="21" x2="9" y2="9"/>
-                  </svg>
-                  <span>Export as Excel</span>
-                </a>
-              </div>
-            </div>
+              <span id="currentDateDisplay">{% now "F Y" %}</span>
+              <span class="dashboard-live-pill">
+                <span class="live-pulse-dot"></span>
+                <span id="dashboardLiveText">Live Sync</span>
+              </span>
+            </a>
           </div>
         </div>
 
+        <!-- Live Status & Error Alert -->
+        <div id="dashboardAlertBox" class="dashboard-alert-box">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span id="dashboardAlertMessage">Unable to refresh dashboard metrics. Displaying latest server-rendered data.</span>
+        </div>
+
         <!-- ==================================================
-             ROW 1: 4 TOP METRIC CARDS
+             ROW 1: 10 SUMMARY METRIC CARDS (SALES, REVENUE, PLATFORM)
              ================================================== -->
         <section class="metrics-grid">
 
-          <!-- TOTAL REVENUE -->
-          <div class="metric-card">
+          <!-- 1. TOTAL REVENUE -->
+          <div class="metric-card" id="cardTotalRevenue">
             <div class="metric-header">
               <span class="metric-title">TOTAL REVENUE</span>
               <span class="metric-icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                  <polyline points="17 6 23 6 23 12"/>
+                  <line x1="12" y1="1" x2="12" y2="23"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                 </svg>
               </span>
             </div>
-            <div class="metric-value">
-              {% if total_revenue %}
-                ₹{{ total_revenue|floatformat:0 }}
-              {% else %}
-                ₹2,48,650
-              {% endif %}
+            <div class="metric-value" id="metricTotalRevenue">
+              ₹{{ total_revenue|floatformat:2 }}
             </div>
-            <div class="metric-trend">
+            <div class="metric-trend trend-positive">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
                 <polyline points="17 6 23 6 23 12"/>
               </svg>
-              <span>+12.5% vs last month</span>
+              <span>Delivered Orders</span>
             </div>
           </div>
 
-          <!-- TOTAL SALES -->
-          <div class="metric-card">
+          <!-- 2. MONTHLY REVENUE -->
+          <div class="metric-card" id="cardMonthlyRevenue">
+            <div class="metric-header">
+              <span class="metric-title">MONTHLY REVENUE</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value" id="metricMonthlyRevenue">
+              ₹{{ monthly_revenue|floatformat:2 }}
+            </div>
+            <div class="metric-trend trend-positive">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+              <span>Current Month</span>
+            </div>
+          </div>
+
+          <!-- 3. TOTAL SALES -->
+          <div class="metric-card" id="cardTotalSales">
             <div class="metric-header">
               <span class="metric-title">TOTAL SALES</span>
               <span class="metric-icon-wrap">
@@ -1507,24 +1400,16 @@
                 </svg>
               </span>
             </div>
-            <div class="metric-value">
-              {% if total_orders and total_orders > 0 %}
-                {{ total_orders }}
-              {% else %}
-                1,248
-              {% endif %}
+            <div class="metric-value" id="metricTotalSales">
+              {{ total_sales|default:0 }}
             </div>
-            <div class="metric-trend">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                <polyline points="17 6 23 6 23 12"/>
-              </svg>
-              <span>+8.2% vs last month</span>
+            <div class="metric-trend trend-info">
+              <span>Delivered Sales</span>
             </div>
           </div>
 
-          <!-- TOTAL ORDERS -->
-          <div class="metric-card">
+          <!-- 4. TOTAL ORDERS -->
+          <div class="metric-card" id="cardTotalOrders">
             <div class="metric-header">
               <span class="metric-title">TOTAL ORDERS</span>
               <span class="metric-icon-wrap">
@@ -1535,99 +1420,170 @@
                 </svg>
               </span>
             </div>
-            <div class="metric-value">
-              {% if total_orders and total_orders > 0 %}
-                {{ total_orders }}
-              {% else %}
-                186
-              {% endif %}
+            <div class="metric-value" id="metricTotalOrders">
+              {{ total_orders|default:0 }}
             </div>
-            <div class="metric-trend">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                <polyline points="17 6 23 6 23 12"/>
-              </svg>
-              <span>+6.4% vs last month</span>
+            <div class="metric-trend trend-info">
+              <span>All Placed Orders</span>
             </div>
           </div>
 
-          <!-- AVG ORDER VALUE -->
-          <div class="metric-card">
+          <!-- 5. PRODUCT SALES -->
+          <div class="metric-card" id="cardProductSales">
             <div class="metric-header">
-              <span class="metric-title">AVG ORDER VALUE</span>
+              <span class="metric-title">PRODUCT SALES</span>
               <span class="metric-icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="5" width="20" height="14" rx="2"/>
-                  <line x1="2" y1="10" x2="22" y2="10"/>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
                 </svg>
               </span>
             </div>
-            <div class="metric-value" id="avgOrderValueEl">
-              ₹1,240
+            <div class="metric-value" id="metricProductSales">
+              {{ product_sales|default:0 }}
             </div>
-            <div class="metric-trend">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                <polyline points="17 6 23 6 23 12"/>
-              </svg>
-              <span>+4.8% vs last month</span>
+            <div class="metric-trend trend-info">
+              <span>Active Items Sold</span>
+            </div>
+          </div>
+
+          <!-- 6. TOTAL DISCOUNTS -->
+          <div class="metric-card" id="cardTotalDiscounts">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL DISCOUNTS</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="5" x2="5" y2="19"/>
+                  <circle cx="6.5" cy="6.5" r="2.5"/>
+                  <circle cx="17.5" cy="17.5" r="2.5"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value" id="metricTotalDiscounts">
+              ₹{{ total_discounts|floatformat:2 }}
+            </div>
+            <div class="metric-trend trend-coral">
+              <span>Active Orders</span>
+            </div>
+          </div>
+
+          <!-- 7. COUPON DISCOUNTS -->
+          <div class="metric-card" id="cardCouponDiscounts">
+            <div class="metric-header">
+              <span class="metric-title">COUPON DISCOUNTS</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="6" width="20" height="12" rx="2"/>
+                  <circle cx="12" cy="12" r="2"/>
+                  <path d="M6 12h.01M18 12h.01"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value" id="metricCouponDiscounts">
+              ₹{{ coupon_discounts|floatformat:2 }}
+            </div>
+            <div class="metric-trend trend-coral">
+              <span>Coupons Applied</span>
+            </div>
+          </div>
+
+          <!-- 8. TOTAL REFUNDS -->
+          <div class="metric-card" id="cardTotalRefunds">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL REFUNDS</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value" id="metricTotalRefunds">
+              ₹{{ total_refunds|floatformat:2 }}
+            </div>
+            <div class="metric-trend trend-coral">
+              <span>Processed Refunds</span>
+            </div>
+          </div>
+
+          <!-- 9. TOTAL CUSTOMERS -->
+          <div class="metric-card" id="cardTotalCustomers">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL CUSTOMERS</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value" id="metricTotalCustomers">
+              {{ total_customers|default:0 }}
+            </div>
+            <div class="metric-trend trend-info">
+              <span>Active Accounts</span>
+            </div>
+          </div>
+
+          <!-- 10. TOTAL PRODUCTS -->
+          <div class="metric-card" id="cardTotalProducts">
+            <div class="metric-header">
+              <span class="metric-title">TOTAL PRODUCTS</span>
+              <span class="metric-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                  <polyline points="2 17 12 22 22 17"/>
+                  <polyline points="2 12 12 17 22 12"/>
+                </svg>
+              </span>
+            </div>
+            <div class="metric-value" id="metricTotalProducts">
+              {{ total_products|default:0 }}
+            </div>
+            <div class="metric-trend trend-info">
+              <span>Catalog Inventory</span>
             </div>
           </div>
 
         </section>
 
         <!-- ==================================================
-             ROW 2: SALES PERFORMANCE (65%) & REVENUE BREAKDOWN (35%)
+             ROW 2: ORDER STATUS OVERVIEW (FULL WIDTH PANEL)
+             ================================================== -->
+        <section class="card-panel">
+          <div class="panel-header-row" style="margin-bottom: 14px;">
+            <h2 class="panel-title">Order Status Overview</h2>
+            <span class="status-summary-tag">Live Counts</span>
+          </div>
+
+          <div class="ops-grid" id="orderStatusGrid">
+            {% if order_status_counts %}
+              {% for status, count in order_status_counts.items %}
+                <div class="ops-box status-card-{{ status|lower }}">
+                  <div class="status-box-header">
+                    <span class="status-dot dot-{{ status|lower }}"></span>
+                    <span class="ops-label">{{ status|upper }}</span>
+                  </div>
+                  <span class="ops-value">{{ count }}</span>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="status-empty-box">
+                <span>No order status records</span>
+              </div>
+            {% endif %}
+          </div>
+        </section>
+
+        <!-- ==================================================
+             ROW 3: REVENUE BREAKDOWN & PAYMENT METHOD OVERVIEW
              ================================================== -->
         <section class="dashboard-two-col">
 
-          <!-- Left Card: Sales Performance Wave Chart -->
-          <div class="card-panel">
-            <div class="panel-header-row">
-              <h2 class="panel-title">Sales Performance</h2>
-
-              <!-- Time Selector Pills -->
-              <div class="segmented-control">
-                <button type="button" class="segment-btn" data-range="week">Week</button>
-                <button type="button" class="segment-btn active" data-range="month">Month</button>
-                <button type="button" class="segment-btn" data-range="year">Year</button>
-              </div>
-            </div>
-
-            <!-- SVG Smooth Crimson Wave Chart Matching Reference -->
-            <div class="chart-container">
-              <svg class="chart-svg" viewBox="0 0 700 200" preserveAspectRatio="none">
-                <defs>
-                  <!-- Glowing Red Gradient Fill -->
-                  <linearGradient id="redAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#e51b24" stop-opacity="0.32" />
-                    <stop offset="65%" stop-color="#e51b24" stop-opacity="0.08" />
-                    <stop offset="100%" stop-color="#e51b24" stop-opacity="0" />
-                  </linearGradient>
-                </defs>
-
-                <!-- Subtle Horizontal Gridlines -->
-                <line x1="10" y1="40" x2="690" y2="40" class="chart-grid-line" />
-                <line x1="10" y1="95" x2="690" y2="95" class="chart-grid-line" />
-                <line x1="10" y1="150" x2="690" y2="150" class="chart-grid-line" />
-
-                <!-- Filled Wave Area -->
-                <path id="chartAreaPath" class="chart-glow-path"
-                      d="M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42 L 690 200 L 10 200 Z" />
-
-                <!-- Neon Crimson Wave Line -->
-                <path id="chartLinePath" class="chart-line-path"
-                      d="M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42" />
-
-                <!-- Interactive Points -->
-                <circle cx="260" cy="76" r="4" class="chart-point" title="₹1,84,200" />
-                <circle cx="460" cy="40" r="4.5" class="chart-point" title="₹2,48,650 (Peak)" />
-                <circle cx="690" cy="42" r="4" class="chart-point" title="₹2,32,000" />
-              </svg>
-            </div>
-          </div>
-
-          <!-- Right Card: Revenue Breakdown -->
+          <!-- Left Card: Revenue Breakdown -->
           <div class="card-panel">
             <div class="panel-header-row">
               <h2 class="panel-title">Revenue Breakdown</h2>
@@ -1636,28 +1592,30 @@
             <div class="breakdown-list">
               <div class="breakdown-row">
                 <span class="breakdown-label">Product Sales</span>
-                <span class="breakdown-value">
-                  {% if total_revenue %}
-                    ₹{{ total_revenue|floatformat:0 }}
-                  {% else %}
-                    ₹2,85,000
-                  {% endif %}
+                <span class="breakdown-value" id="breakdownProductSales">
+                  ₹{{ total_revenue|floatformat:2 }}
                 </span>
               </div>
 
               <div class="breakdown-row">
                 <span class="breakdown-label">Discounts</span>
-                <span class="breakdown-value negative">-₹18,500</span>
+                <span class="breakdown-value negative" id="breakdownDiscounts">
+                  -₹{{ total_discounts|floatformat:2 }}
+                </span>
               </div>
 
               <div class="breakdown-row">
                 <span class="breakdown-label">Coupon Discounts</span>
-                <span class="breakdown-value negative">-₹7,200</span>
+                <span class="breakdown-value negative" id="breakdownCouponDiscounts">
+                  -₹{{ coupon_discounts|floatformat:2 }}
+                </span>
               </div>
 
               <div class="breakdown-row">
                 <span class="breakdown-label">Refunds</span>
-                <span class="breakdown-value negative">-₹10,650</span>
+                <span class="breakdown-value negative" id="breakdownRefunds">
+                  -₹{{ total_refunds|floatformat:2 }}
+                </span>
               </div>
             </div>
 
@@ -1665,185 +1623,77 @@
 
             <div class="breakdown-net-row">
               <span class="net-label">NET REVENUE</span>
-              <span class="net-value">
-                {% if total_revenue %}
-                  ₹{{ total_revenue|floatformat:0 }}
-                {% else %}
-                  ₹2,48,650
-                {% endif %}
+              <span class="net-value" id="breakdownNetRevenue">
+                ₹{{ total_revenue|floatformat:2 }}
               </span>
             </div>
           </div>
 
-        </section>
-
-        <!-- ==================================================
-             ROW 3: BEST SELLING PRODUCTS & OPERATIONS / PAYMENTS
-             ================================================== -->
-        <section class="dashboard-two-col">
-
-          <!-- Left Card: Best Selling Products -->
+          <!-- Right Card: Payment Method Overview -->
           <div class="card-panel">
-            <div class="panel-header-row">
-              <h2 class="panel-title">Best Selling Products</h2>
+            <div class="panel-header-row" style="margin-bottom: 14px;">
+              <h2 class="panel-title">Payment Method Overview</h2>
+              <span class="status-summary-tag">Live Methods</span>
             </div>
 
-            <div class="products-list">
-
-              <!-- Product 1: Lamborghini Huracán -->
-              <div class="product-item">
-                <div class="product-left">
-                  <div class="product-thumb">
-                    <!-- Diecast Car Silhouette SVG -->
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
-                      <circle cx="7" cy="17" r="2"/>
-                      <path d="M9 17h6"/>
-                      <circle cx="17" cy="17" r="2"/>
-                    </svg>
-                  </div>
-                  <div class="product-info">
-                    <span class="product-name">Lamborghini Hurac&aacute;n</span>
-                    <span class="product-sold">124 Units Sold</span>
-                  </div>
+            <div class="payments-list" id="paymentsList">
+              <!-- Razorpay -->
+              <div class="payment-row">
+                <div class="payment-label-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
+                  <span>Razorpay</span>
                 </div>
-                <div class="product-right">
-                  <span class="product-price">₹45,600</span>
-                  <span class="product-badge gold">PREMIUM</span>
+                <div class="progress-track">
+                  <div class="progress-fill fill-razorpay" id="fillRazorpay"></div>
+                </div>
+                <div class="payment-stat-box">
+                  <span class="payment-count" id="paymentCountRazorpay">{{ payment_counts.razorpay|default:0 }} orders</span>
+                  <span class="payment-pct" id="paymentPctRazorpay">0%</span>
                 </div>
               </div>
 
-              <!-- Product 2: Nissan Skyline (F&F) -->
-              <div class="product-item">
-                <div class="product-left">
-                  <div class="product-thumb" style="background: #111a24; border-color: rgba(96, 165, 250, 0.2);">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
-                      <circle cx="7" cy="17" r="2"/>
-                      <path d="M9 17h6"/>
-                      <circle cx="17" cy="17" r="2"/>
-                    </svg>
-                  </div>
-                  <div class="product-info">
-                    <span class="product-name">Nissan Skyline (F&amp;F)</span>
-                    <span class="product-sold">98 Units Sold</span>
-                  </div>
+              <!-- Cash on Delivery -->
+              <div class="payment-row">
+                <div class="payment-label-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13"/>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 8"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/>
+                    <circle cx="18.5" cy="18.5" r="2.5"/>
+                  </svg>
+                  <span>Cash on Delivery</span>
                 </div>
-                <div class="product-right">
-                  <span class="product-price">₹38,200</span>
-                  <span class="product-badge blue">COLLECTORS</span>
+                <div class="progress-track">
+                  <div class="progress-fill fill-cod" id="fillCod"></div>
+                </div>
+                <div class="payment-stat-box">
+                  <span class="payment-count" id="paymentCountCod">{{ payment_counts.cod|default:0 }} orders</span>
+                  <span class="payment-pct" id="paymentPctCod">0%</span>
                 </div>
               </div>
 
-              <!-- Product 3: Porsche 911 GT3 -->
-              <div class="product-item">
-                <div class="product-left">
-                  <div class="product-thumb" style="background: #151a14; border-color: rgba(163, 230, 53, 0.2);">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
-                      <circle cx="7" cy="17" r="2"/>
-                      <path d="M9 17h6"/>
-                      <circle cx="17" cy="17" r="2"/>
-                    </svg>
-                  </div>
-                  <div class="product-info">
-                    <span class="product-name">Porsche 911 GT3</span>
-                    <span class="product-sold">86 Units Sold</span>
-                  </div>
+              <!-- Wallet -->
+              <div class="payment-row">
+                <div class="payment-label-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/>
+                    <path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/>
+                    <circle cx="18" cy="14" r="1"/>
+                  </svg>
+                  <span>Wallet</span>
                 </div>
-                <div class="product-right">
-                  <span class="product-price">₹32,500</span>
-                  <span class="product-badge green">MAINLINE</span>
+                <div class="progress-track">
+                  <div class="progress-fill fill-wallet" id="fillWallet"></div>
                 </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- Right Column: Operations (2x2 Grid) + PAYMENTS -->
-          <div class="stacked-col">
-
-            <!-- Operations -->
-            <div class="card-panel">
-              <div class="panel-header-row" style="margin-bottom: 14px;">
-                <h2 class="panel-title">Operations</h2>
-              </div>
-
-              <div class="ops-grid">
-                <div class="ops-box">
-                  <span class="ops-label">DELIVERED</span>
-                  <span class="ops-value">1,120</span>
-                </div>
-                <div class="ops-box">
-                  <span class="ops-label">PENDING</span>
-                  <span class="ops-value">85</span>
-                </div>
-                <div class="ops-box">
-                  <span class="ops-label">SHIPPED</span>
-                  <span class="ops-value">43</span>
-                </div>
-                <div class="ops-box highlight-returns">
-                  <span class="ops-label">RETURNS</span>
-                  <span class="ops-value">17</span>
+                <div class="payment-stat-box">
+                  <span class="payment-count" id="paymentCountWallet">{{ payment_counts.wallet|default:0 }} orders</span>
+                  <span class="payment-pct" id="paymentPctWallet">0%</span>
                 </div>
               </div>
             </div>
-
-            <!-- PAYMENTS -->
-            <div class="card-panel">
-              <span class="payments-title">PAYMENTS</span>
-
-              <div class="payments-list">
-                <!-- Razorpay -->
-                <div class="payment-row">
-                  <div class="payment-label-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                      <line x1="1" y1="10" x2="23" y2="10"/>
-                    </svg>
-                    <span>Razorpay</span>
-                  </div>
-                  <div class="progress-track">
-                    <div class="progress-fill fill-razorpay"></div>
-                  </div>
-                  <span class="payment-pct">65%</span>
-                </div>
-
-                <!-- Wallet -->
-                <div class="payment-row">
-                  <div class="payment-label-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/>
-                      <path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/>
-                      <circle cx="18" cy="14" r="1"/>
-                    </svg>
-                    <span>Wallet</span>
-                  </div>
-                  <div class="progress-track">
-                    <div class="progress-fill fill-wallet"></div>
-                  </div>
-                  <span class="payment-pct">25%</span>
-                </div>
-
-                <!-- Cash on Delivery -->
-                <div class="payment-row">
-                  <div class="payment-label-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="1" y="3" width="15" height="13"/>
-                      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                      <circle cx="5.5" cy="18.5" r="2.5"/>
-                      <circle cx="18.5" cy="18.5" r="2.5"/>
-                    </svg>
-                    <span>Cash on Delivery</span>
-                  </div>
-                  <div class="progress-track">
-                    <div class="progress-fill fill-cod"></div>
-                  </div>
-                  <span class="payment-pct">10%</span>
-                </div>
-              </div>
-            </div>
-
           </div>
 
         </section>
@@ -1880,7 +1730,7 @@
                     <td class="order-id-cell">#ORD-{{ order.order_number|default:order.id|slice:":8" }}</td>
                     <td class="customer-cell">{{ order.user.username|default:"Collector" }}</td>
                     <td class="date-cell">{{ order.created_at|date:"M d, Y" }}</td>
-                    <td class="amount-cell">₹{{ order.total_amount|floatformat:0 }}</td>
+                    <td class="amount-cell">₹{{ order.total_amount|floatformat:2 }}</td>
                     <td>
                       {% if order.status|lower == 'delivered' %}
                         <span class="status-badge delivered">DELIVERED</span>
@@ -1890,33 +1740,22 @@
                         <span class="status-badge processing">PROCESSING</span>
                       {% elif order.status|lower == 'shipped' %}
                         <span class="status-badge shipped">SHIPPED</span>
+                      {% elif order.status|lower == 'confirmed' %}
+                        <span class="status-badge confirmed">CONFIRMED</span>
+                      {% elif order.status|lower == 'cancelled' %}
+                        <span class="status-badge cancelled">CANCELLED</span>
+                      {% elif order.status|lower == 'returned' %}
+                        <span class="status-badge returned">RETURNED</span>
                       {% else %}
                         <span class="status-badge neutral">{{ order.status|upper|default:"ACTIVE" }}</span>
                       {% endif %}
                     </td>
                   </tr>
                 {% empty %}
-                  <!-- Reference Matching Demo Orders if DB has no orders yet -->
                   <tr>
-                    <td class="order-id-cell">#ORD-12567</td>
-                    <td class="customer-cell">Rahul Verma</td>
-                    <td class="date-cell">Aug 10, 2026</td>
-                    <td class="amount-cell">₹3,450</td>
-                    <td><span class="status-badge delivered">DELIVERED</span></td>
-                  </tr>
-                  <tr>
-                    <td class="order-id-cell">#ORD-12568</td>
-                    <td class="customer-cell">Ananya Singh</td>
-                    <td class="date-cell">Aug 11, 2026</td>
-                    <td class="amount-cell">₹1,240</td>
-                    <td><span class="status-badge pending">PENDING</span></td>
-                  </tr>
-                  <tr>
-                    <td class="order-id-cell">#ORD-12569</td>
-                    <td class="customer-cell">Vikram Malhotra</td>
-                    <td class="date-cell">Aug 11, 2026</td>
-                    <td class="amount-cell">₹2,890</td>
-                    <td><span class="status-badge shipped">SHIPPED</span></td>
+                    <td colspan="5" style="text-align: center; padding: 32px 20px; color: var(--text-muted); font-size: 13px;">
+                      No recent orders recorded yet.
+                    </td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -1938,7 +1777,7 @@
 
   </div>
 
-  <!-- Interactive JavaScript: Export Dropdown, Mobile Menu & Chart Controls -->
+  <!-- Interactive JavaScript: Mobile Menu & Live Sync Controls -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // 1. Mobile Menu Drawer Toggle
@@ -1958,67 +1797,227 @@
         });
       }
 
-      // 2. Export Button Dropdown
-      const exportBtn = document.getElementById('exportBtn');
-      const exportMenu = document.getElementById('exportMenu');
-
-      if (exportBtn && exportMenu) {
-        exportBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          exportMenu.classList.toggle('open');
-        });
-
-        document.addEventListener('click', function(e) {
-          if (!exportMenu.contains(e.target) && !exportBtn.contains(e.target)) {
-            exportMenu.classList.remove('open');
-          }
-        });
+      // 2. Dynamic Data Formatting & Dashboard Integration
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
       }
 
-      // 3. Dynamic Calculation for Average Order Value if needed
-      const revText = "{{ total_revenue|default:0 }}";
-      const ordText = "{{ total_orders|default:0 }}";
-      const totalRev = parseFloat(revText.replace(/,/g, '')) || 0;
-      const totalOrd = parseInt(ordText, 10) || 0;
-      const avgEl = document.getElementById('avgOrderValueEl');
-      if (avgEl && totalRev > 0 && totalOrd > 0) {
-        const avg = Math.round(totalRev / totalOrd);
-        avgEl.textContent = '₹' + avg.toLocaleString('en-IN');
+      function formatMoney(amount) {
+        const num = parseFloat(amount) || 0;
+        return '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
 
-      // 4. Time Range Segmented Control for Chart (Week, Month, Year)
-      const segmentBtns = document.querySelectorAll('.segment-btn');
-      const chartLinePath = document.getElementById('chartLinePath');
-      const chartAreaPath = document.getElementById('chartAreaPath');
+      function formatInt(val) {
+        const num = parseInt(val, 10) || 0;
+        return num.toLocaleString('en-IN');
+      }
 
-      const chartPaths = {
-        month: {
-          line: "M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42",
-          area: "M 10 135 C 70 130, 90 148, 140 146 C 180 144, 210 102, 260 76 C 300 56, 320 120, 360 144 C 400 166, 420 100, 460 40 C 490 5, 520 180, 560 180 C 600 180, 630 42, 690 42 L 690 200 L 10 200 Z"
-        },
-        week: {
-          line: "M 10 150 C 100 150, 160 80, 240 85 C 320 90, 380 130, 470 50 C 530 20, 610 80, 690 60",
-          area: "M 10 150 C 100 150, 160 80, 240 85 C 320 90, 380 130, 470 50 C 530 20, 610 80, 690 60 L 690 200 L 10 200 Z"
-        },
-        year: {
-          line: "M 10 120 C 120 110, 180 160, 280 120 C 370 80, 440 40, 530 65 C 600 85, 640 30, 690 35",
-          area: "M 10 120 C 120 110, 180 160, 280 120 C 370 80, 440 40, 530 65 C 600 85, 640 30, 690 35 L 690 200 L 10 200 Z"
-        }
-      };
+      // Payment Method Overview Synchronizer
+      function updatePaymentMethodOverview(paymentCounts) {
+        if (!paymentCounts) return;
+        const razorpay = parseInt(paymentCounts.razorpay, 10) || 0;
+        const cod = parseInt(paymentCounts.cod, 10) || 0;
+        const wallet = parseInt(paymentCounts.wallet, 10) || 0;
+        const total = razorpay + cod + wallet;
 
-      segmentBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-          segmentBtns.forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          const range = this.getAttribute('data-range');
-          if (chartPaths[range] && chartLinePath && chartAreaPath) {
-            chartLinePath.setAttribute('d', chartPaths[range].line);
-            chartAreaPath.setAttribute('d', chartPaths[range].area);
-          }
-        });
+        const countRazorpay = document.getElementById('paymentCountRazorpay');
+        const countCod = document.getElementById('paymentCountCod');
+        const countWallet = document.getElementById('paymentCountWallet');
+
+        if (countRazorpay) countRazorpay.textContent = `${formatInt(razorpay)} orders`;
+        if (countCod) countCod.textContent = `${formatInt(cod)} orders`;
+        if (countWallet) countWallet.textContent = `${formatInt(wallet)} orders`;
+
+        const pctRazorpay = total > 0 ? Math.round((razorpay / total) * 100) : 0;
+        const pctCod = total > 0 ? Math.round((cod / total) * 100) : 0;
+        const pctWallet = total > 0 ? Math.round((wallet / total) * 100) : 0;
+
+        const pctRazorpayEl = document.getElementById('paymentPctRazorpay');
+        const pctCodEl = document.getElementById('paymentPctCod');
+        const pctWalletEl = document.getElementById('paymentPctWallet');
+
+        if (pctRazorpayEl) pctRazorpayEl.textContent = `${pctRazorpay}%`;
+        if (pctCodEl) pctCodEl.textContent = `${pctCod}%`;
+        if (pctWalletEl) pctWalletEl.textContent = `${pctWallet}%`;
+
+        const fillRazorpay = document.getElementById('fillRazorpay');
+        const fillCod = document.getElementById('fillCod');
+        const fillWallet = document.getElementById('fillWallet');
+
+        if (fillRazorpay) fillRazorpay.style.width = `${pctRazorpay}%`;
+        if (fillCod) fillCod.style.width = `${pctCod}%`;
+        if (fillWallet) fillWallet.style.width = `${pctWallet}%`;
+      }
+
+      // Initialize Payment Methods on load
+      updatePaymentMethodOverview({
+        razorpay: {{ payment_counts.razorpay|default:0 }},
+        cod: {{ payment_counts.cod|default:0 }},
+        wallet: {{ payment_counts.wallet|default:0 }}
       });
 
-      // 5. Pagination Buttons Interactivity
+      // Order Status Overview Synchronizer
+      function updateOrderStatusOverview(statusCounts) {
+        const grid = document.getElementById('orderStatusGrid');
+        if (!grid) return;
+
+        if (!statusCounts || Object.keys(statusCounts).length === 0) {
+          grid.innerHTML = '<div class="status-empty-box"><span>No order status records</span></div>';
+          return;
+        }
+
+        grid.innerHTML = Object.entries(statusCounts).map(([status, count]) => {
+          const sLower = String(status).toLowerCase();
+          return `
+            <div class="ops-box status-card-${escapeHtml(sLower)}">
+              <div class="status-box-header">
+                <span class="status-dot dot-${escapeHtml(sLower)}"></span>
+                <span class="ops-label">${escapeHtml(String(status).toUpperCase())}</span>
+              </div>
+              <span class="ops-value">${formatInt(count)}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Recent Orders Table Synchronizer
+      function updateRecentOrders(orders) {
+        const tbody = document.querySelector('.sales-table tbody');
+        if (!tbody || !Array.isArray(orders)) return;
+
+        if (orders.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 32px 20px; color: var(--text-muted); font-size: 13px;">
+                No recent orders recorded yet.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = orders.map(order => {
+          const sLower = String(order.status || '').toLowerCase();
+          let badgeClass = 'neutral';
+          if (sLower === 'delivered') badgeClass = 'delivered';
+          else if (sLower === 'pending') badgeClass = 'pending';
+          else if (sLower === 'processing') badgeClass = 'processing';
+          else if (sLower === 'shipped') badgeClass = 'shipped';
+          else if (sLower === 'confirmed') badgeClass = 'confirmed';
+          else if (sLower === 'cancelled') badgeClass = 'cancelled';
+          else if (sLower === 'returned') badgeClass = 'returned';
+
+          let dateStr = '';
+          if (order.created_at) {
+            try {
+              const d = new Date(order.created_at);
+              dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch(e) {
+              dateStr = order.created_at;
+            }
+          }
+
+          const orderId = String(order.id || '').slice(0, 8);
+          const amount = formatMoney(order.total_amount);
+
+          return `
+            <tr>
+              <td class="order-id-cell">#ORD-${escapeHtml(orderId)}</td>
+              <td class="customer-cell">${escapeHtml(order.username || 'Collector')}</td>
+              <td class="date-cell">${escapeHtml(dateStr)}</td>
+              <td class="amount-cell">${amount}</td>
+              <td><span class="status-badge ${badgeClass}">${escapeHtml(String(order.status || 'ACTIVE').toUpperCase())}</span></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Update entire Dashboard from JSON endpoint response
+      function updateDashboardFromData(dashboard) {
+        if (!dashboard) return;
+
+        const setVal = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+
+        // 1. Sales and Revenue Summary Cards
+        if (dashboard.total_revenue !== undefined) setVal('metricTotalRevenue', formatMoney(dashboard.total_revenue));
+        if (dashboard.monthly_revenue !== undefined) setVal('metricMonthlyRevenue', formatMoney(dashboard.monthly_revenue));
+        if (dashboard.total_sales !== undefined) setVal('metricTotalSales', formatInt(dashboard.total_sales));
+        if (dashboard.total_orders !== undefined) setVal('metricTotalOrders', formatInt(dashboard.total_orders));
+        if (dashboard.product_sales !== undefined) setVal('metricProductSales', formatInt(dashboard.product_sales));
+        if (dashboard.total_discounts !== undefined) setVal('metricTotalDiscounts', formatMoney(dashboard.total_discounts));
+        if (dashboard.coupon_discounts !== undefined) setVal('metricCouponDiscounts', formatMoney(dashboard.coupon_discounts));
+        if (dashboard.total_refunds !== undefined) setVal('metricTotalRefunds', formatMoney(dashboard.total_refunds));
+
+        // 2. Existing Platform Metrics
+        if (dashboard.total_customers !== undefined) setVal('metricTotalCustomers', formatInt(dashboard.total_customers));
+        if (dashboard.total_products !== undefined) setVal('metricTotalProducts', formatInt(dashboard.total_products));
+
+        // 3. Revenue Breakdown List
+        if (dashboard.total_revenue !== undefined) setVal('breakdownProductSales', formatMoney(dashboard.total_revenue));
+        if (dashboard.total_discounts !== undefined) setVal('breakdownDiscounts', '-' + formatMoney(dashboard.total_discounts));
+        if (dashboard.coupon_discounts !== undefined) setVal('breakdownCouponDiscounts', '-' + formatMoney(dashboard.coupon_discounts));
+        if (dashboard.total_refunds !== undefined) setVal('breakdownRefunds', '-' + formatMoney(dashboard.total_refunds));
+        if (dashboard.total_revenue !== undefined) setVal('breakdownNetRevenue', formatMoney(dashboard.total_revenue));
+
+        // 4. Order Status Overview
+        if (dashboard.order_status_counts) {
+          updateOrderStatusOverview(dashboard.order_status_counts);
+        }
+
+        // 5. Payment Method Overview
+        if (dashboard.payment_counts) {
+          updatePaymentMethodOverview(dashboard.payment_counts);
+        }
+
+        // 6. Recent Orders
+        if (dashboard.recent_orders) {
+          updateRecentOrders(dashboard.recent_orders);
+        }
+      }
+
+      // Fetch dashboard JSON dynamically from existing endpoint
+      async function fetchDashboardData() {
+        const alertBox = document.getElementById('dashboardAlertBox');
+        const alertMsg = document.getElementById('dashboardAlertMessage');
+        const liveIndicator = document.getElementById('dashboardLiveText');
+
+        try {
+          if (liveIndicator) liveIndicator.textContent = 'Syncing...';
+          const res = await fetch(window.location.href, {
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+
+          if (!res.ok) {
+            throw new Error(`HTTP Error ${res.status}`);
+          }
+
+          const data = await res.json();
+          if (data && data.success && data.dashboard) {
+            updateDashboardFromData(data.dashboard);
+            if (alertBox) alertBox.style.display = 'none';
+            if (liveIndicator) liveIndicator.textContent = 'Live Sync';
+          }
+        } catch (err) {
+          console.warn('Dashboard live sync note:', err.message);
+          if (liveIndicator) liveIndicator.textContent = 'Live';
+        }
+      }
+
+      // Trigger dynamic fetch on page load
+      fetchDashboardData();
+
+      // 4. Pagination Buttons Interactivity
       const pageBtns = document.querySelectorAll('.table-pagination .page-btn:not(.page-nav-arrow)');
       pageBtns.forEach(btn => {
         btn.addEventListener('click', function() {

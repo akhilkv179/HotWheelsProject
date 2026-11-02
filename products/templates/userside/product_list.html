@@ -1017,6 +1017,33 @@
       font-weight: 600;
     }
 
+    .card-price-strike-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .card-discount-tag {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent-coral, #ff5252);
+      letter-spacing: 0.03em;
+    }
+
+    .card-offer-name {
+      font-size: 10px;
+      font-weight: 700;
+      color: #fca595;
+      letter-spacing: 0.02em;
+      margin-top: 2px;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.25;
+    }
+
     .final-price-bold {
       font-size: 22px;
       font-weight: 900;
@@ -1715,6 +1742,8 @@
 
               <!-- Badges -->
               {% if product.offer_percentage %}
+                <span class="card-badge-pill sale-pill">{{ product.offer_percentage|floatformat:0 }}% OFF</span>
+              {% elif product.sale_price and product.sale_price < product.regular_price %}
                 <span class="card-badge-pill sale-pill">SALE</span>
               {% elif forloop.counter <= 2 and not search_query and not selected_category %}
                 <span class="card-badge-pill new-pill">NEW</span>
@@ -1797,9 +1826,19 @@
               <!-- Footer: Price & Circle Button -->
               <div class="diecast-footer-row">
                 <div class="diecast-price-group">
-                  {% if product.offer_percentage %}
-                    <span class="strikethrough-price">₹{{ product.regular_price }}</span>
+                  {% if product.offer_percentage or product.sale_price and product.sale_price < product.regular_price %}
+                    <div class="card-price-strike-row">
+                      <span class="strikethrough-price">₹{{ product.regular_price }}</span>
+                      {% if product.offer_percentage %}
+                        <span class="card-discount-tag">{{ product.offer_percentage|floatformat:0 }}% OFF</span>
+                      {% endif %}
+                    </div>
                     <span class="final-price-bold">₹{{ product.sale_price }}</span>
+                    {% if product.offer_name %}
+                      <span class="card-offer-name" title="{{ product.offer_name }}">
+                        {{ product.offer_name }}
+                      </span>
+                    {% endif %}
                   {% else %}
                     {% with v_first=product.variants.all.0 %}
                       {% if v_first and v_first.stock_quantity <= 0 %}

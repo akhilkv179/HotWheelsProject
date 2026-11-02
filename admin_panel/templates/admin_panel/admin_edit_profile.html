@@ -1,0 +1,649 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile | Admin Portal | Hot Wheels HUB</title>
+
+  <!-- Google Fonts: Montserrat for bold headers, Inter for UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Reset & Design Tokens matching Figma Admin Theme */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #0b0b0e;
+      --bg-card: #131419;
+      --bg-input: #12131a;
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-coral-card: rgba(245, 165, 150, 0.45);
+      --border-coral-glow: rgba(245, 165, 150, 0.12);
+      --border-input: rgba(255, 255, 255, 0.12);
+
+      --accent-red: #e31837;
+      --accent-red-hover: #ff222e;
+      --accent-coral: #f5a596;
+      --accent-peach-btn: #ffb3ac;
+      --accent-peach-hover: #fca5a5;
+
+      --text-white: #ffffff;
+      --text-muted: #8e8f9c;
+      --text-dim: #6b7280;
+      --text-dark: #0b0b0e;
+      --text-footer: #454652;
+
+      --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(ellipse 65% 55% at 50% 30%, rgba(229, 27, 36, 0.04), transparent 75%);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 32px 24px 20px 24px;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+
+    /* Top Left Brand Corner Badge */
+    .top-brand-corner {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .brand-circle-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff4d00, #e51b24 85%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(229, 27, 36, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .brand-circle-badge svg {
+      width: 17px;
+      height: 17px;
+      fill: #ffffff;
+    }
+
+    /* Centered Edit Profile Container */
+    .edit-profile-wrapper {
+      width: 100%;
+      max-width: 440px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    /* Mail Icon Badge matching Figma Panel 2 */
+    .header-badge {
+      width: 48px;
+      height: 48px;
+      background-color: #171822;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+    }
+
+    .header-badge svg {
+      width: 20px;
+      height: 20px;
+      color: #60a5fa;
+    }
+
+    /* Title & Subtitle */
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--accent-red);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 330px;
+      margin-bottom: 26px;
+    }
+
+    /* Form Container */
+    .edit-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-align: left;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--accent-coral);
+      background-color: #181923;
+      box-shadow: 0 0 0 2px rgba(245, 165, 150, 0.2);
+    }
+
+    .input-wrapper.has-error {
+      border-color: rgba(239, 68, 68, 0.7);
+      background-color: rgba(239, 68, 68, 0.06);
+    }
+
+    .input-icon-left {
+      position: absolute;
+      left: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      pointer-events: none;
+      transition: color 0.15s ease;
+    }
+
+    .input-wrapper:focus-within .input-icon-left {
+      color: #ffffff;
+    }
+
+    .input-icon-left svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 46px;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 0 16px 0 42px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+    }
+
+    .form-input::placeholder {
+      color: #4b5563;
+      font-size: 13px;
+    }
+
+    /* Field Specific Error Message */
+    .field-error-msg {
+      font-size: 11px;
+      color: #f87171;
+      font-weight: 500;
+      margin-top: 3px;
+      display: none;
+    }
+
+    .field-error-msg.show {
+      display: block;
+    }
+
+    /* Submit Button matching Figma Panel 2 */
+    .btn-submit {
+      width: 100%;
+      height: 48px;
+      background-color: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      box-shadow: 0 4px 18px rgba(227, 24, 55, 0.42);
+      transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--accent-red-hover);
+      box-shadow: 0 6px 24px rgba(227, 24, 55, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-submit svg {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.15s ease;
+    }
+
+    .btn-submit:hover svg {
+      transform: translateX(2px);
+    }
+
+    /* Back Link */
+    .btn-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      margin-top: 22px;
+      transition: color 0.15s ease;
+    }
+
+    .btn-back-link:hover {
+      color: #ffffff;
+    }
+
+    /* Toast Notification Container */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      background: #171822;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 12px 18px;
+      color: #ffffff;
+      font-size: 12.5px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: auto;
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast-msg.success {
+      border-color: rgba(34, 197, 94, 0.35);
+      background: #111d17;
+      color: #4ade80;
+    }
+
+    .toast-msg.error {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: #1e1315;
+      color: #f87171;
+    }
+
+    /* Footer Note */
+    .page-footer {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: var(--text-footer);
+      text-transform: uppercase;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      padding-bottom: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .page-title {
+        font-size: 23px;
+      }
+      .top-brand-corner {
+        top: 16px;
+        left: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Left Brand Corner Badge -->
+  <a href="{% url 'admin_profile' %}" class="top-brand-corner" title="Back to Admin Dashboard">
+    <div class="brand-circle-badge">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C8 6 6 9 6 13a6 6 0 0 0 12 0c0-4-2-7-6-11zm0 15a4 4 0 0 1-4-4c0-2.5 1.5-4.5 4-7 2.5 2.5 4 4.5 4 7a4 4 0 0 1-4 4z"/>
+      </svg>
+    </div>
+  </a>
+
+  <!-- Centered Edit Profile Form Wrapper -->
+  <main class="edit-profile-wrapper">
+
+    <!-- Mail Badge Icon matching Figma Panel 2 -->
+    <div class="header-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+      </svg>
+    </div>
+
+    <!-- Title & Subtitle matching Figma Panel 2 -->
+    <h1 class="page-title">Enter new email</h1>
+    <p class="page-subtitle">
+      Update your administrator contact details. If email is changed, a verification OTP will be sent to confirm.
+    </p>
+
+    <!-- Edit Profile Form -->
+    <form id="editProfileForm" method="POST" action="{% url 'admin_edit_profile' %}" class="edit-form">
+      {% csrf_token %}
+
+      <!-- Username Field -->
+      <div class="form-group">
+        <label class="form-label" for="username">USERNAME</label>
+        <div class="input-wrapper" id="usernameWrapper">
+          <span class="input-icon-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-input"
+            value="{{ form.username.value|default:user.username|default:request.user.username }}"
+            placeholder="Enter username"
+            required
+            autocomplete="username"
+          >
+        </div>
+        <div class="field-error-msg" id="usernameError"></div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label class="form-label" for="email">EMAIL ADDRESS</label>
+        <div class="input-wrapper" id="emailWrapper">
+          <span class="input-icon-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+          </span>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            value="{{ form.email.value|default:user.email|default:request.user.email }}"
+            placeholder="Enter new email address"
+            required
+            autocomplete="email"
+          >
+        </div>
+        <div class="field-error-msg" id="emailError"></div>
+      </div>
+
+      <!-- Phone Number Field -->
+      <div class="form-group">
+        <label class="form-label" for="phone">PHONE NUMBER</label>
+        <div class="input-wrapper" id="phoneWrapper">
+          <span class="input-icon-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </span>
+          <input
+            type="text"
+            id="phone"
+            name="phone"
+            class="form-input"
+            value="{{ form.phone.value|default:user.phone|default:request.user.phone|default:"8660000000" }}"
+            placeholder="Enter 10-digit phone number"
+            required
+            autocomplete="tel"
+          >
+        </div>
+        <div class="field-error-msg" id="phoneError"></div>
+      </div>
+
+      <!-- Submit Button matching Figma Panel 2 -->
+      <button type="submit" class="btn-submit" id="btnSubmitProfile">
+        <span>Verify Email</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+
+    </form>
+
+    <!-- Back to Profile Link -->
+    <a href="{% url 'admin_profile' %}" class="btn-back-link">
+      &lt; Back to Profile
+    </a>
+
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Bottom Copyright Footer -->
+  <footer class="page-footer">
+    &copy; 2026 HOT WHEELS INC. ALL RIGHTS RESERVED.
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('editProfileForm');
+      const btnSubmit = document.getElementById('btnSubmitProfile');
+      const toastContainer = document.getElementById('toastContainer');
+
+      const inputUser = document.getElementById('username');
+      const inputEmail = document.getElementById('email');
+      const inputPhone = document.getElementById('phone');
+
+      const wrapUser = document.getElementById('usernameWrapper');
+      const wrapEmail = document.getElementById('emailWrapper');
+      const wrapPhone = document.getElementById('phoneWrapper');
+
+      const errUser = document.getElementById('usernameError');
+      const errEmail = document.getElementById('emailError');
+      const errPhone = document.getElementById('phoneError');
+
+      function showToast(message, type = 'error') {
+        if (!toastContainer) return;
+        const toast = document.createElement('div');
+        toast.className = `toast-msg ${type}`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+
+        requestAnimationFrame(() => toast.classList.add('show'));
+
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 300);
+        }, 4000);
+      }
+
+      function clearErrors() {
+        [wrapUser, wrapEmail, wrapPhone].forEach(w => w && w.classList.remove('has-error'));
+        [errUser, errEmail, errPhone].forEach(e => {
+          if (e) {
+            e.textContent = '';
+            e.classList.remove('show');
+          }
+        });
+      }
+
+      function showFieldError(field, message) {
+        if (field === 'username') {
+          if (wrapUser) wrapUser.classList.add('has-error');
+          if (errUser) {
+            errUser.textContent = message;
+            errUser.classList.add('show');
+          }
+        } else if (field === 'email') {
+          if (wrapEmail) wrapEmail.classList.add('has-error');
+          if (errEmail) {
+            errEmail.textContent = message;
+            errEmail.classList.add('show');
+          }
+        } else if (field === 'phone') {
+          if (wrapPhone) wrapPhone.classList.add('has-error');
+          if (errPhone) {
+            errPhone.textContent = message;
+            errPhone.classList.add('show');
+          }
+        }
+      }
+
+      [inputUser, inputEmail, inputPhone].forEach(inp => {
+        if (inp) {
+          inp.addEventListener('input', clearErrors);
+        }
+      });
+
+      if (form) {
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          clearErrors();
+
+          if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span>Processing...</span>';
+          }
+
+          try {
+            const formData = new FormData(form);
+
+            // Sanitize phone to 10 digits for ProfileForm backend validation
+            const rawPhone = (formData.get('phone') || '').replace(/\D/g, '').slice(-10);
+            if (rawPhone.length === 10) {
+              formData.set('phone', rawPhone);
+            }
+
+            // Sanitize username to alphanumeric for ProfileForm backend validation
+            let cleanUser = (formData.get('username') || '').trim().replace(/[^A-Za-z0-9]/g, '');
+            if (cleanUser) {
+              formData.set('username', cleanUser);
+            }
+
+            const response = await fetch(form.action || "{% url 'admin_edit_profile' %}", {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok && data.success) {
+              showToast(data.message || 'Profile updated successfully.', 'success');
+
+              // If email changed, backend returns requires_otp: true and redirect_url to verify-otp
+              if (data.redirect_url) {
+                setTimeout(() => {
+                  window.location.href = data.redirect_url;
+                }, 800);
+              }
+            } else {
+              // Handle field-specific validation errors from backend ProfileForm
+              if (data.errors) {
+                Object.keys(data.errors).forEach(key => {
+                  const errList = data.errors[key];
+                  if (Array.isArray(errList) && errList.length > 0) {
+                    const msg = errList[0].message || errList[0];
+                    showFieldError(key, msg);
+                  }
+                });
+              } else if (data.message) {
+                showToast(data.message, 'error');
+              }
+              if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<span>Verify Email</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+              }
+            }
+          } catch (netErr) {
+            showToast('Network error while saving profile. Please try again.', 'error');
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.innerHTML = '<span>Verify Email</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+
+from datetime import datetime, timedelta
 from io import BytesIO
 
 from django.contrib.admin.views.decorators import staff_member_required
@@ -12,9 +14,63 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from orders.models import Order
 
 
-# Fetch order details and format them into tabular data rows for reporting.
-def get_order_report_data():
+# Fetch order details using the selected date filter.
+def get_order_report_data(request=None):
+
     orders = Order.objects.select_related("user").order_by("-created_at")
+
+    # Apply date filters when a request is provided.
+    if request:
+        date_filter = request.GET.get("filter", "all")
+
+        today = timezone.localdate()
+
+        start_date = None
+        end_date = None
+
+        if date_filter == "daily":
+            start_date = today
+            end_date = today
+
+        elif date_filter == "weekly":
+            start_date = today - timedelta(days=today.weekday())
+            end_date = today
+
+        elif date_filter == "monthly":
+            start_date = today.replace(day=1)
+            end_date = today
+
+        elif date_filter == "custom":
+            start_date_input = request.GET.get("start_date")
+            end_date_input = request.GET.get("end_date")
+
+            try:
+                if start_date_input:
+                    start_date = datetime.strptime(
+                        start_date_input,
+                        "%Y-%m-%d"
+                    ).date()
+
+                if end_date_input:
+                    end_date = datetime.strptime(
+                        end_date_input,
+                        "%Y-%m-%d"
+                    ).date()
+
+            except ValueError:
+                start_date = None
+                end_date = None
+
+        # Apply the selected date range.
+        if start_date:
+            orders = orders.filter(
+                created_at__date__gte=start_date
+            )
+
+        if end_date:
+            orders = orders.filter(
+                created_at__date__lte=end_date
+            )
 
     rows = [
         [
@@ -33,7 +89,9 @@ def get_order_report_data():
             float(order.discount_amount),
             float(order.shipping_amount),
             float(order.total_amount),
-            timezone.localtime(order.created_at).strftime("%d-%m-%Y %H:%M"),
+            timezone.localtime(order.created_at).strftime(
+                "%d-%m-%Y %H:%M"
+            ),
         ])
 
     return rows
@@ -55,6 +113,7 @@ def export_orders_excel(request):
 
         return HttpResponseNotAllowed(["GET"])
 
+    # Keep Excel export unchanged: download all orders.
     rows = get_order_report_data()
 
     workbook = Workbook()
@@ -68,6 +127,7 @@ def export_orders_excel(request):
         max_length = max(
             len(str(cell.value or "")) for cell in column
         )
+
         worksheet.column_dimensions[
             column[0].column_letter
         ].width = min(max_length + 2, 30)
@@ -83,6 +143,7 @@ def export_orders_excel(request):
             "spreadsheetml.sheet"
         ),
     )
+
     response["Content-Disposition"] = (
         'attachment; filename="hotwheels_orders.xlsx"'
     )
@@ -90,7 +151,7 @@ def export_orders_excel(request):
     return response
 
 
-# Generate and download a formatted PDF sales report of all customer orders.
+# Generate and download a filtered PDF sales report.
 @staff_member_required
 def export_orders_pdf(request):
 
@@ -106,7 +167,9 @@ def export_orders_pdf(request):
 
         return HttpResponseNotAllowed(["GET"])
 
-    rows = get_order_report_data()
+    # Pass the request so the selected date filter is applied.
+    rows = get_order_report_data(request)
+
     output = BytesIO()
 
     document = SimpleDocTemplate(
@@ -119,6 +182,7 @@ def export_orders_pdf(request):
     )
 
     table = Table(rows, repeatRows=1)
+
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E31837")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
@@ -141,6 +205,7 @@ def export_orders_pdf(request):
         output.getvalue(),
         content_type="application/pdf"
     )
+
     response["Content-Disposition"] = (
         'attachment; filename="hotwheels_orders.pdf"'
     )

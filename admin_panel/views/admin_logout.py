@@ -17,17 +17,17 @@ def wants_json(request):
 @admin_required
 def admin_logout(request):
 
-    if request.method != "POST":
-        if wants_json(request):
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Logout requires a POST request."
-                },
-                status=405
-            )
+    # if request.method != "POST":
+    #     if wants_json(request):
+    #         return JsonResponse(
+    #             {
+    #                 "success": False,
+    #                 "message": "Logout requires a POST request."
+    #             },
+    #             status=405
+    #         )
 
-        return HttpResponseNotAllowed(["POST"])
+    #     return HttpResponseNotAllowed(["POST"])
 
     if not request.user.is_authenticated:
         if wants_json(request):

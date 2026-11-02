@@ -352,6 +352,194 @@
     }
 
     /* ==================================================
+       DATE FILTER CONTROLS BAR
+       ================================================== */
+    .filter-controls-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 14px 20px;
+      transition: border-color 0.2s ease;
+    }
+
+    .filter-controls-card:hover {
+      border-color: var(--border-card-hover);
+    }
+
+    .filter-form {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .filter-left-section {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-header-icon {
+      stroke: var(--accent-red);
+      flex-shrink: 0;
+    }
+
+    .filter-label-title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--text-label);
+      text-transform: uppercase;
+    }
+
+    .filter-preset-pills {
+      background: #141414;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 9999px;
+      padding: 3px;
+      display: inline-flex;
+      gap: 2px;
+    }
+
+    .filter-pill-btn {
+      background: transparent;
+      border: none;
+      color: #7e7f8e;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      transition: color 0.15s, background-color 0.15s;
+    }
+
+    .filter-pill-btn:hover {
+      color: #ffffff;
+    }
+
+    .filter-pill-btn.active {
+      background: #252425;
+      color: #ffffff;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .custom-range-wrapper {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .custom-range-wrapper.is-open {
+      display: inline-flex;
+    }
+
+    .date-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #161618;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 4px 10px;
+    }
+
+    .date-input-tag {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--text-label);
+      text-transform: uppercase;
+    }
+
+    .filter-date-input {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      color-scheme: dark;
+    }
+
+    .filter-date-input::-webkit-calendar-picker-indicator {
+      filter: invert(0.8);
+      cursor: pointer;
+    }
+
+    .btn-filter-submit {
+      background-color: var(--accent-red);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-filter-submit:hover {
+      background-color: var(--accent-red-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-filter-clear {
+      color: #8e8f9c;
+      font-size: 11.5px;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 4px 6px;
+      transition: color 0.15s ease;
+    }
+
+    .btn-filter-clear:hover {
+      color: #ffffff;
+    }
+
+    .active-filter-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .active-filter-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+
+    .active-filter-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* ==================================================
        ROW 1: 6-METRIC CARDS GRID
        ================================================== */
     .metrics-grid {
@@ -533,6 +721,18 @@
       letter-spacing: -0.01em;
     }
 
+    .analytics-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .analytics-subtitle {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
     /* Segmented Control Pill */
     .segmented-control {
       background: #141414;
@@ -552,6 +752,9 @@
       padding: 5px 14px;
       border-radius: 9999px;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
       transition: color 0.15s, background-color 0.15s;
     }
 
@@ -990,6 +1193,41 @@
       }
     }
 
+    @media (max-width: 768px) {
+      .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-left-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-preset-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        border-radius: 12px;
+      }
+      .segmented-control {
+        flex-wrap: wrap;
+        gap: 4px;
+        border-radius: 12px;
+      }
+      .custom-range-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .date-input-wrap {
+        justify-content: space-between;
+      }
+      .btn-filter-submit {
+        justify-content: center;
+      }
+      .active-filter-badge {
+        justify-content: center;
+      }
+    }
+
     @media (max-width: 640px) {
       .metrics-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1113,17 +1351,6 @@
             </a>
           </div>
 
-          <!-- CONTENT -->
-          <div class="nav-group">
-            <span class="nav-group-label">CONTENT</span>
-            <a href="#" class="nav-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <line x1="3" y1="9" x2="21" y2="9"/>
-              </svg>
-              <span>Banners</span>
-            </a>
-          </div>
 
           <!-- ANALYTICS -->
           <div class="nav-group">
@@ -1139,7 +1366,7 @@
           <!-- SYSTEM -->
           <div class="nav-group">
             <span class="nav-group-label">SYSTEM</span>
-            <a href="#" class="nav-item">
+            <a href="{% url 'admin_profile' %}" class="nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -1213,6 +1440,106 @@
       <div class="dashboard-viewport">
 
         <!-- ==============================================
+             DATE FILTER CONTROLS BAR
+             ============================================== -->
+        <div class="filter-controls-card" id="filterControlsCard">
+          <form method="GET" action="{% url 'sales_revenue' %}" class="filter-form" id="salesFilterForm">
+            <div class="filter-left-section">
+              <div class="filter-label-group">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="filter-header-icon">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span class="filter-label-title">Period Filter:</span>
+              </div>
+
+              <!-- Preset Filter Pills -->
+              <div class="filter-preset-pills">
+                <a href="{% url 'sales_revenue' %}?filter=all" class="filter-pill-btn {% if date_filter == 'all' or not date_filter %}active{% endif %}">
+                  All Time
+                </a>
+                <a href="{% url 'sales_revenue' %}?filter=daily" class="filter-pill-btn {% if date_filter == 'daily' %}active{% endif %}">
+                  Daily
+                </a>
+                <a href="{% url 'sales_revenue' %}?filter=weekly" class="filter-pill-btn {% if date_filter == 'weekly' %}active{% endif %}">
+                  Weekly
+                </a>
+                <a href="{% url 'sales_revenue' %}?filter=monthly" class="filter-pill-btn {% if date_filter == 'monthly' %}active{% endif %}">
+                  Monthly
+                </a>
+                <button type="button" class="filter-pill-btn {% if date_filter == 'custom' %}active{% endif %}" id="customFilterToggleBtn">
+                  Custom Range
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Date Range Controls -->
+            <div class="custom-range-wrapper {% if date_filter == 'custom' %}is-open{% endif %}" id="customRangeWrapper">
+              <input type="hidden" name="filter" value="custom">
+
+              <div class="date-input-wrap">
+                <label for="startDateInput" class="date-input-tag">Start</label>
+                <input 
+                  type="date" 
+                  id="startDateInput" 
+                  name="start_date" 
+                  class="filter-date-input"
+                  value="{% if start_date %}{{ start_date|date:'Y-m-d' }}{% endif %}"
+                  required
+                >
+              </div>
+
+              <div class="date-input-wrap">
+                <label for="endDateInput" class="date-input-tag">End</label>
+                <input 
+                  type="date" 
+                  id="endDateInput" 
+                  name="end_date" 
+                  class="filter-date-input"
+                  value="{% if end_date %}{{ end_date|date:'Y-m-d' }}{% endif %}"
+                  required
+                >
+              </div>
+
+              <button type="submit" class="btn-filter-submit">
+                <span>Apply</span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+
+              {% if date_filter == 'custom' %}
+                <a href="{% url 'sales_revenue' %}?filter=all" class="btn-filter-clear" title="Reset to All Time">
+                  Reset
+                </a>
+              {% endif %}
+            </div>
+
+            <!-- Active Filter Indicator Badge -->
+            <div class="active-filter-badge">
+              <span class="active-filter-dot"></span>
+              <span class="active-filter-text">
+                {% if date_filter == 'all' or not date_filter %}
+                  Showing: All Time (All available order data)
+                {% elif date_filter == 'daily' %}
+                  Showing: Today ({{ current_date|date:"M d, Y" }})
+                {% elif date_filter == 'weekly' %}
+                  Showing: This Week ({% if start_date %}{{ start_date|date:"M d" }} - {{ end_date|date:"M d, Y" }}{% else %}Weekly{% endif %})
+                {% elif date_filter == 'monthly' %}
+                  Showing: This Month ({% if start_date %}{{ start_date|date:"M d" }} - {{ end_date|date:"M d, Y" }}{% else %}Monthly{% endif %})
+                {% elif date_filter == 'custom' %}
+                  Showing: Custom ({% if start_date %}{{ start_date|date:"M d, Y" }}{% endif %} to {% if end_date %}{{ end_date|date:"M d, Y" }}{% endif %})
+                {% else %}
+                  Showing: All Time (All available order data)
+                {% endif %}
+              </span>
+            </div>
+          </form>
+        </div>
+
+        <!-- ==============================================
              ROW 1: 6-METRIC CARDS GRID
              ============================================== -->
         <section class="metrics-grid">
@@ -1227,38 +1554,30 @@
               </svg>
             </div>
             <div class="metric-value">
-              {% if total_sales and total_sales > 0 %}
-                &#8377;{{ total_revenue|floatformat:2 }}
-              {% else %}
-                &#8377;2,45k
-              {% endif %}
+              {{ total_sales }}
             </div>
-            <div class="metric-subtitle">+12% vs last month</div>
+            <div class="metric-subtitle">Completed sales</div>
           </div>
 
           <!-- Card 2: REVENUE -->
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-title">REVENUE</span>
+              <span class="metric-title">TOTAL<br>REVENUE</span>
               <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <line x1="2" y1="10" x2="22" y2="10"/>
               </svg>
             </div>
             <div class="metric-value">
-              {% if total_revenue and total_revenue > 0 %}
-                &#8377;{{ total_revenue|floatformat:2 }}
-              {% else %}
-                &#8377;1,85k
-              {% endif %}
+              &#8377;{{ total_revenue|floatformat:2 }}
             </div>
-            <div class="metric-subtitle">+8% vs last month</div>
+            <div class="metric-subtitle">Avg Order: &#8377;{{ average_order_value|floatformat:2 }}</div>
           </div>
 
           <!-- Card 3: ORDERS -->
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-title">ORDERS</span>
+              <span class="metric-title">TOTAL<br>ORDERS</span>
               <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
@@ -1267,19 +1586,15 @@
               </svg>
             </div>
             <div class="metric-value">
-              {% if total_orders and total_orders > 0 %}
-                {{ total_orders }}
-              {% else %}
-                1,240
-              {% endif %}
+              {{ total_orders }}
             </div>
-            <div class="metric-subtitle">+5% vs last month</div>
+            <div class="metric-subtitle">All orders placed</div>
           </div>
 
           <!-- Card 4: CUSTOMERS -->
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-title">CUSTOMERS</span>
+              <span class="metric-title">TOTAL<br>CUSTOMERS</span>
               <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -1287,35 +1602,35 @@
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
-            <div class="metric-value">3,500</div>
-            <div class="metric-subtitle">+15% vs last month</div>
+            <div class="metric-value">{{ total_customers }}</div>
+            <div class="metric-subtitle">Unique buyers</div>
           </div>
 
           <!-- Card 5: PRODUCTS SOLD -->
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-title">PRODUCTS<br>SOLD</span>
+              <span class="metric-title">TOTAL PRODUCTS<br>SOLD</span>
               <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1"/>
                 <circle cx="19" cy="21" r="1"/>
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
               </svg>
             </div>
-            <div class="metric-value">8,420</div>
-            <div class="metric-subtitle">Across 120 SKUs</div>
+            <div class="metric-value">{{ total_products_sold }}</div>
+            <div class="metric-subtitle">Active units sold</div>
           </div>
 
           <!-- Card 6: PENDING (High-Visibility Crimson Red Card) -->
           <div class="metric-card metric-card-pending">
             <div class="metric-header">
-              <span class="metric-title">PENDING</span>
+              <span class="metric-title">PENDING<br>ORDERS</span>
               <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
                 <path d="M3 6h18"/>
                 <path d="M16 10a4 4 0 0 1-8 0"/>
               </svg>
             </div>
-            <div class="metric-value">42</div>
+            <div class="metric-value">{{ pending_orders }}</div>
             <div class="metric-subtitle">Requires attention</div>
           </div>
 
@@ -1334,73 +1649,54 @@
             <!-- Card 1: Sales Analytics (Bar Chart) -->
             <div class="analytics-card">
               <div class="analytics-header">
-                <h2 class="analytics-title">Sales Analytics</h2>
+                <div class="analytics-title-group">
+                  <h2 class="analytics-title">Sales Analytics</h2>
+                  <span class="analytics-subtitle" id="analyticsSubtitle">
+                    {% if date_filter == 'all' or not date_filter %}
+                      All-time revenue breakdown across orders
+                    {% elif date_filter == 'daily' %}
+                      Hourly revenue breakdown for today ({{ current_date|date:"M d, Y" }})
+                    {% elif date_filter == 'weekly' %}
+                      Daily revenue breakdown for this week
+                    {% elif date_filter == 'monthly' %}
+                      Weekly revenue breakdown for this month ({{ current_date|date:"F Y" }})
+                    {% elif date_filter == 'custom' %}
+                      Revenue breakdown for custom period ({% if start_date %}{{ start_date|date:"M d, Y" }}{% endif %}{% if end_date %} to {{ end_date|date:"M d, Y" }}{% endif %})
+                    {% else %}
+                      All-time revenue breakdown across orders
+                    {% endif %}
+                  </span>
+                </div>
 
                 <!-- Segmented Control Pills -->
                 <div class="segmented-control" role="group" aria-label="Time Filter">
-                  <button type="button" class="segment-btn" data-range="daily">Daily</button>
-                  <button type="button" class="segment-btn" data-range="weekly">Weekly</button>
-                  <button type="button" class="segment-btn active" data-range="monthly">Monthly</button>
-                  <button type="button" class="segment-btn" data-range="yearly">Yearly</button>
+                  <a href="{% url 'sales_revenue' %}?filter=all" class="segment-btn {% if date_filter == 'all' or not date_filter %}active{% endif %}">All</a>
+                  <a href="{% url 'sales_revenue' %}?filter=daily" class="segment-btn {% if date_filter == 'daily' %}active{% endif %}">Daily</a>
+                  <a href="{% url 'sales_revenue' %}?filter=weekly" class="segment-btn {% if date_filter == 'weekly' %}active{% endif %}">Weekly</a>
+                  <a href="{% url 'sales_revenue' %}?filter=monthly" class="segment-btn {% if date_filter == 'monthly' %}active{% endif %}">Monthly</a>
+                  <button type="button" class="segment-btn {% if date_filter == 'custom' %}active{% endif %}" id="chartCustomRangeBtn">Custom</button>
                 </div>
               </div>
 
               <!-- Bar Chart SVG Canvas -->
               <div class="chart-container">
-                <svg class="bar-chart-svg" viewBox="0 0 540 220" preserveAspectRatio="none">
-                  <!-- Bars matching exact heights and color accents from screenshot -->
-                  <!-- Base y = 190. Height goes upwards. -->
-                  <!-- Jan: Coral Highlight #d29590 -->
-                  <rect class="chart-bar coral" x="15" y="130" width="26" height="60" rx="3" title="Jan: &#8377;1,24,000"></rect>
-
-                  <!-- Feb: No bar / subtle baseline trace -->
-                  <rect class="chart-bar dark" x="59" y="188" width="26" height="2" rx="1" title="Feb: &#8377;0"></rect>
-
-                  <!-- Mar: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="103" y="105" width="26" height="85" rx="3" title="Mar: &#8377;1,70,000"></rect>
-
-                  <!-- Apr: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="147" y="125" width="26" height="65" rx="3" title="Apr: &#8377;1,30,000"></rect>
-
-                  <!-- May: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="191" y="80" width="26" height="110" rx="3" title="May: &#8377;2,20,000"></rect>
-
-                  <!-- Jun: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="235" y="65" width="26" height="125" rx="3" title="Jun: &#8377;2,50,000"></rect>
-
-                  <!-- Jul: Tall Coral Highlight #d29590 -->
-                  <rect class="chart-bar coral" x="279" y="30" width="26" height="160" rx="3" title="Jul: &#8377;3,20,000 (Peak)"></rect>
-
-                  <!-- Aug: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="323" y="90" width="26" height="100" rx="3" title="Aug: &#8377;2,00,000"></rect>
-
-                  <!-- Sep: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="367" y="80" width="26" height="110" rx="3" title="Sep: &#8377;2,20,000"></rect>
-
-                  <!-- Oct: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="411" y="125" width="26" height="65" rx="3" title="Oct: &#8377;1,30,000"></rect>
-
-                  <!-- Nov: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="455" y="70" width="26" height="120" rx="3" title="Nov: &#8377;2,40,000"></rect>
-
-                  <!-- Dec: Dark bar #313130 -->
-                  <rect class="chart-bar dark" x="499" y="70" width="26" height="120" rx="3" title="Dec: &#8377;2,40,000"></rect>
-
-                  <!-- Month Labels underneath each bar -->
-                  <text class="chart-axis-label" x="28" y="210">Jan</text>
-                  <text class="chart-axis-label" x="72" y="210">Feb</text>
-                  <text class="chart-axis-label" x="116" y="210">Mar</text>
-                  <text class="chart-axis-label" x="160" y="210">Apr</text>
-                  <text class="chart-axis-label" x="204" y="210">May</text>
-                  <text class="chart-axis-label" x="248" y="210">Jun</text>
-                  <text class="chart-axis-label" x="292" y="210">Jul</text>
-                  <text class="chart-axis-label" x="336" y="210">Aug</text>
-                  <text class="chart-axis-label" x="380" y="210">Sep</text>
-                  <text class="chart-axis-label" x="424" y="210">Oct</text>
-                  <text class="chart-axis-label" x="468" y="210">Nov</text>
-                  <text class="chart-axis-label" x="512" y="210">Dec</text>
+                <svg class="bar-chart-svg" id="salesBarChartSvg" viewBox="0 0 540 220" preserveAspectRatio="none">
+                  <!-- Dynamically rendered based on real orders -->
                 </svg>
               </div>
+
+              <!-- Real Filtered Orders Data for Time-Series Charting -->
+              <script id="ordersData" type="application/json">
+              [
+                {% for order in orders %}
+                {
+                  "order_number": "{{ order.order_number|escapejs }}",
+                  "amount": {{ order.total_amount|stringformat:".2f" }},
+                  "created_at": "{{ order.created_at|date:'c' }}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+              ]
+              </script>
             </div>
 
             <!-- Card 2: Recent Activity Table -->
@@ -1437,11 +1733,13 @@
                   </thead>
                   <tbody>
                     {% if orders %}
-                      {% for order in orders|slice:":6" %}
+                      {% for order in orders %}
                         <tr>
                           <td class="order-id-cell">#{{ order.order_number }}</td>
                           <td class="customer-cell">
-                            {% if order.user.first_name or order.user.last_name %}
+                            {% if order.user.get_full_name %}
+                              {{ order.user.get_full_name }}
+                            {% elif order.user.first_name or order.user.last_name %}
                               {{ order.user.first_name }} {{ order.user.last_name }}
                             {% elif order.address and order.address.full_name %}
                               {{ order.address.full_name }}
@@ -1449,7 +1747,7 @@
                               {{ order.user.username }}
                             {% endif %}
                           </td>
-                          <td class="date-cell">{{ order.created_at|date:"M d, H:i" }}</td>
+                          <td class="date-cell">{{ order.created_at|date:"M d, Y H:i" }}</td>
                           <td class="amount-cell">&#8377;{{ order.total_amount|floatformat:2 }}</td>
                           <td>
                             {% if order.status|lower == 'delivered' %}
@@ -1475,65 +1773,9 @@
                         </tr>
                       {% endfor %}
                     {% else %}
-                      <!-- Exact reference sample rows matching Figma screenshot -->
                       <tr>
-                        <td class="order-id-cell">#ORD-9021</td>
-                        <td class="customer-cell">Aarav Patel</td>
-                        <td class="date-cell">Oct 24, 14:30</td>
-                        <td class="amount-cell">&#8377;4,250</td>
-                        <td><span class="status-badge processing">PROCESSING</span></td>
-                        <td>
-                          <span class="action-view-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                              <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="order-id-cell">#ORD-9020</td>
-                        <td class="customer-cell">Diya Sharma</td>
-                        <td class="date-cell">Oct 24, 11:15</td>
-                        <td class="amount-cell">&#8377;1,850</td>
-                        <td><span class="status-badge shipped">SHIPPED</span></td>
-                        <td>
-                          <span class="action-view-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                              <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="order-id-cell">#ORD-9019</td>
-                        <td class="customer-cell">Rohan Gupta</td>
-                        <td class="date-cell">Oct 23, 16:45</td>
-                        <td class="amount-cell">&#8377;12,400</td>
-                        <td><span class="status-badge shipped">SHIPPED</span></td>
-                        <td>
-                          <span class="action-view-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                              <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="order-id-cell">#ORD-9018</td>
-                        <td class="customer-cell">Kavya Singh</td>
-                        <td class="date-cell">Oct 23, 09:20</td>
-                        <td class="amount-cell">&#8377;850</td>
-                        <td><span class="status-badge delivered">DELIVERED</span></td>
-                        <td>
-                          <span class="action-view-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                              <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                          </span>
+                        <td colspan="6" style="text-align: center; padding: 36px 20px; color: var(--text-muted); font-size: 13px;">
+                          No orders found for the selected period.
                         </td>
                       </tr>
                     {% endif %}
@@ -1586,14 +1828,33 @@
               <div class="form-field-group">
                 <label class="form-field-label">DATE RANGE</label>
                 <div class="form-select-box">
-                  <span>Last 30 Days</span>
+                  <span>
+                    {% if date_filter == 'all' or not date_filter %}
+                      All Time
+                    {% elif date_filter == 'daily' %}
+                      Today ({{ current_date|date:"M d, Y" }})
+                    {% elif date_filter == 'weekly' %}
+                      This Week
+                    {% elif date_filter == 'monthly' %}
+                      This Month
+                    {% elif date_filter == 'custom' %}
+                      Custom ({% if start_date %}{{ start_date|date:"M d" }}{% endif %} - {% if end_date %}{{ end_date|date:"M d, Y" }}{% endif %})
+                    {% else %}
+                      All Time
+                    {% endif %}
+                  </span>
                 </div>
               </div>
 
               <!-- Export Buttons -->
               <div class="export-buttons-group">
                 <!-- PDF Report -->
-                <a href="{% url 'export_orders_pdf' %}" class="btn-action-pdf" title="Generate PDF Report">
+                <a 
+                  href="{% url 'export_orders_pdf' %}?{% if date_filter == 'daily' %}filter=daily{% elif date_filter == 'weekly' %}filter=weekly{% elif date_filter == 'monthly' %}filter=monthly{% elif date_filter == 'custom' %}filter=custom{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}{% else %}filter=all{% endif %}" 
+                  class="btn-action-pdf" 
+                  id="btnExportPdf" 
+                  title="Generate PDF Report"
+                >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
@@ -1633,7 +1894,7 @@
 
   </div>
 
-  <!-- Interactive JavaScript: Mobile Navigation & Segmented Filters -->
+  <!-- Interactive JavaScript: Mobile Navigation & Date Filtering -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       // 1. Mobile Sidebar Drawer toggle
@@ -1655,36 +1916,510 @@
         mobileBackdrop.addEventListener('click', toggleMobileMenu);
       }
 
-      // 2. Segmented Range Control for Sales Analytics Bar Chart
-      const segmentBtns = document.querySelectorAll('.segment-btn');
-      const chartBars = document.querySelectorAll('.chart-bar');
+      // 2. Custom Date Range Controls
+      const customFilterToggleBtn = document.getElementById('customFilterToggleBtn');
+      const chartCustomRangeBtn = document.getElementById('chartCustomRangeBtn');
+      const btnFilterTrigger = document.getElementById('btnFilterTrigger');
+      const customRangeWrapper = document.getElementById('customRangeWrapper');
+      const startDateInput = document.getElementById('startDateInput');
+      const endDateInput = document.getElementById('endDateInput');
+      const filterControlsCard = document.getElementById('filterControlsCard');
+      const salesFilterForm = document.getElementById('salesFilterForm');
 
-      // Sample data profiles for dynamic visual feedback
-      const barProfiles = {
-        daily: [40, 70, 95, 60, 110, 140, 120, 85, 95, 110, 80, 130],
-        weekly: [80, 100, 130, 90, 150, 110, 140, 160, 120, 90, 140, 150],
-        monthly: [60, 2, 85, 65, 110, 125, 160, 100, 110, 65, 120, 120],
-        yearly: [90, 110, 120, 140, 130, 150, 165, 140, 135, 125, 150, 160]
-      };
+      function openCustomRange() {
+        if (customRangeWrapper) {
+          customRangeWrapper.classList.add('is-open');
+        }
+        if (filterControlsCard) {
+          filterControlsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        if (startDateInput) {
+          startDateInput.focus();
+        }
+      }
 
-      segmentBtns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          segmentBtns.forEach(function (b) { b.classList.remove('active'); });
-          this.classList.add('active');
+      if (customFilterToggleBtn) {
+        customFilterToggleBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (customRangeWrapper) {
+            customRangeWrapper.classList.toggle('is-open');
+            if (customRangeWrapper.classList.contains('is-open') && startDateInput) {
+              startDateInput.focus();
+            }
+          }
+        });
+      }
 
-          const range = this.getAttribute('data-range');
-          const profile = barProfiles[range] || barProfiles.monthly;
+      if (chartCustomRangeBtn) {
+        chartCustomRangeBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          openCustomRange();
+        });
+      }
 
-          chartBars.forEach(function (bar, idx) {
-            if (profile[idx] !== undefined) {
-              const h = profile[idx];
-              const y = 190 - h;
-              bar.setAttribute('y', y);
-              bar.setAttribute('height', h);
+      if (btnFilterTrigger) {
+        btnFilterTrigger.addEventListener('click', function (e) {
+          e.preventDefault();
+          openCustomRange();
+        });
+      }
+
+      // Validate custom range on submission
+      if (salesFilterForm) {
+        salesFilterForm.addEventListener('submit', function (e) {
+          if (startDateInput && endDateInput) {
+            const startVal = startDateInput.value;
+            const endVal = endDateInput.value;
+            if (!startVal || !endVal) {
+              e.preventDefault();
+              alert('Please select both start and end dates for the custom date range.');
+              return;
+            }
+            if (startVal > endVal) {
+              e.preventDefault();
+              alert('Start date cannot be after end date.');
+              return;
+            }
+          }
+        });
+      }
+
+      // 3. Dynamic PDF Export URL Sync based on selected date filter
+      const btnExportPdf = document.getElementById('btnExportPdf');
+
+      function syncPdfExportUrl() {
+        if (!btnExportPdf) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeFilter = urlParams.get('filter') || '{{ date_filter|default:"all" }}';
+
+        const pdfUrl = new URL(btnExportPdf.getAttribute('href') || "{% url 'export_orders_pdf' %}", window.location.origin);
+        pdfUrl.searchParams.set('filter', activeFilter);
+
+        if (activeFilter === 'custom') {
+          const sDate = urlParams.get('start_date') || (startDateInput ? startDateInput.value : '');
+          const eDate = urlParams.get('end_date') || (endDateInput ? endDateInput.value : '');
+          if (sDate) {
+            pdfUrl.searchParams.set('start_date', sDate);
+          } else {
+            pdfUrl.searchParams.delete('start_date');
+          }
+          if (eDate) {
+            pdfUrl.searchParams.set('end_date', eDate);
+          } else {
+            pdfUrl.searchParams.delete('end_date');
+          }
+        } else {
+          pdfUrl.searchParams.delete('start_date');
+          pdfUrl.searchParams.delete('end_date');
+        }
+
+        btnExportPdf.href = `${pdfUrl.pathname}?${pdfUrl.searchParams.toString()}`;
+      }
+
+      if (btnExportPdf) {
+        syncPdfExportUrl();
+        btnExportPdf.addEventListener('click', function () {
+          syncPdfExportUrl();
+        });
+      }
+
+      if (startDateInput) {
+        startDateInput.addEventListener('change', syncPdfExportUrl);
+      }
+      if (endDateInput) {
+        endDateInput.addEventListener('change', syncPdfExportUrl);
+      }
+
+      // 4. Render Sales Analytics Bar Chart from Real Orders Data
+      const svg = document.getElementById('salesBarChartSvg');
+      if (svg) {
+        renderSalesAnalyticsChart();
+      }
+
+      function parseOrderDate(isoStr) {
+        if (!isoStr) return null;
+        const match = isoStr.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+        if (match) {
+          return new Date(
+            parseInt(match[1], 10),
+            parseInt(match[2], 10) - 1,
+            parseInt(match[3], 10),
+            parseInt(match[4], 10),
+            parseInt(match[5], 10),
+            parseInt(match[6], 10)
+          );
+        }
+        return new Date(isoStr);
+      }
+
+      function renderSalesAnalyticsChart() {
+        let ordersList = [];
+        try {
+          const el = document.getElementById('ordersData');
+          if (el && el.textContent.trim()) {
+            ordersList = JSON.parse(el.textContent.trim());
+          }
+        } catch (e) {
+          console.error("Error reading orders data:", e);
+        }
+
+        const dateFilter = "{{ date_filter|default:'all' }}";
+        const startDateStr = "{% if start_date %}{{ start_date|date:'Y-m-d' }}{% endif %}";
+        const endDateStr = "{% if end_date %}{{ end_date|date:'Y-m-d' }}{% endif %}";
+
+        let buckets = [];
+
+        if (dateFilter === 'daily') {
+          // 8 3-hour blocks across the day
+          const blockLabels = ["3 AM", "6 AM", "9 AM", "12 PM", "3 PM", "6 PM", "9 PM", "12 AM"];
+          const blockFullLabels = [
+            "12:00 AM - 03:00 AM",
+            "03:00 AM - 06:00 AM",
+            "06:00 AM - 09:00 AM",
+            "09:00 AM - 12:00 PM",
+            "12:00 PM - 03:00 PM",
+            "03:00 PM - 06:00 PM",
+            "06:00 PM - 09:00 PM",
+            "09:00 PM - 12:00 AM"
+          ];
+          buckets = blockLabels.map((sl, i) => ({
+            shortLabel: sl,
+            label: blockFullLabels[i],
+            revenue: 0,
+            orderCount: 0
+          }));
+
+          ordersList.forEach(order => {
+            const d = parseOrderDate(order.created_at);
+            if (d) {
+              const hour = d.getHours();
+              const idx = Math.min(Math.floor(hour / 3), 7);
+              buckets[idx].revenue += Number(order.amount) || 0;
+              buckets[idx].orderCount += 1;
             }
           });
+
+        } else if (dateFilter === 'weekly') {
+          // 7 days of the week (Monday through Sunday)
+          const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+          const fullDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+          buckets = dayNames.map((name, i) => ({
+            shortLabel: name,
+            label: fullDayNames[i],
+            revenue: 0,
+            orderCount: 0
+          }));
+
+          ordersList.forEach(order => {
+            const d = parseOrderDate(order.created_at);
+            if (d) {
+              // Convert JS getDay() (Sun=0, Mon=1) to Monday=0
+              const dayIdx = (d.getDay() + 6) % 7;
+              if (dayIdx >= 0 && dayIdx < 7) {
+                buckets[dayIdx].revenue += Number(order.amount) || 0;
+                buckets[dayIdx].orderCount += 1;
+              }
+            }
+          });
+
+        } else if (dateFilter === 'custom' && startDateStr && endDateStr) {
+          const startParts = startDateStr.split("-").map(Number);
+          const endParts = endDateStr.split("-").map(Number);
+          const startD = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+          const endD = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+          const diffDays = Math.max(1, Math.round((endD - startD) / (1000 * 60 * 60 * 24)) + 1);
+
+          if (diffDays <= 1) {
+            // Single day custom range: 8 3-hour blocks
+            const blockLabels = ["3 AM", "6 AM", "9 AM", "12 PM", "3 PM", "6 PM", "9 PM", "12 AM"];
+            const blockFullLabels = [
+              "12:00 AM - 03:00 AM",
+              "03:00 AM - 06:00 AM",
+              "06:00 AM - 09:00 AM",
+              "09:00 AM - 12:00 PM",
+              "12:00 PM - 03:00 PM",
+              "03:00 PM - 06:00 PM",
+              "06:00 PM - 09:00 PM",
+              "09:00 PM - 12:00 AM"
+            ];
+            buckets = blockLabels.map((sl, i) => ({
+              shortLabel: sl,
+              label: blockFullLabels[i],
+              revenue: 0,
+              orderCount: 0
+            }));
+            ordersList.forEach(order => {
+              const d = parseOrderDate(order.created_at);
+              if (d) {
+                const hour = d.getHours();
+                const idx = Math.min(Math.floor(hour / 3), 7);
+                buckets[idx].revenue += Number(order.amount) || 0;
+                buckets[idx].orderCount += 1;
+              }
+            });
+
+          } else if (diffDays <= 7) {
+            // Day by day buckets
+            for (let i = 0; i < diffDays; i++) {
+              const cur = new Date(startD.getFullYear(), startD.getMonth(), startD.getDate() + i);
+              const mName = cur.toLocaleString('default', { month: 'short' });
+              const dNum = cur.getDate();
+              buckets.push({
+                y: cur.getFullYear(),
+                m: cur.getMonth(),
+                d: cur.getDate(),
+                shortLabel: `${mName} ${dNum}`,
+                label: cur.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+                revenue: 0,
+                orderCount: 0
+              });
+            }
+            ordersList.forEach(order => {
+              const d = parseOrderDate(order.created_at);
+              if (d) {
+                const b = buckets.find(b => b.y === d.getFullYear() && b.m === d.getMonth() && b.d === d.getDate());
+                if (b) {
+                  b.revenue += Number(order.amount) || 0;
+                  b.orderCount += 1;
+                }
+              }
+            });
+
+          } else if (diffDays <= 35) {
+            // Sub-range intervals
+            const numBuckets = Math.min(diffDays, 6);
+            const step = diffDays / numBuckets;
+            for (let i = 0; i < numBuckets; i++) {
+              const bStart = new Date(startD.getFullYear(), startD.getMonth(), startD.getDate() + Math.round(i * step));
+              const bEnd = new Date(startD.getFullYear(), startD.getMonth(), startD.getDate() + Math.round((i + 1) * step) - 1);
+              const s1 = bStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+              const s2 = bEnd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+              buckets.push({
+                startMs: bStart.getTime(),
+                endMs: bEnd.getTime() + (24 * 60 * 60 * 1000) - 1,
+                shortLabel: `${bStart.getDate()}-${bEnd.getDate()}`,
+                label: `${s1} to ${s2}`,
+                revenue: 0,
+                orderCount: 0
+              });
+            }
+            ordersList.forEach(order => {
+              const d = parseOrderDate(order.created_at);
+              if (d) {
+                const t = d.getTime();
+                const b = buckets.find(b => t >= b.startMs && t <= b.endMs);
+                if (b) {
+                  b.revenue += Number(order.amount) || 0;
+                  b.orderCount += 1;
+                }
+              }
+            });
+
+          } else {
+            // Multi-month range (> 35 days)
+            let cur = new Date(startD.getFullYear(), startD.getMonth(), 1);
+            const endMonth = new Date(endD.getFullYear(), endD.getMonth(), 1);
+            while (cur <= endMonth && buckets.length < 12) {
+              const y = cur.getFullYear();
+              const m = cur.getMonth();
+              buckets.push({
+                y: y,
+                m: m,
+                shortLabel: cur.toLocaleString('default', { month: 'short' }),
+                label: cur.toLocaleString('default', { month: 'long', year: 'numeric' }),
+                revenue: 0,
+                orderCount: 0
+              });
+              cur.setMonth(cur.getMonth() + 1);
+            }
+            ordersList.forEach(order => {
+              const d = parseOrderDate(order.created_at);
+              if (d) {
+                const b = buckets.find(b => b.y === d.getFullYear() && b.m === d.getMonth());
+                if (b) {
+                  b.revenue += Number(order.amount) || 0;
+                  b.orderCount += 1;
+                }
+              }
+            });
+          }
+
+        } else if (dateFilter === 'monthly') {
+          // Monthly (Weeks 1 to 5)
+          buckets = [
+            { shortLabel: "W1 (1-7)", label: "Week 1 (Days 1–7)", revenue: 0, orderCount: 0 },
+            { shortLabel: "W2 (8-14)", label: "Week 2 (Days 8–14)", revenue: 0, orderCount: 0 },
+            { shortLabel: "W3 (15-21)", label: "Week 3 (Days 15–21)", revenue: 0, orderCount: 0 },
+            { shortLabel: "W4 (22-28)", label: "Week 4 (Days 22–28)", revenue: 0, orderCount: 0 },
+            { shortLabel: "W5 (29+)", label: "Week 5 (Days 29–End)", revenue: 0, orderCount: 0 },
+          ];
+
+          ordersList.forEach(order => {
+            const d = parseOrderDate(order.created_at);
+            if (d) {
+              const day = d.getDate();
+              let idx = 0;
+              if (day <= 7) idx = 0;
+              else if (day <= 14) idx = 1;
+              else if (day <= 21) idx = 2;
+              else if (day <= 28) idx = 3;
+              else idx = 4;
+              buckets[idx].revenue += Number(order.amount) || 0;
+              buckets[idx].orderCount += 1;
+            }
+          });
+
+        } else {
+          // All Time (dateFilter === 'all' or default)
+          // Determine the range of dates from ordersList or default to last 6 months
+          let minDate = null;
+          let maxDate = new Date();
+          ordersList.forEach(order => {
+            const d = parseOrderDate(order.created_at);
+            if (d && !isNaN(d.getTime())) {
+              if (!minDate || d < minDate) minDate = d;
+              if (d > maxDate) maxDate = d;
+            }
+          });
+
+          if (!minDate) {
+            minDate = new Date();
+            minDate.setMonth(minDate.getMonth() - 5);
+          }
+
+          let cur = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+          const endMonth = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+
+          const totalMonths = (endMonth.getFullYear() - cur.getFullYear()) * 12 + (endMonth.getMonth() - cur.getMonth()) + 1;
+          if (totalMonths > 12) {
+            cur = new Date(endMonth.getFullYear(), endMonth.getMonth() - 11, 1);
+          }
+
+          while (cur <= endMonth && buckets.length < 12) {
+            const y = cur.getFullYear();
+            const m = cur.getMonth();
+            buckets.push({
+              y: y,
+              m: m,
+              shortLabel: cur.toLocaleString('default', { month: 'short' }),
+              label: cur.toLocaleString('default', { month: 'long', year: 'numeric' }),
+              revenue: 0,
+              orderCount: 0
+            });
+            cur.setMonth(cur.getMonth() + 1);
+          }
+
+          if (buckets.length === 0) {
+            const now = new Date();
+            buckets.push({
+              y: now.getFullYear(),
+              m: now.getMonth(),
+              shortLabel: now.toLocaleString('default', { month: 'short' }),
+              label: now.toLocaleString('default', { month: 'long', year: 'numeric' }),
+              revenue: 0,
+              orderCount: 0
+            });
+          }
+
+          ordersList.forEach(order => {
+            const d = parseOrderDate(order.created_at);
+            if (d) {
+              const b = buckets.find(b => b.y === d.getFullYear() && b.m === d.getMonth());
+              if (b) {
+                b.revenue += Number(order.amount) || 0;
+                b.orderCount += 1;
+              }
+            }
+          });
+        }
+
+        // Render SVG elements
+        while (svg.firstChild) {
+          svg.removeChild(svg.firstChild);
+        }
+
+        const maxRevenue = Math.max(...buckets.map(b => b.revenue), 0);
+        const totalPeriodOrders = buckets.reduce((acc, b) => acc + b.orderCount, 0);
+
+        // Baseline trace line
+        const baseline = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        baseline.setAttribute("x1", "20");
+        baseline.setAttribute("y1", "190");
+        baseline.setAttribute("x2", "520");
+        baseline.setAttribute("y2", "190");
+        baseline.setAttribute("stroke", "rgba(255, 255, 255, 0.08)");
+        baseline.setAttribute("stroke-width", "1");
+        svg.appendChild(baseline);
+
+        const N = buckets.length;
+        const availableWidth = 500;
+        const slotWidth = availableWidth / N;
+        const barWidth = Math.min(32, Math.max(14, slotWidth * 0.55));
+        const maxHeight = 150;
+
+        if (totalPeriodOrders === 0 || maxRevenue === 0) {
+          const emptyText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          emptyText.setAttribute("x", "270");
+          emptyText.setAttribute("y", "105");
+          emptyText.setAttribute("text-anchor", "middle");
+          emptyText.setAttribute("fill", "#767784");
+          emptyText.setAttribute("font-family", "var(--font-main)");
+          emptyText.setAttribute("font-size", "13");
+          emptyText.setAttribute("font-weight", "600");
+          emptyText.textContent = "No sales recorded for this period";
+          svg.appendChild(emptyText);
+
+          buckets.forEach((bucket, idx) => {
+            const cx = 20 + (idx + 0.5) * slotWidth;
+            const labelText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            labelText.setAttribute("class", "chart-axis-label");
+            labelText.setAttribute("x", cx);
+            labelText.setAttribute("y", "210");
+            labelText.textContent = bucket.shortLabel;
+            svg.appendChild(labelText);
+          });
+          return;
+        }
+
+        buckets.forEach((bucket, idx) => {
+          const cx = 20 + (idx + 0.5) * slotWidth;
+          const barX = cx - (barWidth / 2);
+
+          let barH = 2;
+          if (bucket.revenue > 0) {
+            barH = Math.max(4, Math.round((bucket.revenue / maxRevenue) * maxHeight));
+          }
+          const barY = 190 - barH;
+
+          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          const isPeak = (bucket.revenue === maxRevenue && maxRevenue > 0);
+          rect.setAttribute("class", isPeak ? "chart-bar coral" : "chart-bar dark");
+          rect.setAttribute("x", barX);
+          rect.setAttribute("y", barY);
+          rect.setAttribute("width", barWidth);
+          rect.setAttribute("height", barH);
+          rect.setAttribute("rx", "3");
+
+          const formattedAmount = "₹" + bucket.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const tooltipText = `${bucket.label}: ${formattedAmount} (${bucket.orderCount} order${bucket.orderCount === 1 ? '' : 's'})`;
+          rect.setAttribute("title", tooltipText);
+
+          const titleEl = document.createElementNS("http://www.w3.org/2000/svg", "title");
+          titleEl.textContent = tooltipText;
+          rect.appendChild(titleEl);
+
+          svg.appendChild(rect);
+
+          // Axis label
+          const labelText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          labelText.setAttribute("class", "chart-axis-label");
+          labelText.setAttribute("x", cx);
+          labelText.setAttribute("y", "210");
+          labelText.textContent = bucket.shortLabel;
+          svg.appendChild(labelText);
         });
-      });
+      }
     });
   </script>
 
