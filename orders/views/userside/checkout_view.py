@@ -176,11 +176,13 @@ def checkout(request):
     discounted_subtotal = subtotal - discount_amount
 
     # Preserve the existing free-shipping threshold based on original subtotal.
-    shipping_amount = (
-        Decimal("0.00")
-        if subtotal >= Decimal("1000.00")
-        else Decimal("50.00")
-    )
+    shipping_amount = Decimal("0.00")
+    
+    # (
+        
+    #     if subtotal >= Decimal("1000.00")
+    #     else Decimal("50.00")
+    # )
 
     total_amount = discounted_subtotal + shipping_amount
 

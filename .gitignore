@@ -16,6 +16,7 @@ venv/
 
 # User-uploaded media
 media/
+staticfiles/
 
 # IDE settings
 .vscode/

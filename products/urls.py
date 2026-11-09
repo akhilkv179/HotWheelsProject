@@ -7,7 +7,7 @@ from .views.userside.product_list_view import product_list as user_product_list
 from .views.userside.product_details_view import product_details
 from .views.adminside.product_delete_view import delete_product,restore_product
 from products.views.adminside.inventory_view import (admin_inventory_list,admin_inventory_detail,admin_update_stock,)
-
+from products.views.userside.about import about_view
 
 
 urlpatterns = [
@@ -24,6 +24,8 @@ urlpatterns = [
     path("admin/inventory/", admin_inventory_list, name="admin_inventory_list"),
     path("admin/inventory/<int:product_id>/",admin_inventory_detail,name="admin_inventory_detail",),
     path("admin/inventory/variant/<int:variant_id>/update/",admin_update_stock,name="admin_update_stock", ),
+    path('about/', about_view, name='about'),
+
 
 
 

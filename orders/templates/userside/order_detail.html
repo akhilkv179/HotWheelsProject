@@ -411,10 +411,22 @@
       color: var(--accent-coral);
     }
 
-    .btn-top-action.return-btn:hover {
+    .btn-top-action.return-btn:hover:not(:disabled) {
       background-color: var(--accent-coral);
       color: #121215;
       border-color: var(--accent-coral);
+    }
+
+    .btn-top-action.return-btn:disabled,
+    .btn-top-action.return-btn.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+      background-color: #1a1b20 !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      color: #6b7280 !important;
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     .btn-top-action.review-top-btn {
@@ -916,9 +928,23 @@
       color: var(--accent-coral);
     }
 
-    .btn-item-action.return:hover {
+    .btn-item-action.return:hover:not(:disabled) {
       background: var(--accent-coral);
       color: #121215;
+    }
+
+    .btn-item-action.return:disabled,
+    .btn-item-action.return.disabled,
+    .btn-item-action:disabled,
+    .btn-item-action.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.03) !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      color: #6b7280 !important;
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     /* Review Button & Reviewed Badge Styles */
@@ -1684,7 +1710,7 @@
         <li><a href="{% url 'home' %}" class="nav-link active">HOME</a></li>
         <li><a href="{% url 'user_product_list' %}" class="nav-link">SHOP</a></li>
         <li><a href="{% url 'user_category_list' %}" class="nav-link">COLLECTIONS</a></li>
-        <li><a href="{% url 'home' %}#about" class="nav-link">ABOUT</a></li>
+        <li><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
       </ul>
     </div>
 
@@ -1986,58 +2012,92 @@
                           <span class="pill-dot"></span> Cancelled
                         </span>
                       </div>
-                    {% elif item.returns.all %}
-                      {% with return_obj=item.returns.all.0 %}
-                        <div>
-                          <span class="item-status-pill returned">
-                            <span class="pill-dot"></span> Return: {{ return_obj.status|title }}
+                    {% elif order.status == "delivered" or order.status == "completed" %}
+                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        {% if item.reviews.all %}
+                          <span class="btn-item-action reviewed" title="You reviewed this item on {{ item.reviews.all.0.created_at|date:'M d, Y' }}">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="#fbbf24" stroke="#fbbf24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            <span>Reviewed ({{ item.reviews.all.0.rating }}★)</span>
                           </span>
-                        </div>
-                      {% endwith %}
-                    {% elif item.item_status == "returned" %}
-                      <div>
-                        <span class="item-status-pill returned">
-                          <span class="pill-dot"></span> Returned
-                        </span>
-                      </div>
-                    {% else %}
-                      {% if order.status == "delivered" or order.status == "completed" %}
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                          {% if item.reviews.all %}
-                            <span class="btn-item-action reviewed" title="You reviewed this item on {{ item.reviews.all.0.created_at|date:'M d, Y' }}">
-                              <svg viewBox="0 0 24 24" width="13" height="13" fill="#fbbf24" stroke="#fbbf24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                              <span>Reviewed ({{ item.reviews.all.0.rating }}★)</span>
-                            </span>
-                          {% else %}
-                            <button
-                              type="button"
-                              class="btn-item-action review"
-                              data-item-id="{{ item.id }}"
-                              data-item-name="{{ item.product_name|escape }}"
-                              onclick="openReviewModal('{{ item.id }}', '{{ item.product_name|escapejs }}')"
-                              title="Write a review for this delivered item"
-                            >
-                              <svg viewBox="0 0 24 24" width="13" height="13" fill="#fbbf24" stroke="#fbbf24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                              <span>Write Review</span>
-                            </button>
-                          {% endif %}
-                          <button type="button" class="btn-item-action return" onclick="openReturnForItem('{{ item.id }}', '{{ item.product_name|escapejs }}')">
+                        {% else %}
+                          <button
+                            type="button"
+                            class="btn-item-action review"
+                            data-item-id="{{ item.id }}"
+                            data-item-name="{{ item.product_name|escape }}"
+                            onclick="openReviewModal('{{ item.id }}', '{{ item.product_name|escapejs }}')"
+                            title="Write a review for this delivered item"
+                          >
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="#fbbf24" stroke="#fbbf24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            <span>Write Review</span>
+                          </button>
+                        {% endif %}
+
+                        {% if item.item_status == "returned" or item.returns.all.0.status == "inspection_approved" or item.returns.all.0.status == "refund_processed" %}
+                          <button
+                            type="button"
+                            class="btn-item-action return disabled"
+                            disabled
+                            aria-disabled="true"
+                            data-item-id="{{ item.id }}"
+                            title="This product has already been returned"
+                          >
                             Return Item
                           </button>
-                        </div>
-                      {% elif order.status == "pending" or order.status == "confirmed" %}
-                        <div>
-                          <button type="button" class="btn-item-action cancel" onclick="openCancelForItem('{{ item.id }}', '{{ item.product_name|escapejs }}', '{% url 'cancel_order' order.order_number item.id %}')">
-                            Cancel Item
+                          <span class="item-status-pill returned">
+                            <span class="pill-dot"></span> Returned
+                          </span>
+                        {% elif item.returns.all %}
+                          {% with return_obj=item.returns.all.0 %}
+                            <button
+                              type="button"
+                              class="btn-item-action return disabled"
+                              disabled
+                              aria-disabled="true"
+                              data-item-id="{{ item.id }}"
+                              title="Return request already submitted (Status: {{ return_obj.status|title }})"
+                            >
+                              Return Item
+                            </button>
+                            <span class="item-status-pill returned">
+                              <span class="pill-dot"></span> Return: {{ return_obj.status|title }}
+                            </span>
+                          {% endwith %}
+                        {% else %}
+                          <button
+                            type="button"
+                            class="btn-item-action return"
+                            data-item-id="{{ item.id }}"
+                            onclick="openReturnForItem('{{ item.id }}', '{{ item.product_name|escapejs }}')"
+                          >
+                            Return Item
                           </button>
-                        </div>
-                      {% else %}
-                        <div>
+                        {% endif %}
+                      </div>
+                    {% elif order.status == "pending" or order.status == "confirmed" %}
+                      <div>
+                        <button type="button" class="btn-item-action cancel" onclick="openCancelForItem('{{ item.id }}', '{{ item.product_name|escapejs }}', '{% url 'cancel_order' order.order_number item.id %}')">
+                          Cancel Item
+                        </button>
+                      </div>
+                    {% else %}
+                      <div>
+                        {% if item.item_status == "returned" %}
+                          <span class="item-status-pill returned">
+                            <span class="pill-dot"></span> Returned
+                          </span>
+                        {% elif item.returns.all %}
+                          {% with return_obj=item.returns.all.0 %}
+                            <span class="item-status-pill returned">
+                              <span class="pill-dot"></span> Return: {{ return_obj.status|title }}
+                            </span>
+                          {% endwith %}
+                        {% else %}
                           <span class="item-status-pill active">
                             <span class="pill-dot"></span> Active
                           </span>
-                        </div>
-                      {% endif %}
+                        {% endif %}
+                      </div>
                     {% endif %}
                   </div>
                 </div>
@@ -2474,7 +2534,7 @@
       <div>
         <h4 class="footer-column-title">Company</h4>
         <ul class="footer-links-list">
-          <li><a href="{% url 'home' %}" class="footer-link">About Us</a></li>
+          <li><a href="{% url 'about' %}" class="footer-link">About Us</a></li>
           <li><a href="{% url 'home' %}" class="footer-link">Contact</a></li>
           <li><a href="{% url 'home' %}" class="footer-link">FAQ</a></li>
         </ul>
@@ -2540,6 +2600,14 @@
 
     function handleReturnFormSubmit(form) {
       if (returnSubmitted) return false;
+      const select = document.getElementById('returnItemSelect');
+      const targetItemId = select && select.value ? select.value : (form.action.match(/\/items\/(\d+)\/return\//) || [])[1];
+      if (targetItemId) {
+        const btn = document.querySelector(`.btn-item-action.return[data-item-id="${targetItemId}"]`);
+        if (btn && (btn.disabled || btn.classList.contains('disabled'))) {
+          return false;
+        }
+      }
       returnSubmitted = true;
       const btn = form.querySelector('button[type="submit"]');
       if (btn) {
@@ -2618,9 +2686,16 @@
     }
 
     function openReturnModal() {
+      const enabledBtns = document.querySelectorAll('.btn-item-action.return:not(:disabled)');
+      if (enabledBtns.length === 0) {
+        return false;
+      }
       const modal = document.getElementById('returnOrderModal');
       const select = document.getElementById('returnItemSelect');
-      if (select && select.value) {
+      if (select && select.options.length > 0) {
+        if (!select.value || select.selectedIndex === -1) {
+          select.selectedIndex = 0;
+        }
         updateReturnAction(select.value);
       }
       if (modal) modal.classList.add('open');
@@ -2632,6 +2707,10 @@
     }
 
     function openReturnForItem(itemId, productName) {
+      const btn = document.querySelector(`.btn-item-action.return[data-item-id="${itemId}"]`);
+      if (btn && (btn.disabled || btn.classList.contains('disabled'))) {
+        return false;
+      }
       const select = document.getElementById('returnItemSelect');
       if (select) {
         select.value = itemId;
@@ -2641,6 +2720,10 @@
     }
 
     function updateReturnAction(itemId) {
+      const btn = document.querySelector(`.btn-item-action.return[data-item-id="${itemId}"]`);
+      if (btn && (btn.disabled || btn.classList.contains('disabled'))) {
+        return false;
+      }
       const form = document.getElementById('returnOrderForm');
       if (form && itemId) {
         form.action = `/orders/my-orders/${orderNumber}/items/${itemId}/return/`;
@@ -2951,6 +3034,17 @@
 
     // Indian Thousands Formatting (e.g. 5,548.00)
     document.addEventListener('DOMContentLoaded', function() {
+      // Check if all items in this order are disabled for return
+      const allItemReturnBtns = document.querySelectorAll('.btn-item-action.return');
+      const enabledItemReturnBtns = document.querySelectorAll('.btn-item-action.return:not(:disabled)');
+      const topReturnBtn = document.querySelector('.btn-top-action.return-btn');
+      if (topReturnBtn && allItemReturnBtns.length > 0 && enabledItemReturnBtns.length === 0) {
+        topReturnBtn.disabled = true;
+        topReturnBtn.classList.add('disabled');
+        topReturnBtn.removeAttribute('onclick');
+        topReturnBtn.title = 'All items in this order have already been returned or requested for return';
+      }
+
       // Check for persisted review success message
       try {
         const storedSuccess = sessionStorage.getItem('review_success_message');
