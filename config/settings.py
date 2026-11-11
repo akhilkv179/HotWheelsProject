@@ -34,13 +34,15 @@ if not SECRET_KEY:
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "lk1bx3h1twj5.shares.zrok.io",
+    'localhost',
+    '127.0.0.1',
+    'lk1bx3h1twj5.shares.zrok.io',
+    '13.53.174.250',
 ]
 
 
 # Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',

@@ -46,7 +46,10 @@ def user_list(request):
 
     search_query = request.GET.get("search", "").strip()
 
-    users = User.objects.all().order_by("-date_joined")
+    users = User.objects.filter(
+    is_staff=False,
+    is_superuser=False,
+).order_by("-date_joined")
 
     if search_query:
         users = users.filter(

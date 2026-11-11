@@ -1,10 +1,24 @@
 
 from django import forms
+from django.core.validators import RegexValidator
 
 from coupons.models import Coupon
 
 
 class CouponForm(forms.ModelForm):
+
+    code = forms.CharField(
+        validators=[
+            RegexValidator(
+                regex=r"^[A-Za-z0-9]+$",
+                message=(
+                    "Coupon code can contain only letters and numbers. "
+                    "Spaces and special characters are not allowed."
+                ),
+            )
+        ]
+    )
+
     discount_type = forms.ChoiceField(
         choices=[
             ("percentage", "Percentage"),
@@ -80,7 +94,8 @@ class CouponForm(forms.ModelForm):
         existing_coupons = Coupon.objects.filter(
             code__iexact=code
         )
-        #ignore the coupon I am currently editing. Check whether any other coupon uses this code.
+
+        # Ignore the coupon currently being edited.
         if self.instance.pk:
             existing_coupons = existing_coupons.exclude(
                 pk=self.instance.pk
